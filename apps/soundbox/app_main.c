@@ -86,7 +86,7 @@ void app_task_loop()
             app_idle_task();
             break;
         case APP_SLEEP_TASK:
-            log_info("APP_SLEEP_TASK \n");
+            //log_info("APP_SLEEP_TASK \n");
             app_sleep_task();
             break;
         case APP_SMARTBOX_ACTION_TASK:
