@@ -24,11 +24,11 @@
 //*********************************************************************************//
 //                                  app 配置                                       //
 //*********************************************************************************//
-#define TCFG_APP_BT_EN			            1
+#define TCFG_APP_BT_EN			            0
 #define TCFG_APP_MUSIC_EN			        0
 #define TCFG_APP_LINEIN_EN					0
 #define TCFG_APP_FM_EN					    0
-#define TCFG_APP_PC_EN					    0
+#define TCFG_APP_PC_EN					    1
 #define TCFG_APP_RTC_EN					    0
 #define TCFG_APP_RECORD_EN				    0
 #define TCFG_APP_SPDIF_EN                   0
@@ -96,7 +96,7 @@
 //                                  充电参数配置                                   //
 //*********************************************************************************//
 //是否支持芯片内置充电
-#define TCFG_CHARGE_ENABLE					ENABLE_THIS_MOUDLE
+#define TCFG_CHARGE_ENABLE					DISABLE_THIS_MOUDLE
 //是否支持开机充电
 #define TCFG_CHARGE_POWERON_ENABLE			ENABLE
 //是否支持拔出充电自动开机功能
@@ -115,7 +115,7 @@
 #define     SD_CMD_DECT 	0
 #define     SD_CLK_DECT  	1
 #define     SD_IO_DECT 		2
-#define TCFG_SD0_ENABLE						DISABLE_THIS_MOUDLE
+#define TCFG_SD0_ENABLE						ENABLE_THIS_MOUDLE
 //A组IO: CMD:PA9    CLK:PA10   DAT0:PA5    DAT1:PA6    DAT2:PA7    DAT3:PA8
 //B组IO: CMD:PB10   CLK:PB9    DAT0:PB8    DAT1:PB6    DAT2:PB5    DAT3:PB4
 #define TCFG_SD0_PORTS						'B'
@@ -490,7 +490,7 @@ DAC硬件上的连接方式,可选的配置：
 //                                  EQ配置                                         //
 //*********************************************************************************//
 //EQ配置，使用在线EQ时，EQ文件和EQ模式无效。有EQ文件时，使能TCFG_USE_EQ_FILE,默认不用EQ模式切换功能
-#define TCFG_EQ_ENABLE                      1     //支持EQ功能
+#define TCFG_EQ_ENABLE                      0     //支持EQ功能
 #if TCFG_EQ_ENABLE
 #define TCFG_EQ_ONLINE_ENABLE               0     //支持在线EQ调试
 #define TCFG_BT_MUSIC_EQ_ENABLE             1     //支持蓝牙音乐EQ
