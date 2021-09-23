@@ -51,8 +51,8 @@
 
 #if TCFG_APP_PC_EN
 
-#define LOG_TAG_CONST        APP_PC
-#define LOG_TAG             "[APP_PC]"
+#define LOG_TAG_CONST       APP
+#define LOG_TAG             "[APP]"
 #define LOG_ERROR_ENABLE
 #define LOG_DEBUG_ENABLE
 #define LOG_INFO_ENABLE
@@ -80,9 +80,13 @@ static void pc_start()
     }
     __this->onoff = 1;
     log_info("App Start - PC");
+	log_info("enter into usb_start ---------------------------0");
 
     app_status_handler(APP_STATUS_PC);
+	
 #if TCFG_PC_ENABLE
+	log_info("enter into usb_start ---------------------------1");
+
     usb_start();
 #endif
 }

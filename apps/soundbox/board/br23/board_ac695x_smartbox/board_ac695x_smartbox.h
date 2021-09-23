@@ -25,7 +25,7 @@
 //                                  app 配置                                       //
 //*********************************************************************************//
 #define TCFG_APP_BT_EN			            0
-#define TCFG_APP_MUSIC_EN			        0
+#define TCFG_APP_MUSIC_EN			        1
 #define TCFG_APP_LINEIN_EN					0
 #define TCFG_APP_FM_EN					    0
 #define TCFG_APP_PC_EN					    1
@@ -98,9 +98,9 @@
 //是否支持芯片内置充电
 #define TCFG_CHARGE_ENABLE					DISABLE_THIS_MOUDLE
 //是否支持开机充电
-#define TCFG_CHARGE_POWERON_ENABLE			ENABLE
+#define TCFG_CHARGE_POWERON_ENABLE			DISABLE
 //是否支持拔出充电自动开机功能
-#define TCFG_CHARGE_OFF_POWERON_NE			ENABLE
+#define TCFG_CHARGE_OFF_POWERON_NE			DISABLE
 
 #define TCFG_CHARGE_FULL_V					CHARGE_FULL_V_4202
 
@@ -120,7 +120,7 @@
 //B组IO: CMD:PB10   CLK:PB9    DAT0:PB8    DAT1:PB6    DAT2:PB5    DAT3:PB4
 #define TCFG_SD0_PORTS						'B'
 #define TCFG_SD0_DAT_MODE					1
-#define TCFG_SD0_DET_MODE					SD_CMD_DECT
+#define TCFG_SD0_DET_MODE					SD_CLK_DECT
 #define TCFG_SD0_DET_IO 					IO_PORT_DM//当SD_DET_MODE为2时有效
 #define TCFG_SD0_DET_IO_LEVEL				0//IO检查，0：低电平检测到卡。 1：高电平(外部电源)检测到卡。 2：高电平(SD卡电源)检测到卡。
 #define TCFG_SD0_CLK						(3000000*4L)
@@ -597,7 +597,7 @@ DAC硬件上的连接方式,可选的配置：
 //                                  系统配置                                         //
 //*********************************************************************************//
 #define TCFG_AUTO_SHUT_DOWN_TIME		    0   //没有蓝牙连接自动关机时间
-#define TCFG_SYS_LVD_EN						1   //电量检测使能
+#define TCFG_SYS_LVD_EN						0   //电量检测使能
 #define TCFG_POWER_ON_NEED_KEY				0	  //是否需要按按键开机配置
 #define TWFG_APP_POWERON_IGNORE_DEV         3700//上电忽略挂载设备，0时不忽略，非0则n毫秒忽略
 
@@ -830,7 +830,7 @@ DAC硬件上的连接方式,可选的配置：
 //*********************************************************************************//
 //                                  fat 文件系统配置                                       //
 //*********************************************************************************//
-#define CONFIG_FATFS_ENABLE					DISABLE
+#define CONFIG_FATFS_ENABLE					ENABLE
 
 
 
