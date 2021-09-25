@@ -86,7 +86,7 @@ void app_task_loop()
             app_idle_task();
             break;
         case APP_SLEEP_TASK:
-            //log_info("APP_SLEEP_TASK \n");
+            log_info("APP_SLEEP_TASK \n");
             app_sleep_task();
             break;
         case APP_SMARTBOX_ACTION_TASK:
@@ -99,6 +99,8 @@ void app_task_loop()
         vm_check_all(0);
     }
 }
+
+extern void uart_dev_test_main();
 
 void app_main()
 {
@@ -138,8 +140,9 @@ void app_main()
 #if TCFG_CHARGE_BOX_ENABLE
     app_curr_task = APP_IDLE_TASK;
 #endif
-
+	uart_dev_test_main();
     app_task_loop();
+
 }
 
 

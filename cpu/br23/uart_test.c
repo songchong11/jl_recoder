@@ -2,7 +2,7 @@
 #include "asm/uart_dev.h"
 #include "system/event.h"
 
-#if 0
+#if 1
 /*
     [[  注意!!!  ]]
     * 如果当系统任务较少时使用本demo，需要将低功耗关闭（#define TCFG_LOWPOWER_LOWPOWER_SEL    0//SLEEP_EN ），否则任务被串口接收函数调用信号量pend时会导致cpu休眠，串口中断和DMA接收将遗漏数据或数据不正确
@@ -92,6 +92,8 @@ static void uart_event_handler(struct sys_event *e)
 }
 SYS_EVENT_HANDLER(SYS_DEVICE_EVENT, uart_event_handler, 0);
 
+static FILE *test_file = NULL;
+
 static void uart_u_task(void *arg)
 {
     const uart_bus_t *uart_bus = arg;
@@ -125,6 +127,33 @@ static void uart_u_task(void *arg)
 #if (!UART_DEV_FLOW_CTRL)
             uart_bus->write(uart_rxbuf, uart_rxcnt);
 #endif
+		#if 0 //file wirte test
+			if(uart_rxcnt == 10) {
+				printf("open file\r\n");
+				//void *fmnt = mount(p->name, p->storage_path, p->fs_type, 3, NULL);
+				int ret = 0;
+				static u32 cnt = 0;
+				if (!test_file) {
+					test_file = fopen("storage/sd0/C/record01.txt", "w+");
+					cnt = 0;
+					if (!test_file) {
+						log_e("fopen play file faild!\n");
+					}
+				}
+				putchar('W');
+				ret = fwrite(test_file, uart_rxbuf, uart_rxcnt);
+				if (ret != uart_rxcnt) {
+					log_e(" file write buf err %d\n", ret);
+					fclose(test_file);
+					test_file = NULL;
+				}
+
+				printf("file write end....\n");
+				fclose(test_file);
+				test_file = NULL;
+				uart_rxcnt = 0;
+			#endif
+			}
         }
 #endif
     }
@@ -178,7 +207,7 @@ void uart_dev_test_main()
     u_arg.frame_length = 32;
     u_arg.rx_timeout = 100;
     u_arg.isr_cbfun = uart_isr_hook;
-    u_arg.baud = 9600;
+    u_arg.baud = 115200;
     u_arg.is_9bit = 0;
 #if UART_DEV_FLOW_CTRL
     u_arg.tx_pin = IO_PORTA_00;
