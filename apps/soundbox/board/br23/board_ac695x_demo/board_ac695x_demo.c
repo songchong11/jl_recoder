@@ -67,14 +67,14 @@ STATUS_CONFIG status_config = {
 
 // *INDENT-OFF*
 /************************** UART config****************************/
-#if TCFG_UART0_ENABLE
-UART0_PLATFORM_DATA_BEGIN(uart0_data)
-    .tx_pin = TCFG_UART0_TX_PORT,
-    .rx_pin = TCFG_UART0_RX_PORT,
-    .baudrate = TCFG_UART0_BAUDRATE,
+#if TCFG_UART2_ENABLE
+UART2_PLATFORM_DATA_BEGIN(uart2_data)
+    .tx_pin = TCFG_UART2_TX_PORT,
+    .rx_pin = TCFG_UART2_RX_PORT,
+    .baudrate = TCFG_UART2_BAUDRATE,
 
     .flags = UART_DEBUG,
-UART0_PLATFORM_DATA_END()
+UART2_PLATFORM_DATA_END()
 #endif //TCFG_UART0_ENABLE
 
 
@@ -853,11 +853,11 @@ static void key_wakeup_enable()
 
 void debug_uart_init(const struct uart_platform_data *data)
 {
-#if TCFG_UART0_ENABLE
+#if TCFG_UART2_ENABLE
     if (data) {
         uart_init(data);
     } else {
-        uart_init(&uart0_data);
+        uart_init(&uart2_data);
     }
 #endif
 }
@@ -981,9 +981,9 @@ void board_init()
         /* gpio_set_output_value(IO_PORTA_04,1); */
     /* } */
 
- #if TCFG_UART0_ENABLE
-    if (uart0_data.rx_pin < IO_MAX_NUM) {
-        gpio_set_die(uart0_data.rx_pin, 1);
+ #if TCFG_UART2_ENABLE
+    if (uart2_data.rx_pin < IO_MAX_NUM) {
+        gpio_set_die(uart2_data.rx_pin, 1);
     }
 #endif
 
