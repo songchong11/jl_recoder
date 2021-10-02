@@ -38,7 +38,7 @@ static void my_put_u8hex(u8 dat)
 }
 
 //设备事件响应demo
-static void uart_event_handler(struct sys_event *e)
+static void uart_event_4g_at_handler(struct sys_event *e)
 {
     const uart_bus_t *uart_bus;
     u32 uart_rxcnt = 0;
@@ -90,17 +90,17 @@ static void uart_event_handler(struct sys_event *e)
         }
     }
 }
-SYS_EVENT_HANDLER(SYS_DEVICE_EVENT, uart_event_handler, 0);
+SYS_EVENT_HANDLER(SYS_DEVICE_EVENT, uart_event_4g_at_handler, 0);
 
 static FILE *test_file = NULL;
 
-static void uart_u_task(void *arg)
+static void uart_at_task(void *arg)
 {
     const uart_bus_t *uart_bus = arg;
     int ret;
     u32 uart_rxcnt = 0;
 
-    printf("uart_u_task start\n");
+    printf("uart_at_task start\n");
     while (1) {
 #if !UART_DEV_TEST_MULTI_BYTE
         //uart_bus->getbyte()在尚未收到串口数据时会pend信号量，挂起task，直到UART_RX_PND或UART_RX_OT_PND中断发生，post信号量，唤醒task
@@ -196,12 +196,12 @@ static void uart_flow_ctrl_task(void *arg)
 	}
 }
 
-void uart_dev_receive_init()
+void uart_dev_4g_at_init()
 {
     const uart_bus_t *uart_bus;
     struct uart_platform_data_t u_arg = {0};
-    u_arg.tx_pin = IO_PORTA_05;
-    u_arg.rx_pin = IO_PORTA_06;
+    u_arg.tx_pin = IO_PORTA_00;
+    u_arg.rx_pin = IO_PORTA_01;
     u_arg.rx_cbuf = uart_cbuf;
     u_arg.rx_cbuf_size = 512;
     u_arg.frame_length = 32;
@@ -220,7 +220,7 @@ void uart_dev_receive_init()
     if (uart_bus != NULL) {
         printf("uart_dev_open() success\n");
 #if (UART_DEV_USAGE_TEST_SEL == 2)
-        os_task_create(uart_u_task, (void *)uart_bus, 31, 512, 0, "uart_u_task");
+        os_task_create(uart_at_task, (void *)uart_bus, 31, 512, 0, "uart_at_task");
 #endif
 #if UART_DEV_FLOW_CTRL
 		os_task_create(uart_flow_ctrl_task, (void *)uart_bus, 31, 128, 0, "flow_ctrl");

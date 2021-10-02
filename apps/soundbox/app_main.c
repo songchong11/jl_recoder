@@ -100,7 +100,8 @@ void app_task_loop()
     }
 }
 
-extern void uart_dev_test_main();
+extern void uart_dev_receive_init();
+extern void uart_dev_4g_at_init();
 
 void app_main()
 {
@@ -140,7 +141,9 @@ void app_main()
 #if TCFG_CHARGE_BOX_ENABLE
     app_curr_task = APP_IDLE_TASK;
 #endif
-	uart_dev_test_main();
+	uart_dev_receive_init();
+	uart_dev_4g_at_init();
+
     app_task_loop();
 
 }

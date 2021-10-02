@@ -59,6 +59,7 @@ objs += \
 
 objs += \
 	  $(ROOT)/cpu/$(CPU)/uart_test.o \
+	  $(ROOT)/cpu/$(CPU)/uart_4g_at.o \
 	  $(ROOT)/cpu/$(CPU)/spi_test.o \
 	  $(ROOT)/cpu/$(CPU)/iic_eeprom_test.o \
 	  $(ROOT)/cpu/$(CPU)/iic_slave_test.o \
