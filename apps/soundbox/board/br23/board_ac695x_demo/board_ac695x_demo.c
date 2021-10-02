@@ -797,7 +797,7 @@ struct port_wakeup port0 = {
     .pullup_down_enable = ENABLE,                            //配置I/O 内部上下拉是否使能
     .edge       = FALLING_EDGE,                            //唤醒方式选择,可选：上升沿\下降沿
     .attribute  = BLUETOOTH_RESUME,                        //保留参数
-    .iomap      = IO_PORTA_10,                             //唤醒口选择
+    .iomap      = IO_PORTB_01,                             //唤醒口选择
 };
 
 /* RTC PR0 PR1 唤醒 */
