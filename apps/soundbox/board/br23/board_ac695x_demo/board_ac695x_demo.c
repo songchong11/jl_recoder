@@ -274,7 +274,13 @@ const struct iokey_port iokey_list[] = {
         .key_value = 0,                                       //按键值
     },
 
-    {
+	{
+			.connect_way = TCFG_IOKEY_RECODER_CONNECT_WAY,
+			.key_type.one_io.port = TCFG_IOKEY_RECODER_ONE_PORT,
+			.key_value = 1,
+	},
+
+   /* {
         .connect_way = TCFG_IOKEY_PREV_CONNECT_WAY,
         .key_type.one_io.port = TCFG_IOKEY_PREV_ONE_PORT,
         .key_value = 1,
@@ -284,7 +290,7 @@ const struct iokey_port iokey_list[] = {
         .connect_way = TCFG_IOKEY_NEXT_CONNECT_WAY,
         .key_type.one_io.port = TCFG_IOKEY_NEXT_ONE_PORT,
         .key_value = 2,
-    },
+    },*/
 };
 const struct iokey_platform_data iokey_data = {
     .enable = TCFG_IOKEY_ENABLE,                              //是否使能IO按键
