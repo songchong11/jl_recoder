@@ -174,10 +174,10 @@ const u16 record_key_io_table[KEY_IO_NUM_MAX][KEY_EVENT_MAX] = {
 const u16 rtc_key_io_table[KEY_IO_NUM_MAX][KEY_EVENT_MAX] = {
     //单击             //长按          //hold         //抬起            //双击                //三击
     [0] = {
-        KEY_MUSIC_PP,			KEY_POWEROFF,			KEY_POWEROFF_HOLD,	KEY_NULL,	KEY_NULL,			KEY_NULL
+        KEY_NULL,			KEY_POWEROFF,			KEY_POWEROFF_HOLD,	KEY_NULL,	KEY_NULL,			KEY_NULL
     },
     [1] = {
-        KEY_NULL,				KEY_NULL,				KEY_NULL,			KEY_NULL,	KEY_NULL,			KEY_NULL
+         KEY_START_STOP_RECODER, KEY_NULL,			KEY_POWEROFF_HOLD,	KEY_NULL,	KEY_AT_SEND_PCM,			KEY_NULL
     },
     [2] = {
         KEY_NULL,				KEY_NULL,				KEY_NULL,			KEY_NULL,	KEY_NULL,			KEY_NULL

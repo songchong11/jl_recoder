@@ -178,6 +178,8 @@ enum {
     MSG_HALF_SECOND,//半秒的事件
     //不会出现在按键主流程，用于不重要得其他操作
     KEY_MINOR_OPT,
+	KEY_START_STOP_RECODER,
+	KEY_AT_SEND_PCM,
 
     KEY_NULL = 0xFFFF,
 
