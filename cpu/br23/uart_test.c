@@ -152,8 +152,8 @@ static void uart_u_task(void *arg)
 				fclose(test_file);
 				test_file = NULL;
 				uart_rxcnt = 0;
-			#endif
 			}
+		#endif
         }
 #endif
     }
@@ -192,7 +192,7 @@ static void uart_flow_ctrl_task(void *arg)
     const uart_bus_t *uart_bus = arg;
 	while (1) {
 		uart_bus->write("flow control test ", sizeof("flow control test "));
-		os_time_dly(100);	
+		os_time_dly(100);
 	}
 }
 
@@ -200,8 +200,8 @@ void uart_dev_test_main()
 {
     const uart_bus_t *uart_bus;
     struct uart_platform_data_t u_arg = {0};
-    u_arg.tx_pin = IO_PORTA_01;
-    u_arg.rx_pin = IO_PORTA_02;
+    u_arg.tx_pin = IO_PORTA_05;
+    u_arg.rx_pin = IO_PORTA_06;
     u_arg.rx_cbuf = uart_cbuf;
     u_arg.rx_cbuf_size = 512;
     u_arg.frame_length = 32;
