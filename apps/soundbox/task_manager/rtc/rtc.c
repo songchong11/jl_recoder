@@ -21,6 +21,7 @@
 
 #if TCFG_APP_RTC_EN
 
+extern void get_sys_time(struct sys_time *time);
 
 
 #define LOG_TAG_CONST       APP_RTC
@@ -550,6 +551,7 @@ static int rtc_key_event_opr(struct sys_event *event)
 {
     int ret = true;
     int err = 0;
+	struct sys_time time;
 
 #if (TCFG_SPI_LCD_ENABLE)
     extern int key_is_ui_takeover();
@@ -601,7 +603,8 @@ static int rtc_key_event_opr(struct sys_event *event)
 
 			break;
 		case KEY_AT_SEND_PCM:
-			printf("KEY_RTC_SW_POS \n");
+			get_sys_time(&time);
+			printf("now_time : %d-%d-%d,%d:%d:%d\n", time.year, time.month, time.day, time.hour, time.min, time.sec);
 			break;
 
         default :
@@ -681,14 +684,12 @@ static void  rtc_tone_play_end_callback(void *priv, int flag)
    @note
 */
 /*----------------------------------------------------------------------------*/
-extern void get_sys_time(struct sys_time *time);
 
 void app_rtc_task()
 {
     int res;
     int msg[32];
 
-	struct sys_time time;
 #if (SMART_BOX_EN)
     extern u8 smartbox_rtc_ring_tone(void);
     if (smartbox_rtc_ring_tone()) {
@@ -698,15 +699,16 @@ void app_rtc_task()
     tone_play_with_callback_by_name(tone_table[IDEX_TONE_RTC], 1, rtc_tone_play_end_callback, (void *)IDEX_TONE_RTC);
 #endif
     rtc_task_start();
+	/*update rtc */
 
+	
     while (1) {
         app_task_get_msg(msg, ARRAY_SIZE(msg), 1);
 
         switch (msg[0]) {
         case APP_MSG_SYS_EVENT:
             if (rtc_sys_event_handler((struct sys_event *)(&msg[1])) == false) {
-				get_sys_time(&time);
-				printf("now_time : %d-%d-%d,%d:%d:%d\n", time.year, time.month, time.day, time.hour, time.min, time.sec);
+
                 app_default_event_deal((struct sys_event *)(&msg[1]));    //由common统一处理
             }
             break;
