@@ -12,7 +12,7 @@
 #include "clock_cfg.h"
 #include "ui/ui_style.h"
 #include "ui_manage.h"
-
+#include "common/app_common.h"
 /*************************************************************
    此文件函数主要是rtc模式按键处理和事件处理
 
@@ -74,7 +74,6 @@ static struct rtc_opr *__this = NULL;
 
 const char *alm_string[] =  {" AL ", " ON ", " OFF"};
 const char *alm_select[] =  {"AL-1", "AL-2", "AL-3", "AL-4", "AL-5"};
-
 
 
 
@@ -534,6 +533,11 @@ static void rtc_task_close()
         __this = NULL;
     }
 }
+bool recoder_state = false;
+extern void uart_dev_receive_init();
+extern void uart_receive_task_del(void);
+extern void file_write_task_del(void);
+extern void file_write_thread_init(void);
 
 //*----------------------------------------------------------------------------*/
 /**@brief    rtc 按键消息入口
@@ -580,6 +584,25 @@ static int rtc_key_event_opr(struct sys_event *event)
             log_info("KEY_RTC_SW_POS \n");
             set_rtc_pos();
             break;
+		case KEY_START_STOP_RECODER:
+			if(recoder_state == false) {
+				printf("start recoder task............\n");
+				/*start recoder task*/
+				//uart_dev_receive_init();
+				os_taskq_post_msg("file_write", 1, APP_USER_MSG_START_RECODER);
+				recoder_state = true;
+			} else {
+				printf("stop recoder task............\n");
+				//uart_receive_task_del();
+				//file_write_task_del();
+				recoder_state = false;
+				os_taskq_post_msg("file_write", 1, APP_USER_MSG_STOP_RECODER);
+			}
+
+			break;
+		case KEY_AT_SEND_PCM:
+			printf("KEY_RTC_SW_POS \n");
+			break;
 
         default :
             ret = false;
@@ -658,10 +681,14 @@ static void  rtc_tone_play_end_callback(void *priv, int flag)
    @note
 */
 /*----------------------------------------------------------------------------*/
+extern void get_sys_time(struct sys_time *time);
+
 void app_rtc_task()
 {
     int res;
     int msg[32];
+
+	struct sys_time time;
 #if (SMART_BOX_EN)
     extern u8 smartbox_rtc_ring_tone(void);
     if (smartbox_rtc_ring_tone()) {
@@ -678,12 +705,15 @@ void app_rtc_task()
         switch (msg[0]) {
         case APP_MSG_SYS_EVENT:
             if (rtc_sys_event_handler((struct sys_event *)(&msg[1])) == false) {
+				get_sys_time(&time);
+				printf("now_time : %d-%d-%d,%d:%d:%d\n", time.year, time.month, time.day, time.hour, time.min, time.sec);
                 app_default_event_deal((struct sys_event *)(&msg[1]));    //由common统一处理
             }
             break;
         default:
             break;
         }
+
 
         if (app_task_exitting()) {
             rtc_task_close();

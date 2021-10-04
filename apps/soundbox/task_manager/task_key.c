@@ -66,6 +66,7 @@ extern const u16 rtc_key_io_table[KEY_IO_NUM_MAX][KEY_EVENT_MAX];
 extern const u16 pc_key_io_table[KEY_IO_NUM_MAX][KEY_EVENT_MAX];
 extern const u16 spdif_key_io_table[KEY_IO_NUM_MAX][KEY_EVENT_MAX];
 extern const u16 idle_key_io_table[KEY_IO_NUM_MAX][KEY_EVENT_MAX];
+extern const u16 sleep_key_io_table[KEY_IO_NUM_MAX][KEY_EVENT_MAX];
 /***********************************************************
  *				iokey table 映射管理
  ***********************************************************/
@@ -96,6 +97,8 @@ static const type_key_io_table io_table[APP_TASK_MAX_INDEX] = {
     [APP_SPDIF_TASK] 	= spdif_key_io_table,
 #endif
     [APP_IDLE_TASK] 	= idle_key_io_table,
+
+    [APP_SLEEP_TASK] 	= sleep_key_io_table,
 };
 
 u16 iokey_event_to_msg(u8 cur_task, struct key_event *key)

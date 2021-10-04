@@ -102,6 +102,8 @@ void app_task_loop()
 
 extern void uart_dev_receive_init();
 extern void uart_dev_4g_at_init();
+extern void file_write_thread_init(void);
+extern void user_deal_init(void);
 
 void app_main()
 {
@@ -142,7 +144,8 @@ void app_main()
     app_curr_task = APP_IDLE_TASK;
 #endif
 	uart_dev_receive_init();
-	uart_dev_4g_at_init();
+	//uart_dev_4g_at_init();
+	file_write_thread_init();
 
     app_task_loop();
 

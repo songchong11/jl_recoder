@@ -174,19 +174,19 @@ const u16 record_key_io_table[KEY_IO_NUM_MAX][KEY_EVENT_MAX] = {
 const u16 rtc_key_io_table[KEY_IO_NUM_MAX][KEY_EVENT_MAX] = {
     //单击             //长按          //hold         //抬起            //双击                //三击
     [0] = {
-        KEY_NULL,			KEY_POWEROFF,			KEY_POWEROFF_HOLD,	KEY_NULL,	KEY_NULL,			KEY_NULL
+        KEY_NULL,			KEY_NULL,			KEY_NULL,	KEY_NULL,	KEY_NULL,			KEY_NULL
     },
     [1] = {
-         KEY_START_STOP_RECODER, KEY_NULL,			KEY_POWEROFF_HOLD,	KEY_NULL,	KEY_AT_SEND_PCM,			KEY_NULL
+         KEY_START_STOP_RECODER, KEY_NULL,			KEY_NULL,	KEY_NULL,	KEY_AT_SEND_PCM,			KEY_NULL
     },
     [2] = {
         KEY_NULL,				KEY_NULL,				KEY_NULL,			KEY_NULL,	KEY_NULL,			KEY_NULL
     },
     [3] = {
-        KEY_CHANGE_MODE,		KEY_NULL,				KEY_NULL,			KEY_NULL,	KEY_NULL,			KEY_NULL
+        KEY_NULL,		KEY_NULL,				KEY_NULL,			KEY_NULL,	KEY_NULL,			KEY_NULL
     },
     [4] = {
-        KEY_RTC_SW_POS,			KEY_RTC_SW,				KEY_NULL,			KEY_NULL,	KEY_NULL,			KEY_NULL
+        KEY_NULL,			KEY_NULL,				KEY_NULL,			KEY_NULL,	KEY_NULL,			KEY_NULL
     },
     [5] = {
         KEY_NULL,				KEY_NULL,				KEY_NULL,			KEY_NULL,	KEY_NULL,			KEY_NULL
@@ -227,11 +227,12 @@ const u16 spdif_key_io_table[KEY_IO_NUM_MAX][KEY_EVENT_MAX] = {
 const u16 idle_key_io_table[KEY_IO_NUM_MAX][KEY_EVENT_MAX] = {
     //单击             //长按          //hold         //抬起            //双击                //三击
     [0] = {
-        KEY_NULL,			    KEY_POWER_ON,			KEY_POWER_ON_HOLD,	KEY_NULL,	KEY_NULL,			KEY_NULL
-    },
-    [1] = {
-        KEY_NULL,				KEY_NULL,				KEY_NULL,			KEY_NULL,	KEY_NULL,           KEY_NULL
-    },
+		KEY_NULL,			KEY_POWEROFF,			KEY_POWEROFF_HOLD,	KEY_NULL,	KEY_NULL,			KEY_NULL
+	},
+	[1] = {
+		 KEY_START_STOP_RECODER, KEY_NULL,			KEY_POWEROFF_HOLD,	KEY_NULL,	KEY_AT_SEND_PCM,			KEY_NULL
+	},
+
     [2] = {
         KEY_NULL,				KEY_NULL,				KEY_NULL,			KEY_NULL,	KEY_NULL,           KEY_NULL
     },
@@ -244,5 +245,30 @@ const u16 idle_key_io_table[KEY_IO_NUM_MAX][KEY_EVENT_MAX] = {
     [5] = {
         KEY_NULL,				KEY_NULL,				KEY_NULL,			KEY_NULL,	KEY_NULL,			KEY_NULL
     },
+};
+/***********************************************************
+ *				sleep 模式的 iokey table
+ ***********************************************************/
+const u16 sleep_key_io_table[KEY_IO_NUM_MAX][KEY_EVENT_MAX] = {
+	//单击			 //长按		   //hold		  //抬起			  //双击				  //三击
+	[0] = {
+		KEY_NULL,			KEY_POWEROFF,			KEY_POWEROFF_HOLD,	KEY_NULL,	KEY_NULL,			KEY_NULL
+	},
+	[1] = {
+		 KEY_START_STOP_RECODER, KEY_NULL,			KEY_POWEROFF_HOLD,	KEY_NULL,	KEY_AT_SEND_PCM,			KEY_NULL
+	},
+
+	[2] = {
+		KEY_NULL,				KEY_NULL,				KEY_NULL,			KEY_NULL,	KEY_NULL,			KEY_NULL
+	},
+	[3] = {
+		KEY_NULL,				KEY_NULL,				KEY_NULL,			KEY_NULL,	KEY_NULL,			KEY_NULL
+	},
+	[4] = {
+		KEY_NULL,				KEY_NULL,				KEY_NULL,			KEY_NULL,	KEY_NULL,			KEY_NULL
+	},
+	[5] = {
+		KEY_NULL,				KEY_NULL,				KEY_NULL,			KEY_NULL,	KEY_NULL,			KEY_NULL
+	},
 };
 #endif

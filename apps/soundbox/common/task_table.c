@@ -1,6 +1,6 @@
 #include "system/includes.h"
 #include "app_config.h"
-
+#include "lwrb.h"
 
 /*任务列表, 注意:stack_size设置为32*n*/
 const struct task_info task_info_table[] = {
@@ -79,9 +79,12 @@ const struct task_info task_info_table[] = {
     {"uac_play",            6,     768,   0    },
     {"uac_record",          6,     768,   32   },
 #endif
-#if (TUYA_DEMO_EN)
+//#if (TUYA_DEMO_EN)
     {"user_deal",           7,     512,   512   },//定义线程 tuya任务调度
-#endif
+//#endif
+	{"file_write",     7,     512,   512   },//定义线程user任务调度
+   //{"uart_u_task",     7,     512,   128   },//定义线程user任务调度
+
     {0, 0},
 };
 
@@ -194,3 +197,4 @@ void user_deal_exit(void)
 {
     task_kill("user_deal");
 }
+

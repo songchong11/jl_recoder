@@ -47,6 +47,12 @@
 #define LOG_CLI_ENABLE
 #include "debug.h"
 
+bool at_state = false;
+extern void uart_dev_receive_init();
+extern void uart_receive_task_del(void);
+extern void file_write_task_del(void);
+extern void file_write_thread_init(void);
+
 
 int JL_rcsp_event_handler(struct rcsp_event *rcsp);
 int bt_background_event_handler(struct sys_event *event);
@@ -293,11 +299,25 @@ int app_common_key_msg_deal(struct sys_event *event)
         break;
 
 	case KEY_START_STOP_RECODER:
-		printf("start or stop recoder............\n");
+#if 0
+		if(recoder_state == false) {
+			printf("start recoder task............\n");
+			/*start recoder task*/
+			//uart_dev_receive_init();
+			//file_write_thread_init();
+			recoder_state = true;
+		} else {
+			printf("stop recoder task............\n");
+			//uart_receive_task_del();
+			//file_write_task_del();
+			recoder_state = false;
+		}
+#endif
 		break;
 
 	case KEY_AT_SEND_PCM:
-		printf("start or stop send pcm by at port............\n");
+		printf("start or stop send pcm by at port-------------------\n");
+
 		break;
     default:
         ui_key_msg_post(key_event);

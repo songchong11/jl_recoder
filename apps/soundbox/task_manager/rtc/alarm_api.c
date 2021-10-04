@@ -126,7 +126,8 @@ void *is_sys_time_online()
 }
 
 
-static void get_sys_time(struct sys_time *time)//获取时间
+//static void get_sys_time(struct sys_time *time)//获取时间
+void get_sys_time(struct sys_time *time)//获取时间
 {
     if (!dev_handle) {
         return ;
