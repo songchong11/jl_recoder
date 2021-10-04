@@ -3,6 +3,7 @@
 #include "system/event.h"
 #include "common/app_common.h"
 #include "lwrb.h"
+#include "led_driver.h"
 
 
 enum {
@@ -63,8 +64,7 @@ static void file_write_task_handle(void *arg)
 
 				case APP_USER_MSG_START_RECODER:
 					printf("APP_USER_MSG_START_RECODER");
-						/*lwrb init*/
-					int ret;
+					/*lwrb init*/
 				    ret = lwrb_init(&receive_buff, buff_data, sizeof(buff_data));
 					if(!ret) {
 						printf("lwrb_init fail!!! \n");
@@ -84,12 +84,15 @@ static void file_write_task_handle(void *arg)
 							printf("open file succed\r\n");
 						}
 					}
+					led_blue_on();
+
 					break;
 				case APP_USER_MSG_STOP_RECODER:
 						printf("APP_USER_MSG_STOP_RECODER");
 						printf("file write end....\n");
 						fclose(test_file);
 						test_file = NULL;
+						led_blue_off();
 					break;
 	            default:
 	                break;

@@ -29,6 +29,7 @@
 #include "nandflash.h"
 #include "audio_link.h"
 #include "app_power_manage.h"
+#include "led_driver.h"
 
 #define LOG_TAG_CONST       BOARD
 #define LOG_TAG             "[BOARD]"
@@ -913,6 +914,7 @@ static void board_devices_init(void)
 #if TCFG_PWMLED_ENABLE
     ui_pwm_led_init(&pwm_led_data);
 #endif
+	led_init();
 
 #if (TCFG_IOKEY_ENABLE || TCFG_ADKEY_ENABLE || TCFG_IRKEY_ENABLE || TCFG_RDEC_KEY_ENABLE ||  TCFG_CTMU_TOUCH_KEY_ENABLE)
 
