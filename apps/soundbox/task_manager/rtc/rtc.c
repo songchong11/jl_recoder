@@ -591,6 +591,8 @@ static int rtc_key_event_opr(struct sys_event *event)
 				printf("start recoder task............\n");
 				/*start recoder task*/
 				//uart_dev_receive_init();
+				get_sys_time(&time);
+				printf("now_time : %d-%d-%d,%d:%d:%d\n", time.year, time.month, time.day, time.hour, time.min, time.sec);
 				os_taskq_post_msg("file_write", 1, APP_USER_MSG_START_RECODER);
 				recoder_state = true;
 			} else {

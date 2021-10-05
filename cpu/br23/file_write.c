@@ -30,6 +30,14 @@ uint8_t read_buffer[1024];
 extern bool recoder_state;
 
 static FILE *test_file = NULL;
+struct sys_time g_time;
+
+const char root_path[] = "storage/sd0/C/";
+char file_path[80] = {0};
+char year_month_day[20] = {0};
+char hour_min_sec[20] = {0};
+
+extern void get_sys_time(struct sys_time *time);//获取时间
 
 static void file_write_task_handle(void *arg)
 {
@@ -75,9 +83,36 @@ static void file_write_task_handle(void *arg)
 						printf("lwrb ready fail!!! \n");
 						return;
 					}
+					get_sys_time(&g_time);
+					printf("now_time : %d-%d-%d,%d:%d:%d\n", g_time.year, g_time.month, g_time.day, g_time.hour, g_time.min, g_time.sec);
+					#if 0
 
+					sprintf(time_str, "%d-%d-%d:%d:%d:%d" ,  g_time.year, g_time.month, g_time.day, g_time.hour, g_time.min, g_time.sec);
+					printf("time_str:%s\n", time_str);
+
+					strcat(file_path, root_path);
+					
+					strcat(file_path, time_str);
+					strcat(file_path, ".txt");
+
+					printf("path:%s\n", file_path);
+					#endif
+
+					sprintf(year_month_day, "%d%02d%02d", g_time.year, g_time.month, g_time.day);
+					printf("year_month_day:%s\n", year_month_day);
+
+					sprintf(hour_min_sec, "%02d%02d%02d", g_time.hour, g_time.min, g_time.sec);
+					printf("hour_min_sec:%s\n", hour_min_sec);
+
+					strcat(file_path, root_path);
+					strcat(file_path, year_month_day);
+					strcat(file_path, "/");
+					strcat(file_path, hour_min_sec);
+					strcat(file_path, ".mp3");
+					printf("file_path:%s\n", file_path);
 					if (!test_file) {
-						test_file = fopen("storage/sd0/C/record02.txt", "w+");
+						test_file = fopen(file_path, "w+");
+						//test_file = fopen("storage/sd0/C/1115181215.txt", "w+");
 						if (!test_file) {
 							printf("fopen file faild!\n");
 						} else {
@@ -85,13 +120,16 @@ static void file_write_task_handle(void *arg)
 						}
 					}
 					led_blue_on();
-
+					memset(file_path, 0, sizeof(file_path));
 					break;
 				case APP_USER_MSG_STOP_RECODER:
 						printf("APP_USER_MSG_STOP_RECODER");
 						printf("file write end....\n");
-						fclose(test_file);
-						test_file = NULL;
+
+						if (test_file) {
+							fclose(test_file);
+							test_file = NULL;
+						}
 						led_blue_off();
 					break;
 	            default:
@@ -109,7 +147,7 @@ void file_write_thread_init(void)
 
 	//os_task_create(file_write_task,NULL, 7, 512, 512, "file_write_task");
 	task_create(file_write_task_handle,NULL, "file_write");
-   
+
 }
 
 
