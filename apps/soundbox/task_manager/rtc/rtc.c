@@ -535,6 +535,8 @@ static void rtc_task_close()
     }
 }
 bool recoder_state = false;
+bool send_pcm_state = false;
+
 extern void uart_dev_receive_init();
 extern void uart_receive_task_del(void);
 extern void file_write_task_del(void);
@@ -605,8 +607,18 @@ static int rtc_key_event_opr(struct sys_event *event)
 
 			break;
 		case KEY_AT_SEND_PCM:
-			get_sys_time(&time);
-			printf("now_time : %d-%d-%d,%d:%d:%d\n", time.year, time.month, time.day, time.hour, time.min, time.sec);
+			//get_sys_time(&time);
+			//printf("now_time : %d-%d-%d,%d:%d:%d\n", time.year, time.month, time.day, time.hour, time.min, time.sec);
+			if (send_pcm_state == false) {
+				send_pcm_state = true;
+				printf("start send pcm to module............\n");
+				os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_START_SEND_FILE_TO_AT);
+
+			} else {
+				printf("stop send pcm to module............\n");
+				send_pcm_state = false;
+				os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_STOP_SEND_FILE_TO_AT);
+			}
 			break;
 
         default :

@@ -94,7 +94,7 @@ SYS_EVENT_HANDLER(SYS_DEVICE_EVENT, uart_event_4g_at_handler, 0);
 
 static FILE *test_file = NULL;
 
-static void uart_at_task(void *arg)
+static void uart_at_task_handle(void *arg)
 {
     const uart_bus_t *uart_bus = arg;
     int ret;
@@ -127,33 +127,6 @@ static void uart_at_task(void *arg)
 #if (!UART_DEV_FLOW_CTRL)
             uart_bus->write(uart_rxbuf, uart_rxcnt);
 #endif
-		#if 0 //file wirte test
-			if(uart_rxcnt == 10) {
-				printf("open file\r\n");
-				//void *fmnt = mount(p->name, p->storage_path, p->fs_type, 3, NULL);
-				int ret = 0;
-				static u32 cnt = 0;
-				if (!test_file) {
-					test_file = fopen("storage/sd0/C/record01.txt", "w+");
-					cnt = 0;
-					if (!test_file) {
-						log_e("fopen play file faild!\n");
-					}
-				}
-				putchar('W');
-				ret = fwrite(test_file, uart_rxbuf, uart_rxcnt);
-				if (ret != uart_rxcnt) {
-					log_e(" file write buf err %d\n", ret);
-					fclose(test_file);
-					test_file = NULL;
-				}
-
-				printf("file write end....\n");
-				fclose(test_file);
-				test_file = NULL;
-				uart_rxcnt = 0;
-			}
-		#endif
         }
 #endif
     }
@@ -218,9 +191,9 @@ void uart_dev_4g_at_init()
 #endif
     uart_bus = uart_dev_open(&u_arg);
     if (uart_bus != NULL) {
-        printf("uart_dev_open() success\n");
+        printf("4G AT uart_dev_open() success\n");
 #if (UART_DEV_USAGE_TEST_SEL == 2)
-        os_task_create(uart_at_task, (void *)uart_bus, 31, 512, 0, "uart_at_task");
+        os_task_create(uart_at_task_handle, (void *)uart_bus, 31, 512, 0, "uart_at_task");
 #endif
 #if UART_DEV_FLOW_CTRL
 		os_task_create(uart_flow_ctrl_task, (void *)uart_bus, 31, 128, 0, "flow_ctrl");
