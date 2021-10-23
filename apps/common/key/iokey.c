@@ -195,7 +195,10 @@ u8 io_get_key_value(void)
             read_value = get_io_key_value(read_io);
         }
 #else
+		
         read_value = get_io_key_value(read_io);
+		//printf("read_io %d, read_value %x\r\n", read_io, read_value);	
+
 #endif
         if (iokey_filter_hook(read_value)) {
 #ifdef TCFG_IOKEY_TIME_REDEFINE

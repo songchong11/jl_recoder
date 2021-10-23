@@ -137,16 +137,18 @@ void app_main()
         /* endless_loop_debug_int(); */
         ui_update_status(STATUS_POWERON);
 
-        app_curr_task = APP_POWERON_TASK;
+        //app_curr_task = APP_POWERON_TASK;
+        //app_curr_task = APP_RTC_TASK;
+        app_curr_task = APP_IDLE_TASK;
     }
 
 #if TCFG_CHARGE_BOX_ENABLE
     app_curr_task = APP_IDLE_TASK;
 #endif
-	uart_dev_receive_init();
-	//uart_dev_4g_at_init();
-	file_write_thread_init();
-	at_4g_thread_init();
+	uart_dev_receive_init();//uart 0 receive data from bes
+	uart_dev_4g_at_init(); //uart 1 for AT
+	file_write_thread_init();//file write
+	at_4g_thread_init(); // 4g driver
 
     app_task_loop();
 

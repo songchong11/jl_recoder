@@ -30,6 +30,8 @@
 #include "audio_link.h"
 #include "app_power_manage.h"
 #include "led_driver.h"
+#include "at_4g_driver.h"
+#include "misc_driver.h"
 
 #define LOG_TAG_CONST       BOARD
 #define LOG_TAG             "[BOARD]"
@@ -86,20 +88,20 @@ UART2_PLATFORM_DATA_END()
 /*     return 1; */
 /* } */
 
-/* void sd_set_power(u8 enable) */
-/* { */
-/*     static u8 old_enable = 0xff; */
-/*  */
-/*     if(old_enable == enable){ */
-/*         return; */
-/*     } */
-/*     if(enable){ */
-/*         sdpg_config(1); */
-/*     }else{ */
-/*         sdpg_config(0); */
-/*     } */
-/*     old_enable = enable; */
-/* } */
+void sd_set_power(u8 enable)
+{ 
+     static u8 old_enable = 0xff;
+
+     if(old_enable == enable){
+        return;
+     }
+     if(enable){
+         sdpg_config(1);
+     }else{
+         sdpg_config(0);
+     }
+     old_enable = enable;
+ }
 
 SD0_PLATFORM_DATA_BEGIN(sd0_data)
 //	.port 					= 'B',  //sd0 support port 'A' and port 'B'
@@ -524,7 +526,7 @@ LED7_PLATFORM_DATA_BEGIN(led7_data)
 	.pin_cfg.pin7.pin[0] = IO_PORTB_00,
 	.pin_cfg.pin7.pin[1] = IO_PORTB_01,
 	.pin_cfg.pin7.pin[2] = IO_PORTB_02,
-	.pin_cfg.pin7.pin[3] = IO_PORTB_03,
+	.pin_cfg.pin7.pin[3] = IO_PORTB_04,
 	.pin_cfg.pin7.pin[4] = IO_PORTB_04,
 	.pin_cfg.pin7.pin[5] = IO_PORTB_05,
 	.pin_cfg.pin7.pin[6] = (u8)-1,//IO_PORTB_06,
@@ -915,6 +917,8 @@ static void board_devices_init(void)
     ui_pwm_led_init(&pwm_led_data);
 #endif
 	led_init();
+	module_4g_gpio_init();
+	misc_driver_init();
 
 #if (TCFG_IOKEY_ENABLE || TCFG_ADKEY_ENABLE || TCFG_IRKEY_ENABLE || TCFG_RDEC_KEY_ENABLE ||  TCFG_CTMU_TOUCH_KEY_ENABLE)
 

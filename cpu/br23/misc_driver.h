@@ -3,6 +3,9 @@
 
 #include "generic/typedef.h"
 
+void misc_driver_init(void);
+
+void bes_power_on(void);
 
 
 #endif

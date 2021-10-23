@@ -201,7 +201,7 @@ _notify:
     scan_para->notify_value = NO_KEY;
 
     e.arg  = (void *)DEVICE_EVENT_FROM_KEY;
-    /* printf("key_value: 0x%x, event: %d\n", key_value, key_event); */
+    printf("key_value: 0x%x, event: %d\n", key_value, key_event);
     if (key_event_remap(&e)) {
         sys_event_notify(&e);
 #if TCFG_KEY_TONE_EN

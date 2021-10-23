@@ -402,6 +402,7 @@ static void app_common_device_event_handler(struct sys_event *event)
 #if TCFG_PC_ENABLE
             ret = pc_device_event_handler(event);
             if (ret == true) {
+				printf("inseret to pc----------------------\r\n");
                 app = APP_PC_TASK;
             }
 #endif
@@ -420,8 +421,10 @@ static void app_common_device_event_handler(struct sys_event *event)
         if (ret == true) {
             if (event->u.dev.event == DEVICE_EVENT_IN) {
                 ///设备上线， 非解码模式切换到解码模式播放
+
+				printf("switch to music task\r\n");
                 if (app_get_curr_task() != APP_MUSIC_TASK) {
-                    app = APP_MUSIC_TASK;
+                   // app = APP_MUSIC_TASK;
                 }
             }
         }
@@ -442,6 +445,7 @@ static void app_common_device_event_handler(struct sys_event *event)
         ret = alarm_sys_event_handler(event);
         if (ret == true) {
             alarm_flag = 1;
+			printf("switch to rtc task\r\n");
             app = APP_RTC_TASK;
         }
         break;

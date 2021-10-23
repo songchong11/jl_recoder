@@ -16,5 +16,6 @@ void led_green_off(void);
 void led_blue_on(void);
 
 void led_blue_off(void);
+void led_blink_time(int blink_gap_2ms, int blink_time);
 
 #endif

@@ -33,7 +33,7 @@
 #define TCFG_APP_RTC_EN					    1
 #define TCFG_APP_RECORD_EN				    0
 #define TCFG_APP_SPDIF_EN                   0
-#define TCFG_APP_SLEEP_EN                   1
+#define TCFG_APP_SLEEP_EN                   0
 
 //*********************************************************************************//
 //                               PCM_DEBUG调试配置                                 //
@@ -45,16 +45,16 @@
 //                                 UART配置                                        //
 //*********************************************************************************//
 // receive data from bes
-#define TCFG_UART0_ENABLE					ENABLE_THIS_MOUDLE                     //串口打印模块使能
-#define TCFG_UART0_RX_PORT					IO_PORTA_06                         //串口接收脚配置（用于打印可以选择NO_CONFIG_PORT）
-#define TCFG_UART0_TX_PORT  				IO_PORTA_05                            //串口发送脚配置
-#define TCFG_UART0_BAUDRATE  				115200                                //串口波特率配置
+//#define TCFG_UART0_ENABLE					ENABLE_THIS_MOUDLE                     //串口打印模块使能
+//#define TCFG_UART0_RX_PORT					IO_PORTA_06                         //串口接收脚配置（用于打印可以选择NO_CONFIG_PORT）
+//#define TCFG_UART0_TX_PORT  				IO_PORTA_05                            //串口发送脚配置
+//#define TCFG_UART0_BAUDRATE  				115200                                //串口波特率配置
 
 //AT port
-#define TCFG_UART1_ENABLE					ENABLE_THIS_MOUDLE                     //串口打印模块使能
-#define TCFG_UART1_RX_PORT					IO_PORTA_01                         //串口接收脚配置（用于打印可以选择NO_CONFIG_PORT）
-#define TCFG_UART1_TX_PORT  				IO_PORTA_00                            //串口发送脚配置
-#define TCFG_UART1_BAUDRATE  				1000000
+//#define TCFG_UART1_ENABLE					ENABLE_THIS_MOUDLE                     //串口打印模块使能
+//#define TCFG_UART1_RX_PORT				IO_PORTA_01                         //串口接收脚配置（用于打印可以选择NO_CONFIG_PORT）
+//#define TCFG_UART1_TX_PORT  				IO_PORTA_00                            //串口发送脚配置
+//#define TCFG_UART1_BAUDRATE  				1000000
 
 //log print
 #define TCFG_UART2_ENABLE					ENABLE_THIS_MOUDLE                     //串口打印模块使能
@@ -774,7 +774,7 @@ DAC硬件上的连接方式,可选的配置：
 //*********************************************************************************//
 #define TCFG_RTC_ENABLE						TCFG_APP_RTC_EN
 
-#define TCFG_USE_VIRTUAL_RTC                ENABLE    //假时钟
+#define TCFG_USE_VIRTUAL_RTC                DISABLE    //假时钟
 
 //*********************************************************************************//
 //                                  SPDIF & ARC 配置                                     //

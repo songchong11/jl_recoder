@@ -12,48 +12,56 @@ void misc_driver_init(void)
 {
 
 	/*bes power gpio init*/
-	gpio_set_pull_up(IO_PORTA_12, 1);
-	gpio_set_pull_down(IO_PORTA_12, 1);
-	gpio_set_die(IO_PORTA_12, 1);
-	gpio_set_direction(IO_PORTA_12, 0);
-	gpio_set_output_value(IO_PORTA_12, 1);
+	gpio_set_pull_up(BES_PWR_GPIO, 0);
+	gpio_set_pull_down(BES_PWR_GPIO, 0);
+	gpio_set_die(BES_PWR_GPIO, 0);
+	gpio_set_direction(BES_PWR_GPIO, 0);
+	gpio_set_output_value(BES_PWR_GPIO, 0);
 
 	/*charge ic init*/
-	gpio_set_pull_up(SYSOFF_GPIO, 1);
-	gpio_set_pull_down(SYSOFF_GPIO, 1);
-	gpio_set_die(SYSOFF_GPIO, 1);
+	gpio_set_pull_up(SYSOFF_GPIO, 0);
+	gpio_set_pull_down(SYSOFF_GPIO, 0);
+	gpio_set_die(SYSOFF_GPIO, 0);
 	gpio_set_direction(SYSOFF_GPIO, 0);
-	gpio_set_output_value(SYSOFF_GPIO, 1);
+	gpio_set_output_value(SYSOFF_GPIO, 0);
 
 
-	gpio_set_pull_up(EN01_GPIO, 1);
-	gpio_set_pull_down(EN01_GPIO, 1);
-	gpio_set_die(EN01_GPIO, 1);
+	gpio_set_pull_up(EN01_GPIO, 0);
+	gpio_set_pull_down(EN01_GPIO, 0);
+	gpio_set_die(EN01_GPIO, 0);
 	gpio_set_direction(EN01_GPIO, 0);
 	gpio_set_output_value(EN01_GPIO, 1);
 
-	gpio_set_pull_up(EN02_GPIO, 1);
-	gpio_set_pull_down(EN02_GPIO, 1);
-	gpio_set_die(EN02_GPIO, 1);
+	gpio_set_pull_up(EN02_GPIO, 0);
+	gpio_set_pull_down(EN02_GPIO, 0);
+	gpio_set_die(EN02_GPIO, 0);
 	gpio_set_direction(EN02_GPIO, 0);
 	gpio_set_output_value(EN02_GPIO, 1);
 
-	gpio_set_pull_up(CE_GPIO, 1);
-	gpio_set_pull_down(CE_GPIO, 1);
-	gpio_set_die(CE_GPIO, 1);
+	gpio_set_pull_up(CE_GPIO, 0);
+	gpio_set_pull_down(CE_GPIO, 0);
+	gpio_set_die(CE_GPIO, 0);
 	gpio_set_direction(CE_GPIO, 0);
 	gpio_set_output_value(CE_GPIO, 1);
 
+	bes_power_on();
 }
 
 void bes_power_on(void)
 {
-	//gpio_set_output_value(BES_PWR_GPIO, 0);
+	printf("bes_power_on\r\n");
+	gpio_set_output_value(BES_PWR_GPIO, 1);
+	delay_2ms(20);
+	gpio_set_output_value(BES_PWR_GPIO, 0);
 }
 
-void bes_power_off(void)
+void bes_power_off(void)// TODO:check
 {
-	//gpio_set_output_value(BES_PWR_GPIO, 1);
+	printf("bes_power_off\r\n");
+	gpio_set_output_value(BES_PWR_GPIO, 1);
+	delay_2ms(20);
+	gpio_set_output_value(BES_PWR_GPIO, 0);
+
 }
 
 

@@ -28,6 +28,9 @@
 #include "user_cfg.h"
 #include "ui/ui_api.h"
 #include "key_event_deal.h"
+#include "common/app_common.h"
+#include "led_driver.h"
+
 
 #define LOG_TAG_CONST       APP_IDLE
 #define LOG_TAG             "[APP_IDLE]"
@@ -241,6 +244,7 @@ REGISTER_LP_TARGET(idle_lp_target) = {
 
 static void idle_key_poweron_deal(u8 step)
 {
+	printf("idle_key_poweron_deal %x\r\n", step);
     switch (step) {
     case 0:
         goto_poweron_cnt = 0;
@@ -275,6 +279,10 @@ static void poweron_task_switch_to_bt(void *priv) //超时还没有设备挂载�
 }
 #endif
 
+static bool recoder_state = false;
+static bool send_pcm_state = false;
+extern void get_sys_time(struct sys_time *time);
+
 //*----------------------------------------------------------------------------*/
 /**@brief    idle 按键消息入口
    @param    无
@@ -284,11 +292,13 @@ static void poweron_task_switch_to_bt(void *priv) //超时还没有设备挂载�
 /*----------------------------------------------------------------------------*/
 static int idle_key_event_opr(struct sys_event *event)
 {
+
+	struct sys_time time;
     int ret = false;
     int key_event = event->u.key.event;
     int key_value = event->u.key.value;
 
-    log_info("key_event:%d \n", key_event);
+    printf("key_event:%d \n", key_event);
 
     switch (key_event) {
     case KEY_POWER_ON:
@@ -296,7 +306,41 @@ static int idle_key_event_opr(struct sys_event *event)
         idle_key_poweron_deal(key_event - KEY_POWER_ON);
         ret = true;
         break;
-    }
+
+	case KEY_START_STOP_RECODER:
+		if(recoder_state == false) {
+			printf("start recoder task............\n");
+			/*start recoder task*/
+			//uart_dev_receive_init();
+			get_sys_time(&time);
+			printf("now_time : %d-%d-%d,%d:%d:%d\n", time.year, time.month, time.day, time.hour, time.min, time.sec);
+			os_taskq_post_msg("file_write", 1, APP_USER_MSG_START_RECODER);
+			recoder_state = true;
+		} else {
+			printf("stop recoder task............\n");
+			//uart_receive_task_del();
+			//file_write_task_del();
+			recoder_state = false;
+			os_taskq_post_msg("file_write", 1, APP_USER_MSG_STOP_RECODER);
+		}
+
+		break;
+	case KEY_AT_SEND_PCM:
+		get_sys_time(&time);
+		printf("now_time : %d-%d-%d,%d:%d:%d\n", time.year, time.month, time.day, time.hour, time.min, time.sec);
+		if (send_pcm_state == false) {
+			send_pcm_state = true;
+			printf("start send pcm to module............\n");
+			os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_START_SEND_FILE_TO_AT);
+
+		} else {
+			printf("stop send pcm to module............\n");
+			send_pcm_state = false;
+			os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_STOP_SEND_FILE_TO_AT);
+		}
+		break;
+
+	}
     return ret;
 }
 
@@ -491,9 +535,12 @@ void app_idle_task()
 
     idle_app_start();
 
+	led_red_on();
+
     while (1) {
         app_task_get_msg(msg, ARRAY_SIZE(msg), 1);
 
+		printf("msg[0]: %x %x\r\n", msg[0], msg[1]);
         switch (msg[0]) {
         case APP_MSG_SYS_EVENT:
             if (idle_sys_event_handler((struct sys_event *)(&msg[1])) == false) {

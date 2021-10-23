@@ -1,8 +1,14 @@
 #include "system/includes.h"
 #include "asm/uart_dev.h"
 #include "system/event.h"
+#include <stdarg.h>
 
 #if 1
+//中断缓存串口数据
+#define UART_BUFF_SIZE      512
+
+
+
 /*
     [[  注意!!!  ]]
     * 如果当系统任务较少时使用本demo，需要将低功耗关闭（#define TCFG_LOWPOWER_LOWPOWER_SEL    0//SLEEP_EN ），否则任务被串口接收函数调用信号量pend时会导致cpu休眠，串口中断和DMA接收将遗漏数据或数据不正确
@@ -18,6 +24,7 @@
 
 static u8 uart_cbuf[512] __attribute__((aligned(4)));
 static u8 uart_rxbuf[512] __attribute__((aligned(4)));
+static u8 uart_txbuf[52] __attribute__((aligned(4)));
 
 static void my_put_u8hex(u8 dat)
 {
@@ -49,7 +56,7 @@ static void uart_event_4g_at_handler(struct sys_event *e)
             uart_bus = (const uart_bus_t *)e->u.dev.value;
             uart_rxcnt = uart_bus->read(uart_rxbuf, sizeof(uart_rxbuf), 0);
             if (uart_rxcnt) {
-                printf("get_buffer:\n");
+                printf("get_buffer-------:\n");
                 for (int i = 0; i < uart_rxcnt; i++) {
                     my_put_u8hex(uart_rxbuf[i]);
                     if (i % 16 == 15) {
@@ -93,42 +100,24 @@ static void uart_event_4g_at_handler(struct sys_event *e)
 SYS_EVENT_HANDLER(SYS_DEVICE_EVENT, uart_event_4g_at_handler, 0);
 
 static FILE *test_file = NULL;
+u32 uart_rxcnt = 0;
 
 static void uart_at_task_handle(void *arg)
 {
     const uart_bus_t *uart_bus = arg;
     int ret;
-    u32 uart_rxcnt = 0;
 
-    printf("uart_at_task start\n");
     while (1) {
-#if !UART_DEV_TEST_MULTI_BYTE
-        //uart_bus->getbyte()在尚未收到串口数据时会pend信号量，挂起task，直到UART_RX_PND或UART_RX_OT_PND中断发生，post信号量，唤醒task
-        ret = uart_bus->getbyte(&uart_rxbuf[0], 0);
-        if (ret) {
-            uart_rxcnt = 1;
-            printf("get_byte: %02x\n", uart_rxbuf[0]);
-            uart_bus->putbyte(uart_rxbuf[0]);
-        }
-#else
         //uart_bus->read()在尚未收到串口数据时会pend信号量，挂起task，直到UART_RX_PND或UART_RX_OT_PND中断发生，post信号量，唤醒task
         uart_rxcnt = uart_bus->read(uart_rxbuf, sizeof(uart_rxbuf), 0);
         if (uart_rxcnt) {
-            printf("get_buffer:\n");
             for (int i = 0; i < uart_rxcnt; i++) {
                 my_put_u8hex(uart_rxbuf[i]);
                 if (i % 16 == 15) {
                     putchar('\n');
                 }
             }
-            if (uart_rxcnt % 16) {
-                putchar('\n');
-            }
-#if (!UART_DEV_FLOW_CTRL)
-            uart_bus->write(uart_rxbuf, uart_rxcnt);
-#endif
         }
-#endif
     }
 }
 
@@ -139,7 +128,7 @@ static void uart_isr_hook(void *arg, u32 status)
 
     //当CONFIG_UARTx_ENABLE_TX_DMA（x = 0, 1）为1时，不要在中断里面调用ubus->write()，因为中断不能pend信号量
     if (status == UT_RX) {
-        printf("uart_rx_isr\n");
+       // printf("uart_rx_isr--------\n");
 #if (UART_DEV_USAGE_TEST_SEL == 1)
         e.type = SYS_DEVICE_EVENT;
         e.arg = (void *)DEVICE_EVENT_FROM_UART_RX_OVERFLOW;
@@ -149,7 +138,7 @@ static void uart_isr_hook(void *arg, u32 status)
 #endif
     }
     if (status == UT_RX_OT) {
-        printf("uart_rx_ot_isr\n");
+       // printf("uart_rx_ot_isr++++\n");
 #if (UART_DEV_USAGE_TEST_SEL == 1)
         e.type = SYS_DEVICE_EVENT;
         e.arg = (void *)DEVICE_EVENT_FROM_UART_RX_OUTTIME;
@@ -169,9 +158,10 @@ static void uart_flow_ctrl_task(void *arg)
 	}
 }
 
+static const uart_bus_t *uart_bus;
+
 void uart_dev_4g_at_init()
 {
-    const uart_bus_t *uart_bus;
     struct uart_platform_data_t u_arg = {0};
     u_arg.tx_pin = IO_PORTA_00;
     u_arg.rx_pin = IO_PORTA_01;
@@ -185,7 +175,7 @@ void uart_dev_4g_at_init()
 #if UART_DEV_FLOW_CTRL
     u_arg.tx_pin = IO_PORTA_00;
     u_arg.rx_pin = IO_PORTA_01;
-    u_arg.baud = 1000000;
+    u_arg.baud = 115200//1000000;
 	extern void flow_ctl_hw_init(void);
 	flow_ctl_hw_init();
 #endif
@@ -210,5 +200,181 @@ void uart_change_rts_state(void)
 	rts_state = !rts_state;
 }
 #endif
+
+
+/*
+ * 函数名：itoa
+ * 描述  ：将整形数据转换成字符串
+ * 输入  ：-radix =10 表示10进制，其他结果为0
+ *         -value 要转换的整形数
+ *         -buf 转换后的字符串
+ *         -radix = 10
+ * 输出  ：无
+ * 返回  ：无
+ * 调用  ：被GSM_USARTx_printf()调用
+ */
+static char *itoa(int value, char *string, int radix)
+{
+    int     i, d;
+    int     flag = 0;
+    char    *ptr = string;
+
+    /* This implementation only works for decimal numbers. */
+    if (radix != 10)
+    {
+        *ptr = 0;
+        return string;
+    }
+
+    if (!value)
+    {
+        *ptr++ = 0x30;
+        *ptr = 0;
+        return string;
+    }
+
+    /* if this is a negative value insert the minus sign. */
+    if (value < 0)
+    {
+        *ptr++ = '-';
+
+        /* Make the value positive. */
+        value *= -1;
+    }
+
+    for (i = 10000; i > 0; i /= 10)
+    {
+        d = value / i;
+
+        if (d || flag)
+        {
+            *ptr++ = (char)(d + 0x30);
+            value -= (d * i);
+            flag = 1;
+        }
+    }
+
+    /* Null terminate the string. */
+    *ptr = 0;
+
+    return string;
+
+} /* NCL_Itoa */
+
+
+#if 1
+
+
+//获取接收到的数据和长度
+char *get_rebuff(uint8_t *len)
+{
+    *len = uart_rxcnt;
+    return (char *)&uart_rxbuf;
+}
+
+void clean_rebuff(void)
+{
+	uint16_t i=UART_BUFF_SIZE+1;
+    uart_rxcnt = 0;
+	while(i)
+		uart_rxbuf[--i]=0;
+}
+
+#endif
+
+/*
+ * 函数名：GSM_USARTx_printf
+ * 描述  ：格式化输出，类似于C库中的printf，但这里没有用到C库
+ * 输入  ：-USARTx 串口通道，这里只用到了串口2，即GSM_USARTx
+ *		     -Data   要发送到串口的内容的指针
+ *			   -...    其他参数
+ * 输出  ：无
+ * 返回  ：无 
+ * 调用  ：外部调用
+ *         典型应用GSM_USARTx_printf( GSM_USARTx, "\r\n this is a demo \r\n" );
+ *            		 GSM_USARTx_printf( GSM_USARTx, "\r\n %d \r\n", i );
+ *            		 GSM_USARTx_printf( GSM_USARTx, "\r\n %s \r\n", j );
+ */
+void GSM_USART_printf(char *Data,...)
+{
+	const char *s;
+  int d;   
+  char buf[16];
+
+  va_list ap;
+  va_start(ap, Data);
+
+	while ( *Data != 0)     // 判断是否到达字符串结束符
+	{				                          
+		if ( *Data == 0x5c )  //'\'
+		{									  
+			switch ( *++Data )
+			{
+				case 'r':							          //回车符
+					uart_txbuf[0] = 0x0d;
+					uart_bus->write(uart_txbuf, 1);
+					//USART_SendData(GSM_USARTx, 0x0d);
+					Data ++;
+					break;
+
+				case 'n':							          //换行符
+					uart_txbuf[0] = 0x0a;
+					uart_bus->write(uart_txbuf, 1);
+					//USART_SendData(GSM_USARTx, 0x0a);	
+					Data ++;
+					break;
+				
+				default:
+					Data ++;
+				    break;
+			}			 
+		}
+		else if ( *Data == '%')
+		{									  //
+			switch ( *++Data )
+			{				
+				case 's':										  //字符串
+					s = va_arg(ap, const char *);
+          for ( ; *s; s++) 
+					{
+						//USART_SendData(GSM_USARTx,*s);
+						uart_txbuf[0] = *s;
+						uart_bus->write(uart_txbuf, 1);
+						//while( USART_GetFlagStatus(GSM_USARTx, USART_FLAG_TXE) == RESET );
+          }
+					Data++;
+          break;
+
+        case 'd':										//十进制
+          d = va_arg(ap, int);
+          itoa(d, buf, 10);
+          for (s = buf; *s; s++) 
+					{
+						//USART_SendData(GSM_USARTx,*s);
+						uart_txbuf[0] = *s;
+						uart_bus->write(uart_txbuf, 1);
+						//while( USART_GetFlagStatus(GSM_USARTx, USART_FLAG_TXE) == RESET );
+          }
+					Data++;
+          break;
+				 default:
+						Data++;
+				    break;
+			}		 
+		} /* end of else if */
+		//else USART_SendData(GSM_USARTx, *Data++);
+		else {
+			uart_txbuf[0] = *Data++;
+			uart_bus->write(uart_txbuf, 1);
+		}
+		//while( USART_GetFlagStatus(GSM_USARTx, USART_FLAG_TXE) == RESET );
+	}
+}
+
+void gsm_send_buffer(u8 *buf, int len)
+{
+	if(uart_bus != NULL)
+		uart_bus->write(buf, len);
+}
 
 #endif
