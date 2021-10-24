@@ -3,6 +3,16 @@
 
 #include "generic/typedef.h"
 
+enum{
+    CTNET,
+    CMNET,
+    TGNET,
+};
+
+
+#define SIM_CARD_TYPE	CMNET
+
+
 typedef enum{
     GSM_TRUE,
     GSM_FALSE,
@@ -23,7 +33,7 @@ typedef enum
 //SIM卡状态         AT+CPIN?\r        +CPIN: READY   OK
 //SIM卡信号强度     AT+CSQ\r          +CSQ: 8,0   OK
 
-extern  uint8_t     gsm_cmd         	(char *cmd, char *reply,uint32_t waittime );
+extern  uint8_t     gsm_cmd(char *cmd, char *reply, uint32_t waittime);
 extern  uint8_t     gsm_cmd_check   	(char *reply);
 
 extern void clean_rebuff(void);
@@ -62,7 +72,6 @@ uint8_t gsm_gprs_udp_link	(char *localport,char * serverip,char * serverport);		
 uint8_t gsm_gprs_send		(const char * str);														//发送数据
 uint8_t gsm_gprs_link_close	(void);              												//IP链接断开
 uint8_t gsm_gprs_shut_close	(void);               												//关闭场景
-uint8_t	PostGPRS(void);
 
 
 
@@ -107,8 +116,8 @@ uint8_t	PostGPRS(void);
 
 void at_4g_thread_init(void);
 uint8_t gsm_gprs_init(void);
-int clsoe_module(void);
-uint8_t gsm_register_init(void);
+int clsoe_tcp_link(void);
+uint8_t gsm_init_to_access_mode(void);
 int gsm_set_to_access_mode(void);
 void file_read_from_sd_card(void);
 void module_4g_gpio_init(void);

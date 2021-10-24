@@ -51,7 +51,7 @@ void bes_power_on(void)
 {
 	printf("bes_power_on\r\n");
 	gpio_set_output_value(BES_PWR_GPIO, 1);
-	delay_2ms(20);
+	delay_2ms(40);
 	gpio_set_output_value(BES_PWR_GPIO, 0);
 }
 
@@ -59,7 +59,7 @@ void bes_power_off(void)// TODO:check
 {
 	printf("bes_power_off\r\n");
 	gpio_set_output_value(BES_PWR_GPIO, 1);
-	delay_2ms(20);
+	delay_2ms(40);
 	gpio_set_output_value(BES_PWR_GPIO, 0);
 
 }
