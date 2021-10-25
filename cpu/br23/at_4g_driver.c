@@ -184,7 +184,8 @@ void file_read_and_send(void *priv)
 void file_read_from_sd_card(void)
 {
 
-	fp = fopen("storage/sd0/C/20201214192925","rb");
+	fp = fopen("storage/sd0/C/19270101/000000.MP3","rb");
+	//fp = fopen("storage/sd0/C/20201214192925","rb");
 
 	if (fp)
 		printf("open file successd\r\n");

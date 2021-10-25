@@ -135,7 +135,7 @@ void get_sys_time(struct sys_time *time)//获取时间
     dev_ioctl(dev_handle, IOCTL_GET_SYS_TIME, (u32)time);
 }
 
-static void set_sys_time(struct sys_time *time)//设置时间
+void set_sys_time(struct sys_time *time)//设置时间
 {
     if (!dev_handle) {
         return ;

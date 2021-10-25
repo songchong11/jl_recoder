@@ -4,6 +4,7 @@
 #include "common/app_common.h"
 #include "lwrb.h"
 #include "led_driver.h"
+#include "misc_driver.h"
 
 enum {
     KEY_USER_DEAL_POST = 0,
@@ -53,7 +54,7 @@ static void file_write_task_handle(void *arg)
             //printf("use os_taskq_post_msg");
 	        switch (msg[1]) {
 	            case APP_USER_MSG_BUFFER_HAVE_DATA:
-	                //printf("APP_USER_MSG_BUFFER_HAVE_DATA");
+	                printf("APP_USER_MSG_BUFFER_HAVE_DATA");
 					if(test_file && recoder_state) {
 							int n_bytes_in_queue = lwrb_get_full(&receive_buff);
 							if (n_bytes_in_queue > 0) {
@@ -71,6 +72,7 @@ static void file_write_task_handle(void *arg)
 
 				case APP_USER_MSG_START_RECODER:
 					printf("APP_USER_MSG_START_RECODER");
+#if 1
 					/*lwrb init*/
 				    ret = lwrb_init(&receive_buff, buff_data, sizeof(buff_data));
 					if(!ret) {
@@ -120,6 +122,9 @@ static void file_write_task_handle(void *arg)
 					}
 					led_blue_on();
 					memset(file_path, 0, sizeof(file_path));
+
+					bes_power_on();
+#endif
 					break;
 				case APP_USER_MSG_STOP_RECODER:
 						printf("APP_USER_MSG_STOP_RECODER");
@@ -130,6 +135,7 @@ static void file_write_task_handle(void *arg)
 							test_file = NULL;
 						}
 						led_blue_off();
+						bes_power_off();
 					break;
 	            default:
 	                break;

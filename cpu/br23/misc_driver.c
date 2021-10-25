@@ -12,7 +12,7 @@ void misc_driver_init(void)
 {
 
 	/*bes power gpio init*/
-	gpio_set_pull_up(BES_PWR_GPIO, 0);
+	gpio_set_pull_up(BES_PWR_GPIO, 1);
 	gpio_set_pull_down(BES_PWR_GPIO, 0);
 	gpio_set_die(BES_PWR_GPIO, 0);
 	gpio_set_direction(BES_PWR_GPIO, 0);
@@ -51,7 +51,7 @@ void bes_power_on(void)
 {
 	printf("bes_power_on\r\n");
 	gpio_set_output_value(BES_PWR_GPIO, 1);
-	delay_2ms(40);
+	delay_2ms(100);
 	gpio_set_output_value(BES_PWR_GPIO, 0);
 }
 

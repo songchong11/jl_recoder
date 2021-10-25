@@ -104,6 +104,7 @@ extern void uart_dev_receive_init();
 extern void uart_dev_4g_at_init();
 extern void file_write_thread_init(void);
 extern void at_4g_thread_init(void);
+extern void set_sys_time(struct sys_time *time);
 
 void app_main()
 {
@@ -149,6 +150,16 @@ void app_main()
 	uart_dev_4g_at_init(); //uart 1 for AT
 	file_write_thread_init();//file write
 	at_4g_thread_init(); // 4g driver
+
+	struct sys_time t;
+	t.year  = 2021;
+	t.month = 10;
+	t.day	= 24;
+	t.hour	= 17;
+	t.min	= 32;
+	t.sec	= 30;
+
+	set_sys_time(&t);
 
     app_task_loop();
 

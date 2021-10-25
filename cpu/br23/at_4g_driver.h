@@ -4,13 +4,13 @@
 #include "generic/typedef.h"
 
 enum{
-    CTNET,
-    CMNET,
-    TGNET,
+    CTNET,//电信
+    CMNET,//移动
+    TGNET,//联通
 };
 
 
-#define SIM_CARD_TYPE	CMNET
+#define SIM_CARD_TYPE	CTNET
 
 
 typedef enum{
