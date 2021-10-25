@@ -478,7 +478,7 @@ const struct rtc_dev_data rtc_data = {
     .port = (u8)-1,
     .edge = 0,    //0 leading edge, 1 falling edge
     .port_en = false,
-    .rtc_ldo = false,//使用内部ldo 供电
+    .rtc_ldo = true,//使用内部ldo 供电
     .clk_res = RTC_CLK_RES_SEL,
 };
 #endif
