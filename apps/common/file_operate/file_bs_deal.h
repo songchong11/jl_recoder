@@ -42,6 +42,7 @@ extern u32 file_bs_exit_dir(FILE_BS_DEAL *fil_bs);
 extern u32 file_bs_get_dir_info(FILE_BS_DEAL *fil_bs, FS_DIR_INFO *buf, u16 start_sn, u16 get_cnt);
 
 extern void file_comm_change_display_name(char *tpath, LONG_FILE_NAME *disp_file_name, LONG_FILE_NAME *disp_dir_name);
+void file_bs_test(void);
 
 #endif/*_FILE_BS_DEAL_H_*/
 

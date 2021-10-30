@@ -17,11 +17,13 @@
 #include "uart.h"
 #include "dev_manager.h"
 
+
 #define FILE_BS_OPT_DBG
 #ifdef  FILE_BS_OPT_DBG
 
 #define file_bs_puts     puts
 #define file_bs_printf   printf
+extern void printf_buf(u8 *buf, u32 len);
 
 #else
 #define file_bs_puts(...)
@@ -230,7 +232,7 @@ void file_comm_change_display_name(char *tpath, LONG_FILE_NAME *disp_file_name, 
             disp_file_name->lfn_cnt = 0;
         }
 
-        //printf_buf(disp_file_name->lfn, 32);
+       printf_buf(disp_file_name->lfn, 32);
 
     }
 
@@ -240,7 +242,7 @@ void file_comm_change_display_name(char *tpath, LONG_FILE_NAME *disp_file_name, 
         if (disp_dir_name->lfn_cnt != 0) {
             //long name
             file_bs_puts("folder long name \n");
-            //printf_buf(disp_dir_name->lfn, 16);
+            printf_buf(disp_dir_name->lfn, 16);
             disp_dir_name->lfn_cnt = file_comm_long_name_fix((void *)&disp_dir_name->lfn, disp_dir_name->lfn_cnt); //增加结束符
         } else {
             //short name
@@ -261,7 +263,7 @@ void file_comm_change_display_name(char *tpath, LONG_FILE_NAME *disp_file_name, 
             disp_dir_name->lfn_cnt = 0;
         }
 
-        //printf_buf(disp_dir_name->lfn, 32);
+        printf_buf(disp_dir_name->lfn, 32);
     }
 }
 /*
@@ -397,7 +399,12 @@ u32 file_bs_get_dir_info(FILE_BS_DEAL *fil_bs, FS_DIR_INFO *buf, u16 start_sn, u
 //////////////////////////////////////////////////////////////////////////
 // test
 
-#if 0
+#if 1
+LONG_FILE_NAME dir_name;
+LONG_FILE_NAME file_name;
+
+extern int file_list_flush(int from_index);
+int file_browse_enter_onchane(void);
 
 #define BS_GET_DIR_NUM		3
 void file_bs_test(void)
@@ -410,7 +417,7 @@ void file_bs_test(void)
         printf("malloc err");
         while (1);
     }
-    fil_bs->dev = storage_dev_last();
+    fil_bs->dev = dev_manager_find_active(0);//storage_dev_last();
     if (!fil_bs->dev) {
         printf("%s,%d, ", __func__, __LINE__);
         printf("have no dev");
@@ -425,44 +432,46 @@ void file_bs_test(void)
     /* } */
 
     int i, j, cnt, total;
-    file_bs_open_handle(fil_bs, "MP3");//open完后需要close
-    /* printf("\n root dir num: %d ", total); */
-    /* if (!total) { */
-    /*     printf("%s,%d, ", __func__, __LINE__); */
-    /*     printf("total dir is zero"); */
-    /*     goto __exit; */
-    /* } */
+    total = file_bs_open_handle(fil_bs, "MP3");//open完后需要close
+    printf("\n root dir num: %d ", total);
+    if (!total) { 
+         printf("%s,%d, ", __func__, __LINE__);
+         printf("total dir is zero");
+         goto __exit;
+    } 
 
     total = file_bs_entern_dir(fil_bs, dir_buf);
     /* printf("\n %s,%d, ", __func__, __LINE__); */
-    /* printf("dir num: %d ", total); */
+    printf("dir num: %d ", total);
     if (!total) {
         printf("%s,%d, ", __func__, __LINE__);
         printf("total dir is zero");
         goto __exit;
     }
 
+
     u8 flag = 0;
     for (i = 1; i <= total; i += BS_GET_DIR_NUM) {
 __again:
         cnt = file_bs_get_dir_info(fil_bs, dir_buf, i, BS_GET_DIR_NUM);
-        /* printf("\n cnt:%d ", cnt); */
+        printf("\n cnt:%d ", cnt);
         for (j = 0; j < cnt; j++) {
             /* printf("j:%d, dirtype:%d, fntype:%d, sclust:0x%x ", i + j, dir_buf[j].dir_type, dir_buf[j].fn_type, dir_buf[j].sclust); */
             if (dir_buf[j].dir_type == BS_DIR_TYPE_FORLDER) {
+
                 if (flag < 2) {
                     flag ++;
                     if (flag == 2) {
                         int sub_i, sub_j, sub_cnt, sub_total;
                         sub_total = file_bs_entern_dir(fil_bs, &dir_buf[j]);
                         /* printf("\n %s,%d, ", __func__, __LINE__); */
-                        /* printf("dir num: %d ", sub_total); */
+                        printf("dir num: %d ", sub_total);
                         if (sub_total) {
                             for (sub_i = 1; sub_i <= sub_total; sub_i += BS_GET_DIR_NUM) {
                                 sub_cnt = file_bs_get_dir_info(fil_bs, dir_buf, sub_i, BS_GET_DIR_NUM);
-                                /* printf("sub_cnt:%d ", sub_cnt); */
+                                printf("sub_cnt:%d ", sub_cnt);
                                 for (sub_j = 0; sub_j < sub_cnt; sub_j++) {
-                                    /* printf("sub_j:%d, dirtype:%d, fntype:%d, sclust:0x%x ", sub_i + sub_j, dir_buf[sub_j].dir_type, dir_buf[sub_j].fn_type, dir_buf[sub_j].sclust); */
+                                    printf("sub_j:%d, dirtype:%d, fntype:%d, sclust:0x%x ", sub_i + sub_j, dir_buf[sub_j].dir_type, dir_buf[sub_j].fn_type, dir_buf[sub_j].sclust);
                                 }
                             }
                         }

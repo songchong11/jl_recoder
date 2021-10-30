@@ -1,5 +1,5 @@
 
-#if 0
+#if 1
 #include "app_config.h"
 #include "system/includes.h"
 #include "system/os/os_cpu.h"
@@ -125,7 +125,7 @@ _exit:
     return pfil;
 }
 
-#if 0
+#if 1
 void file_create_test(void)
 {
     struct storage_dev *dev = storage_dev_last();

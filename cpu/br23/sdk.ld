@@ -1,6 +1,9 @@
 
 
 
+
+
+
 RAM1_LIMIT_L = 0x2C000;
 RAM1_LIMIT_H = 0x30000;
 
@@ -97,6 +100,10 @@ MEMORY
 EXTERN(
 _start
 
+fat_vfs_ops
+
+
+
 sdfile_vfs_ops
 sbc_decoder
 msbc_decoder
@@ -109,12 +116,56 @@ cvsd_decoder
 
 
 pcm_decoder
+
+
+
+
+
+
+
+mp3_decoder
+
+
+
+
+
+
+wma_decoder
+
+
+
+
+
+
+flac_decoder
+
+
+
+ape_decoder
+
+
+
+m4a_decoder
+
+
+
+
+
+
+alac_decoder
+
+
+
+amr_decoder
+
+
+
+dts_decoder
+
+
+
 g729_decoder
-cvsd_encoder
-
-
-
-msbc_encoder
+wav_decoder
 );
 
 ENTRY(_start)
@@ -1093,6 +1144,9 @@ SECTIONS
         *(.ui_ram)
 
         *(.fat_data_code)
+        *(.fm_code)
+
+
         . = ALIGN(4);
 
         media_data_code_start = .;
@@ -1468,7 +1522,7 @@ SECTIONS
         acl_tx_pool = .;
         *(.bredr_tx_bulk)
 
-        acl_tx_pool_end = acl_tx_pool + (3 * 1024);
+        acl_tx_pool_end = acl_tx_pool + (0);
 
 
 
@@ -1477,7 +1531,7 @@ SECTIONS
         acl_rx_pool = .;
         *(.bredr_rx_bulk)
 
-        acl_rx_pool_end = acl_rx_pool + (12 * 1024);
+        acl_rx_pool_end = acl_rx_pool + (0);
 
 
 
@@ -1485,9 +1539,9 @@ SECTIONS
 
         tws_bulk_pool = .;
 
+        tws_bulk_pool_end = tws_bulk_pool + (0);
 
 
-        tws_bulk_pool_end = tws_bulk_pool;
 
         . = tws_bulk_pool_end;
 

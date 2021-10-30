@@ -18,7 +18,7 @@
 
 
 
-
+#if 0
 #if (TCFG_UI_ENABLE&&(CONFIG_UI_STYLE == STYLE_JL_SOUNDBOX))
 
 #define STYLE_NAME  JL//必须要
@@ -345,27 +345,328 @@ REGISTER_UI_EVENT_HANDLER(MUSIC_FILE_BROWSE)
  .onkey = file_browse_onkey,
   .ontouch = NULL,
 };
+#endif
+
+#endif
+
+
+#if 1
+
+//文件浏览部分
+
+#define TEXT_NAME_LEN (128)
+#define TEXT_SHORT_NAME_LEN (13)//8.3+1
+#define TEXT_PAGE     (10)
+struct text_name_t {
+    u16 len;
+    u8  unicode;
+    u8 fname[TEXT_NAME_LEN];
+    u8 fsname[TEXT_SHORT_NAME_LEN];
+    int index;
+};
 
 
 
+struct grid_set_info {
+    int flist_index;  //文件列表首项所指的索引
+    int open_index;  //所打开的文件所指的索引(未)
+    int cur_total;
+    const char *disk_name[4];
+    u8  in_scan;//是否在盘内
+    u8  disk_total;
+    FILE *file;
+    struct vfscan *fs;
+    struct text_name_t text_list[TEXT_PAGE];
+    struct vfs_attr attr[TEXT_PAGE];
+#if (TCFG_LFN_EN)
+    u8  lfn_buf[512];
+#endif//TCFG_LFN_EN
+
+};
+
+static struct grid_set_info *handler = NULL;
+#define __this 	(handler)
+
+static struct grid_set_info *file_handler = NULL;
+#define __this_file 	(file_handler)
+
+#define sizeof_this     (sizeof(struct grid_set_info))
+
+#define FILE_BROWSE_PIC_0 0X10805AD
+#define FILE_BROWSE_PIC_1 0X1088F22
+#define FILE_BROWSE_PIC_2 0X10887D4
+#define FILE_BROWSE_PIC_3 0X10894DF
+#define FILE_BROWSE_TEXT_0 0X10CA2F5
+#define FILE_BROWSE_TEXT_1 0X10C0A6E
+#define FILE_BROWSE_TEXT_2 0X10C68CB
+#define FILE_BROWSE_TEXT_3 0X10C5339
+#define FILE_LAYOUT_0 0X1031888
+#define FILE_LAYOUT_1 0X1038A2F
+#define FILE_LAYOUT_2 0X1035021
+#define FILE_LAYOUT_3 0X103855D
+
+
+static u32 TEXT_FNAME_ID[10] = {
+    FILE_BROWSE_TEXT_0,
+    FILE_BROWSE_TEXT_1,
+    FILE_BROWSE_TEXT_2,
+    FILE_BROWSE_TEXT_3,
+};
 
 
 
+static const u8 MUSIC_SCAN_PARAM[] = "-t"
+                                     "MP3"
+                                     " -sn -d"
+                                     ;
+
+
+static int file_select_enter(int from_index)
+{
+
+    int one_page_num = sizeof(TEXT_FNAME_ID) / sizeof(TEXT_FNAME_ID[0]);
+    int i = 0;
+    i = from_index % one_page_num;
+    if (__this->attr[i].attr == F_ATTR_DIR) { //判断是不是文件夹文件属性
+        if (!from_index) {
+            __this->fs = fscan_exitdir(__this->fs);
+        } else {
+            __this->fs = fscan_enterdir(__this->fs, __this->text_list[i].fsname);
+        }
+
+        if (!__this->fs) {
+            printf("this dir have no file\r\n");
+            return false;
+        }
+
+
+        __this->cur_total = __this->fs->file_number + 1;
+        return TRUE;
+    } else {
+
+		printf("is not a dir\r\n");
+    }
+    return false;
+}
+
+//static int file_list_flush(int from_index)
+#if 0
+int file_list_flush(int from_index)
+{
+    FILE *f = NULL;
+    int one_page_num = sizeof(TEXT_FNAME_ID) / sizeof(TEXT_FNAME_ID[0]);
+    int i = 0;
+    int end_index = from_index + one_page_num;
+    char *name_buf = NULL;
+
+    for (i = 0; i < sizeof(TEXT_FNAME_ID) / sizeof(TEXT_FNAME_ID[0]); i++) {
+        memset(__this->text_list[i].fname, 0, TEXT_NAME_LEN);
+        __this->text_list[i].len = 0;
+    }
+	printf("file_list_flush  -------------\r\n");
+__find:
+    i = from_index % one_page_num;
+    if (from_index == 0) {
+
+        sprintf(__this->text_list[from_index].fname, "%s", "..");
+        sprintf(__this->text_list[from_index].fsname, "%s", "..");
+        __this->attr[from_index].attr = F_ATTR_DIR;
+        __this->text_list[from_index].unicode = 0;
+        __this->text_list[from_index].len = strlen(__this->text_list[i].fname);
+    } else {
+        f = fselect(__this->fs, FSEL_BY_NUMBER, from_index);
+    }
+
+    if (f) {
+        name_buf = malloc(TEXT_NAME_LEN);
+        __this->text_list[from_index].len = fget_name(f, name_buf, TEXT_NAME_LEN);
+        if (name_buf[0] == '\\' && name_buf[1] == 'U') {
+            __this->text_list[i].len   -= 2;
+            __this->text_list[i].unicode = 1;
+            memcpy(__this->text_list[i].fname, name_buf + 2, TEXT_NAME_LEN - 2);
+        } else {
+            __this->text_list[i].unicode = 0;
+            memcpy(__this->text_list[i].fname, name_buf, TEXT_NAME_LEN);
+        }
+        free(name_buf);
+        name_buf = NULL;
+        printf("flush [%d]=%s\n", i, __this->text_list[i].fname);
+		printf("__this->flist_index: %x\n", __this->flist_index);
+        fget_attrs(f, &__this->attr[i]);
+        if (__this->attr[i].attr == F_ATTR_DIR) { //判断是不是文件夹文件属性,文件夹需要获取短文件名
+            fget_name(f, __this->text_list[i].fsname, TEXT_SHORT_NAME_LEN);
+        }
+        fclose(f);
+        f = NULL;
+    }
+
+    from_index++;
+    if (from_index < __this->cur_total) {
+        goto __find;
+    }
+
+    return 0;
+}
+#endif
+
+int file_list_flush(int from_index)
+{
+    FILE *dir = NULL;
+    FILE *file = NULL;
+
+    int i = 0;
+    char *name_buf = NULL;
+	int dir_num = __this->cur_total;
+
+    for (i = 0; i < sizeof(TEXT_FNAME_ID) / sizeof(TEXT_FNAME_ID[0]); i++) {
+        memset(__this->text_list[i].fname, 0, TEXT_NAME_LEN);
+        __this->text_list[i].len = 0;
+    }
+	printf("file_list_flush  -------------\r\n");
+
+	name_buf = malloc(TEXT_NAME_LEN);
+
+	for (from_index = 0; from_index <  dir_num; from_index++) {
+        dir = fselect(__this->fs, FSEL_BY_NUMBER, from_index);
+
+	    if (dir) {
+
+			__this->text_list[from_index].len = fget_name(dir, name_buf, TEXT_NAME_LEN);
+
+			printf("dir[%d]=%s\n", from_index, name_buf);
+
+			__this->fs = fscan_enterdir(__this->fs, name_buf);
+			__this->cur_total = __this->fs->file_number;
+			printf("%s have %d  files\n", name_buf, __this->cur_total);
+
+			for (int j = 1; j < __this->cur_total; j++) {
+				file = fselect(__this->fs, FSEL_BY_NUMBER, j);
+				fget_name(file, name_buf, TEXT_NAME_LEN);
+				printf("file[%d]: %s\n", j, name_buf);
+				fclose(file);
+	        	file = NULL;
+			}
+
+			__this->fs = fscan_exitdir(__this->fs);
+			printf("exitdir\n");
+
+			fclose(dir);
+			dir = NULL;
+	    }
+    }
+
+	free(name_buf);
+	name_buf = NULL;
+
+    return 0;
+}
 
 
 
+//static int file_browse_enter_onchane(void *ctr, enum element_change_event e, void *arg)
+int file_browse_enter_onchane(void)
+{
+
+        if (!__this) {
+            __this = zalloc(sizeof_this);
+        }
+
+        if (!__this->fs) {
+            if (!dev_manager_get_total(1)) {
+                return false;
+            }
+
+            void *dev = dev_manager_find_active(1);
+            if (!dev) {
+				printf("no dev \n");
+                return false;
+            }
+            __this->fs = fscan(dev_manager_get_root_path(dev), MUSIC_SCAN_PARAM, 9);
+
+            printf(">>> dir number=%d \n", __this->fs->file_number);
+            __this->cur_total = __this->fs->file_number + 1;
+        }
+
+        file_list_flush(0);
+
+		if (__this->fs) {
+            fscan_release(__this->fs);
+            __this->fs = NULL;
+        }
+
+        if (__this) {
+            free(__this);
+            __this = NULL;
+        }
+
+    return false;
+}
+
+static int file_browse_onkey(void *ctr, struct element_key_event *e)
+{
+    struct ui_grid *grid = (struct ui_grid *)ctr;
+    printf("ui key %s %d\n", __FUNCTION__, e->value);
+    int sel_item;
+    sel_item = ui_grid_cur_item(grid);
+    switch (e->value) {
+    case KEY_OK:
+        if (file_select_enter(__this->flist_index)) {
+           // ui_no_highlight_element_by_id(LAYOUT_FNAME_LIST_ID[sel_item]);
+            __this->flist_index = 0;
+            file_list_flush(__this->flist_index);
+           // ui_grid_set_item(grid, 0);
+          //  ui_highlight_element_by_id(LAYOUT_FNAME_LIST_ID[0]);
+        }
 
 
+        break;
+    case KEY_DOWN:
 
+        sel_item++;
 
+        __this->flist_index += 1;
 
+        if (sel_item >= __this->cur_total || __this->flist_index >= __this->cur_total) {
+            //大于文件数
+           // ui_no_highlight_element_by_id(LAYOUT_FNAME_LIST_ID[sel_item - 1]);
+            __this->flist_index = 0;
+            file_list_flush(__this->flist_index);
+           // ui_grid_set_item(grid, 0);
+           // ui_highlight_element_by_id(LAYOUT_FNAME_LIST_ID[0]);
+           // ui_vslider_set_persent_by_id(MUSIC_FILE_SLIDER, (__this->flist_index + 1) * 100 / __this->cur_total);
+            return TRUE;
+        }
+        //ui_vslider_set_persent_by_id(MUSIC_FILE_SLIDER, (__this->flist_index + 1) * 100 / __this->cur_total);
+        if (sel_item >= TEXT_PAGE) {
+          //  ui_no_highlight_element_by_id(LAYOUT_FNAME_LIST_ID[sel_item - 1]);
+            file_list_flush(__this->flist_index);
+         //   ui_grid_set_item(grid, 0);
+         //   ui_highlight_element_by_id(LAYOUT_FNAME_LIST_ID[0]);
+            return true; //不返回到首项
+        }
 
+        return FALSE;
 
+        break;
+    case KEY_UP:
+        if (sel_item == 0) {
+            __this->flist_index = __this->flist_index ? __this->flist_index - 1 : __this->cur_total - 1;
+           // ui_no_highlight_element_by_id(LAYOUT_FNAME_LIST_ID[sel_item]);
+            file_list_flush(__this->flist_index / TEXT_PAGE * TEXT_PAGE);
+           // ui_grid_set_item(grid, __this->flist_index % TEXT_PAGE);
+           // ui_highlight_element_by_id(LAYOUT_FNAME_LIST_ID[__this->flist_index % TEXT_PAGE]);
+           // ui_vslider_set_persent_by_id(MUSIC_FILE_SLIDER, (__this->flist_index + 1) * 100 / __this->cur_total);
+            return true; //不跳转到最后一项
+        }
+        __this->flist_index--;
+      //  ui_vslider_set_persent_by_id(MUSIC_FILE_SLIDER, (__this->flist_index + 1) * 100 / __this->cur_total);
+        return FALSE;
+        break;
 
-
-
-
-
-
+    default:
+        return false;
+    }
+    return false;
+}
 
 #endif

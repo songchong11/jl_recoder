@@ -5,6 +5,7 @@
 #include "lwrb.h"
 #include "led_driver.h"
 #include "misc_driver.h"
+#include "file_bs_deal.h"
 
 enum {
     KEY_USER_DEAL_POST = 0,
@@ -30,6 +31,8 @@ uint8_t write_buffer[1024];
 extern bool recoder_state;
 
 static FILE *test_file = NULL;
+static FILE *config_file = NULL;
+
 struct sys_time g_time;
 
 const char root_path[] = "storage/sd0/C/";
@@ -38,6 +41,8 @@ char year_month_day[20] = {0};
 char hour_min_sec[20] = {0};
 
 extern void get_sys_time(struct sys_time *time);//获取时间
+extern void test_browser();
+extern int file_browse_enter_onchane(void);
 
 static void file_write_task_handle(void *arg)
 {
@@ -92,7 +97,7 @@ static void file_write_task_handle(void *arg)
 					printf("time_str:%s\n", time_str);
 
 					strcat(file_path, root_path);
-					
+
 					strcat(file_path, time_str);
 					strcat(file_path, ".txt");
 
@@ -112,14 +117,40 @@ static void file_write_task_handle(void *arg)
 					strcat(file_path, ".mp3");
 					printf("file_path:%s\n", file_path);
 					if (!test_file) {
-						test_file = fopen(file_path, "w+");
-						//test_file = fopen("storage/sd0/C/1115181215.txt", "w+");
+						//test_file = fopen(file_path, "w+");
+						test_file = fopen("storage/sd0/C/ML*****.pcm", "w+");
 						if (!test_file) {
 							printf("fopen file faild!\n");
 						} else {
 							printf("open file succed\r\n");
 						}
 					}
+					//----------------------------------------------------------
+					printf("file_bs_test\r\n");
+
+					//-----------------------------------------------------------------------------------
+					config_file =  fopen("storage/sd0/C/config.ini", "r");
+					if (!config_file) {
+						printf("Have no config files\n");
+						config_file =  fopen("storage/sd0/C/config.ini", "w+");
+						if (!config_file) {
+							printf("fopen config file faild!\n");
+						} else {
+							printf("fopen config file succed\r\n");
+						}
+
+					} else {
+						printf("Config file is exist\n");
+					}
+
+					fclose(config_file);
+					config_file = NULL;
+					//----------------------------------------------------------
+					int ret = file_browse_enter_onchane();
+					//printf("ret = %d\r\n", ret);
+					//file_bs_test();
+
+					//----------------------------------------------------------
 					led_blue_on();
 					memset(file_path, 0, sizeof(file_path));
 
