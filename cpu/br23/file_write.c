@@ -43,6 +43,7 @@ char hour_min_sec[20] = {0};
 extern void get_sys_time(struct sys_time *time);//获取时间
 extern void test_browser();
 extern int file_browse_enter_onchane(void);
+void check_config_file(void);
 
 static void file_write_task_handle(void *arg)
 {
@@ -117,38 +118,23 @@ static void file_write_task_handle(void *arg)
 					strcat(file_path, ".mp3");
 					printf("file_path:%s\n", file_path);
 					if (!test_file) {
-						//test_file = fopen(file_path, "w+");
-						test_file = fopen("storage/sd0/C/ML*****.pcm", "w+");
+						test_file = fopen(file_path, "w+");
+						//test_file = fopen("storage/sd0/C/ML*****.pcm", "w+");
 						if (!test_file) {
 							printf("fopen file faild!\n");
 						} else {
 							printf("open file succed\r\n");
 						}
 					}
-					//----------------------------------------------------------
-					printf("file_bs_test\r\n");
 
 					//-----------------------------------------------------------------------------------
-					config_file =  fopen("storage/sd0/C/config.ini", "r");
-					if (!config_file) {
-						printf("Have no config files\n");
-						config_file =  fopen("storage/sd0/C/config.ini", "w+");
-						if (!config_file) {
-							printf("fopen config file faild!\n");
-						} else {
-							printf("fopen config file succed\r\n");
-						}
+					check_config_file();
 
-					} else {
-						printf("Config file is exist\n");
-					}
-
-					fclose(config_file);
-					config_file = NULL;
 					//----------------------------------------------------------
-					int ret = file_browse_enter_onchane();
-					//printf("ret = %d\r\n", ret);
-					//file_bs_test();
+
+					//call it when send file to AT
+					//int ret = file_browse_enter_onchane();
+
 
 					//----------------------------------------------------------
 					led_blue_on();
@@ -193,6 +179,43 @@ void file_write_task_del(void)
 
     os_task_del("file_write_task");
 }
+
+void check_config_file(void)
+{
+	char bp_dir[20] = {0};
+	char bp_file[20] = {0};
+	u32 bp_addr = {0};
+	char temp[100] = {0};
+
+	config_file =  fopen("storage/sd0/C/config.ini", "r");
+	if (!config_file) {
+		printf("Have no config files\n");
+		config_file =  fopen("storage/sd0/C/config.ini", "w+");
+		if (!config_file) {
+			printf("fopen config file faild!\n");
+		} else {
+			printf("fopen config file succed\r\n");
+		}
+	}
+
+	if (config_file) {
+		printf("config_file is exist\n");
+
+		fread(config_file, temp, sizeof(temp));
+
+		for (int i = 0; i < 60; i++) {
+			printf("[%d]:%c", i, temp[i]);
+		}
+		printf("\n");
+
+		printf("BP_dir:%s, BP_file:%s, BP_addr: %x\n", bp_dir, bp_file, bp_addr);
+	}
+
+	fclose(config_file);
+	config_file = NULL;
+}
+
+
 
 
 #endif

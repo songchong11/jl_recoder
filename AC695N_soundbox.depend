@@ -12639,7 +12639,7 @@
 	"typedef.h"
 	"JL_rcsp_protocol.h"
 
-1635185508 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\common\init.c
+1635606637 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\common\init.c
 	"app_config.h"
 	"system/includes.h"
 	"asm/charge.h"
@@ -14697,7 +14697,7 @@
 	"asm/power/p33.h"
 	"asm/power_interface.h"
 
-1635185588 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\app_timer.c
+1635606066 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\app_timer.c
 	"includes.h"
 	"app_config.h"
 	"asm/cpu.h"
@@ -15608,7 +15608,7 @@
 	"system/includes.h"
 	"system/event.h"
 
-1635586669 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\file_write.c
+1635604879 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\file_write.c
 	"system/includes.h"
 	"asm/uart_dev.h"
 	"system/event.h"

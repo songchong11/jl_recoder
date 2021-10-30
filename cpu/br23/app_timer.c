@@ -29,7 +29,7 @@ timer1 现在定义优先级为6 ，关总中断不关闭该优先级，
 //注意：改定时器会被低功耗使用到，使用时需要关闭低功耗
 
 #if (TCFG_UI_LED1888_ENABLE ||  TCFG_UI_LED7_ENABLE)
-#define TCFG_USER_TIMER_ENABLE
+//#define TCFG_USER_TIMER_ENABLE
 #endif
 
 #ifdef TCFG_USER_TIMER_ENABLE
