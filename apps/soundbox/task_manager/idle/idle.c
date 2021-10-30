@@ -48,6 +48,12 @@ static u8 goto_poweron_cnt = 0;
 static u8 goto_poweron_flag = 0;
 
 extern u8 get_power_on_status(void);
+extern void uart_dev_receive_init();
+extern void uart_dev_4g_at_init();
+extern void file_write_thread_init(void);
+extern void at_4g_thread_init(void);
+extern void file_write_task_del(void);
+void uart_receive_task_del(void);
 
 static void idle_key_poweron_deal(u8 step);
 static void idle_app_open_module();
@@ -279,8 +285,8 @@ static void poweron_task_switch_to_bt(void *priv) //超时还没有设备挂载�
 }
 #endif
 
-static bool recoder_state = false;
-static bool send_pcm_state = false;
+bool recoder_state = false;
+bool send_pcm_state = false;
 extern void get_sys_time(struct sys_time *time);
 
 //*----------------------------------------------------------------------------*/
@@ -310,16 +316,16 @@ static int idle_key_event_opr(struct sys_event *event)
 	case KEY_START_STOP_RECODER:
 		if(recoder_state == false) {
 			printf("start recoder task............\n");
-			/*start recoder task*/
-			//uart_dev_receive_init();
+
 			get_sys_time(&time);
 			printf("now_time : %d-%d-%d,%d:%d:%d\n", time.year, time.month, time.day, time.hour, time.min, time.sec);
-			os_taskq_post_msg("file_write", 1, APP_USER_MSG_START_RECODER);
+
 			recoder_state = true;
+			printf("recoder_state = %x\n", recoder_state);
+			os_taskq_post_msg("file_write", 1, APP_USER_MSG_START_RECODER);
 		} else {
 			printf("stop recoder task............\n");
-			//uart_receive_task_del();
-			//file_write_task_del();
+
 			recoder_state = false;
 			os_taskq_post_msg("file_write", 1, APP_USER_MSG_STOP_RECODER);
 		}
@@ -540,7 +546,7 @@ void app_idle_task()
     while (1) {
         app_task_get_msg(msg, ARRAY_SIZE(msg), 1);
 
-		printf("msg[0]: %x %x\r\n", msg[0], msg[1]);
+		//printf("msg[0]: %x %x\r\n", msg[0], msg[1]);
         switch (msg[0]) {
         case APP_MSG_SYS_EVENT:
             if (idle_sys_event_handler((struct sys_event *)(&msg[1])) == false) {

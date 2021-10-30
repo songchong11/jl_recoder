@@ -154,10 +154,10 @@ void app_main()
 	struct sys_time t;
 	t.year  = 2021;
 	t.month = 10;
-	t.day	= 24;
-	t.hour	= 17;
-	t.min	= 32;
-	t.sec	= 30;
+	t.day	= 30;
+	t.hour	= 23;
+	t.min	= 15;
+	t.sec	= 21;
 
 	set_sys_time(&t);
 

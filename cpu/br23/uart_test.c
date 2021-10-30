@@ -99,7 +99,7 @@ SYS_EVENT_HANDLER(SYS_DEVICE_EVENT, uart_event_handler, 0);
 
 extern lwrb_t receive_buff;
 static u32 rx_total = 0;
-static void uart_u_task(void *arg)
+static void uart_u_task_handle(void *arg)
 {
 		const uart_bus_t *uart_bus = arg;
 		int ret;
@@ -112,7 +112,7 @@ static void uart_u_task(void *arg)
 			uart_rxcnt = uart_bus->read(uart_rxbuf, sizeof(uart_rxbuf), 0);
 			if (uart_rxcnt && recoder_state) {
 				rx_total += uart_rxcnt;
-				printf("%d, %d ", uart_rxcnt, rx_total);
+				//printf("%d, %d ", uart_rxcnt, rx_total);
 #if 0
 				for (int i = 0; i < uart_rxcnt; i++) {
 					my_put_u8hex(uart_rxbuf[i]);
@@ -124,6 +124,7 @@ static void uart_u_task(void *arg)
 					putchar('\n');
 				}
 #endif
+
 				/*push receive data to fifo*/
 				ret = lwrb_is_ready(&receive_buff);
 
@@ -133,7 +134,6 @@ static void uart_u_task(void *arg)
 				} else {
 					os_taskq_post_msg("file_write", 1, APP_USER_MSG_BUFFER_HAVE_DATA);
 				}
-
 #if (!UART_DEV_FLOW_CTRL)
 				//uart_bus->write(uart_rxbuf, uart_rxcnt);
 #endif
@@ -188,10 +188,10 @@ void uart_dev_receive_init()
     u_arg.rx_pin = IO_PORTA_06;
     u_arg.rx_cbuf = uart_cbuf;
     u_arg.rx_cbuf_size = 512;
-    u_arg.frame_length = 64;
+    u_arg.frame_length = 320;
     u_arg.rx_timeout = 100;
     u_arg.isr_cbfun = uart_isr_hook;
-    u_arg.baud = 115200;
+    u_arg.baud = 921600;//460800;
     u_arg.is_9bit = 0;
 #if UART_DEV_FLOW_CTRL
     u_arg.tx_pin = IO_PORTA_00;
@@ -204,7 +204,7 @@ void uart_dev_receive_init()
     if (uart_bus != NULL) {
         printf("uart_dev_open() success\n");
 #if (UART_DEV_USAGE_TEST_SEL == 2)
-        os_task_create(uart_u_task, (void *)uart_bus, 4, 512, 512, "uart_u_task");
+        os_task_create(uart_u_task_handle, (void *)uart_bus, 4, 512, 512, "uart_u_task");
         //task_create(uart_u_task,NULL, "uart_u_task");
 #endif
 #if UART_DEV_FLOW_CTRL

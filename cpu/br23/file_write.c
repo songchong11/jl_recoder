@@ -26,7 +26,7 @@ enum {
 
 /* Declare rb instance & raw data */
 lwrb_t receive_buff;
-uint8_t buff_data[1024 * 2];
+uint8_t buff_data[320 * 8];
 uint8_t write_buffer[1024];
 extern bool recoder_state;
 
@@ -44,6 +44,8 @@ extern void get_sys_time(struct sys_time *time);//获取时间
 extern void test_browser();
 extern int file_browse_enter_onchane(void);
 void check_config_file(void);
+void file_write_task_del(void);
+void uart_receive_task_del(void);
 
 static void file_write_task_handle(void *arg)
 {
@@ -60,7 +62,7 @@ static void file_write_task_handle(void *arg)
             //printf("use os_taskq_post_msg");
 	        switch (msg[1]) {
 	            case APP_USER_MSG_BUFFER_HAVE_DATA:
-	                printf("APP_USER_MSG_BUFFER_HAVE_DATA");
+	                //printf("APP_USER_MSG_BUFFER_HAVE_DATA");
 					if(test_file && recoder_state) {
 							int n_bytes_in_queue = lwrb_get_full(&receive_buff);
 							if (n_bytes_in_queue > 0) {
@@ -79,6 +81,7 @@ static void file_write_task_handle(void *arg)
 				case APP_USER_MSG_START_RECODER:
 					printf("APP_USER_MSG_START_RECODER");
 #if 1
+
 					/*lwrb init*/
 				    ret = lwrb_init(&receive_buff, buff_data, sizeof(buff_data));
 					if(!ret) {
@@ -128,9 +131,7 @@ static void file_write_task_handle(void *arg)
 					}
 
 					//-----------------------------------------------------------------------------------
-					check_config_file();
-
-					//----------------------------------------------------------
+					//check_config_file();
 
 					//call it when send file to AT
 					//int ret = file_browse_enter_onchane();

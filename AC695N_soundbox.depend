@@ -8420,7 +8420,7 @@
 
 1626847689 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\common\usb\usb_std_class_def.h
 
-1634855766 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\board\br23\board_ac695x_demo\board_ac695x_demo_cfg.h
+1635609682 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\board\br23\board_ac695x_demo\board_ac695x_demo_cfg.h
 	"usb_std_class_def.h"
 
 1626847689 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\board\br23\board_ac6952e_lighter\board_ac6952e_lighter_cfg.h
@@ -11501,7 +11501,7 @@
 1626847689 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\include_lib\media\media_develop\media\cpu\br23\commproc.h
 	"generic/typedef.h"
 
-1635187102 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\app_main.c
+1635608259 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\app_main.c
 	"system/includes.h"
 	"app_config.h"
 	"asm/pwm_led.h"
@@ -12639,7 +12639,7 @@
 	"typedef.h"
 	"JL_rcsp_protocol.h"
 
-1635606637 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\common\init.c
+1635606798 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\common\init.c
 	"app_config.h"
 	"system/includes.h"
 	"asm/charge.h"
@@ -13955,7 +13955,7 @@
 	"fm/fm_manage.h"
 	"fm/fm_rw.h"
 
-1635185565 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\idle\idle.c
+1635612677 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\idle\idle.c
 	"system/includes.h"
 	"media/includes.h"
 	"app_config.h"
@@ -14192,7 +14192,7 @@
 	"tone_player.h"
 	"app_task.h"
 
-1633495430 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\rtc\rtc.c
+1635612775 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\rtc\rtc.c
 	"app_config.h"
 	"key_event_deal.h"
 	"system/includes.h"
@@ -15465,7 +15465,7 @@
 	"generic/gpio.h"
 	"spinlock.h"
 
-1633340583 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\uart_test.c
+1635615993 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\uart_test.c
 	"system/includes.h"
 	"asm/uart_dev.h"
 	"system/event.h"
@@ -15608,7 +15608,7 @@
 	"system/includes.h"
 	"system/event.h"
 
-1635604879 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\file_write.c
+1635615859 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\file_write.c
 	"system/includes.h"
 	"asm/uart_dev.h"
 	"system/event.h"

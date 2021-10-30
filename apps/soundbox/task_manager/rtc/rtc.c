@@ -534,8 +534,9 @@ static void rtc_task_close()
         __this = NULL;
     }
 }
-bool recoder_state = false;
-bool send_pcm_state = false;
+
+extern bool recoder_state;
+extern bool send_pcm_state;
 
 extern void uart_dev_receive_init();
 extern void uart_receive_task_del(void);
@@ -592,15 +593,12 @@ static int rtc_key_event_opr(struct sys_event *event)
 			if(recoder_state == false) {
 				printf("start recoder task............\n");
 				/*start recoder task*/
-				//uart_dev_receive_init();
 				get_sys_time(&time);
 				printf("now_time : %d-%d-%d,%d:%d:%d\n", time.year, time.month, time.day, time.hour, time.min, time.sec);
-				os_taskq_post_msg("file_write", 1, APP_USER_MSG_START_RECODER);
 				recoder_state = true;
+				os_taskq_post_msg("file_write", 1, APP_USER_MSG_START_RECODER);
 			} else {
 				printf("stop recoder task............\n");
-				//uart_receive_task_del();
-				//file_write_task_del();
 				recoder_state = false;
 				os_taskq_post_msg("file_write", 1, APP_USER_MSG_STOP_RECODER);
 			}
