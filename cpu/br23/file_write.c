@@ -31,7 +31,6 @@ uint8_t write_buffer[1024];
 extern bool recoder_state;
 
 static FILE *test_file = NULL;
-static FILE *config_file = NULL;
 
 struct sys_time g_time;
 
@@ -121,8 +120,8 @@ static void file_write_task_handle(void *arg)
 					strcat(file_path, ".mp3");
 					printf("file_path:%s\n", file_path);
 					if (!test_file) {
-						test_file = fopen(file_path, "w+");
-						//test_file = fopen("storage/sd0/C/ML*****.pcm", "w+");
+						//test_file = fopen(file_path, "w+");
+						test_file = fopen("storage/sd0/C/MLtest01.pcm", "w+");
 						if (!test_file) {
 							printf("fopen file faild!\n");
 						} else {
@@ -130,14 +129,7 @@ static void file_write_task_handle(void *arg)
 						}
 					}
 
-					//-----------------------------------------------------------------------------------
-					//check_config_file();
 
-					//call it when send file to AT
-					//int ret = file_browse_enter_onchane();
-
-
-					//----------------------------------------------------------
 					led_blue_on();
 					memset(file_path, 0, sizeof(file_path));
 
@@ -179,41 +171,6 @@ void file_write_task_del(void)
     printf("file_write_task_del\n");
 
     os_task_del("file_write_task");
-}
-
-void check_config_file(void)
-{
-	char bp_dir[20] = {0};
-	char bp_file[20] = {0};
-	u32 bp_addr = {0};
-	char temp[100] = {0};
-
-	config_file =  fopen("storage/sd0/C/config.ini", "r");
-	if (!config_file) {
-		printf("Have no config files\n");
-		config_file =  fopen("storage/sd0/C/config.ini", "w+");
-		if (!config_file) {
-			printf("fopen config file faild!\n");
-		} else {
-			printf("fopen config file succed\r\n");
-		}
-	}
-
-	if (config_file) {
-		printf("config_file is exist\n");
-
-		fread(config_file, temp, sizeof(temp));
-
-		for (int i = 0; i < 60; i++) {
-			printf("[%d]:%c", i, temp[i]);
-		}
-		printf("\n");
-
-		printf("BP_dir:%s, BP_file:%s, BP_addr: %x\n", bp_dir, bp_file, bp_addr);
-	}
-
-	fclose(config_file);
-	config_file = NULL;
 }
 
 

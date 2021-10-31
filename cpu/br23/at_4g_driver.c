@@ -88,6 +88,8 @@ static void at_4g_task_handle(void *arg)
 	                printf("APP_USER_MSG_START_SEND_FILE_TO_AT");
 					/*power on 4g module and send file to at*/
 					if (module_status == POWER_OFF) {
+						
+					#if 1
 						module_power_on();
 						while(gsm_init_to_access_mode() == GSM_FALSE){
 							retry++;
@@ -97,7 +99,9 @@ static void at_4g_task_handle(void *arg)
 								module_power_on();
 							}
 						}
+					#endif
 					}
+					printf("gsm enter into access mode success\n");
 
 					file_read_from_sd_card();
 	                break;
@@ -166,12 +170,14 @@ void file_read_and_send(void *priv)
 		packet_num++;
 		printf("sending %d\r\n", packet_num);
 		gsm_send_buffer(read_buffer, READ_LEN);
+
 	} else {
 
 		sys_timer_del(file_send_timer);
 		file_send_timer = 0;
 
-		gsm_send_buffer(read_buffer, ret);
+		gsm_send_buffer(read_buffer, ret);//send last packet
+
 		printf("send over, close file!!!\r\n");
 		fclose(fp);
 		led_green_off();
@@ -181,11 +187,86 @@ void file_read_and_send(void *priv)
 
 }
 
+
+static FILE *config_file = NULL;
+char target_bp_dir[20] = {0};
+char target_bp_file[20] = {0};
+bool have_target_dir = false;
+bool have_target_file = false;
+
+void check_config_file(void)
+{
+
+	//u32 bp_addr = {0};
+	char bp_addr[20] = {0};
+	char temp[100] = {0};
+
+	config_file =  fopen("storage/sd0/C/config.ini", "r");
+	if (!config_file) {
+		printf("Have no config files\n");
+		config_file =  fopen("storage/sd0/C/config.ini", "w+");
+		if (!config_file) {
+			printf("fopen config file faild!\n");
+		} else {
+			printf("fopen config file succed\r\n");
+		}
+	}
+
+	if (config_file) {
+		printf("config_file is exist\n");
+
+		fread(config_file, temp, sizeof(temp));
+
+		#if 1
+		for (int i = 0; i < 60; i++) {
+			printf("[%d]:%c %x", i, temp[i], temp[i]);
+		}
+		printf("\n");
+		#endif
+
+		memcpy(target_bp_dir, &temp[7], 8 + 1);
+		memcpy(target_bp_file, &temp[25], 10 + 1);
+		memcpy(bp_addr, &temp[45], 4 + 1);
+
+		printf("target_bp_dir:%s, target_bp_file:%s, BP_addr: %x\n", target_bp_dir, target_bp_file, bp_addr);
+
+		// TODO:  check bp_dir and bp_file
+		
+		if(target_bp_dir[0] != 0x00 || target_bp_dir[1] != 0x00 || target_bp_dir[2] != 0x00) {
+			have_target_dir = true;
+			printf("have targe dir\n");
+		}
+
+		if(target_bp_dir[32] == 'M' && target_bp_dir[33] == 'P' && target_bp_dir[34] == '3') {
+			have_target_file = true;
+			printf("have targe file\n");
+		}
+
+		
+		
+	}
+
+	fclose(config_file);
+	config_file = NULL;
+}
+
+//-----------------------------------------------------------------------------------
+//
+
+//call it when send file to AT
+//int ret = file_browse_enter_onchane();
+
+
+//----------------------------------------------------------
+
+
 void file_read_from_sd_card(void)
 {
 
-	fp = fopen("storage/sd0/C/19270101/000000.MP3","rb");
-	//fp = fopen("storage/sd0/C/20201214192925","rb");
+	//check_config_file();
+
+	//fp = fopen("storage/sd0/C/20211130/231521.MP3","rb");
+	fp = fopen("storage/sd0/C/MLtest01.pcm","rb");
 
 	if (fp)
 		printf("open file successd\r\n");

@@ -509,8 +509,12 @@ __find:
 }
 #endif
 
+extern char target_bp_dir[20];
+extern char target_bp_file[20];
+
 int file_list_flush(int from_index)
 {
+#if 0
     FILE *dir = NULL;
     FILE *file = NULL;
 
@@ -529,11 +533,40 @@ int file_list_flush(int from_index)
 	for (from_index = 0; from_index <  dir_num; from_index++) {
         dir = fselect(__this->fs, FSEL_BY_NUMBER, from_index);
 
-	    if (dir) {
+	    if (dir) { // TODO: check the logic of 
 
 			__this->text_list[from_index].len = fget_name(dir, name_buf, TEXT_NAME_LEN);
 
 			printf("dir[%d]=%s\n", from_index, name_buf);
+
+			///if(target_bp_dir[0] != 0 || target_bp_dir[1] != 0 || target_bp_dir[2] != 0){
+
+			if(have_target_dir) {
+
+				if(!memcmp(target_bp_dir, name_buf, 8)) {
+
+					printf("find target dir %s\n", target_bp_dir);
+					__this->fs = fscan_enterdir(__this->fs, name_buf);
+					printf("%s have %d	files\n", name_buf, __this->cur_total);
+
+					for (int j = 1; j < __this->cur_total; j++) {
+						file = fselect(__this->fs, FSEL_BY_NUMBER, j);
+						fget_name(file, name_buf, TEXT_NAME_LEN);
+						printf("file[%d]: %s\n", j, name_buf);
+						fclose(file);
+						file = NULL;
+					}
+
+					
+
+				} else {
+					printf("not target dir, continue\n");
+
+					continue;
+				}
+
+
+			} else {
 
 			__this->fs = fscan_enterdir(__this->fs, name_buf);
 			__this->cur_total = __this->fs->file_number;
@@ -552,12 +585,14 @@ int file_list_flush(int from_index)
 
 			fclose(dir);
 			dir = NULL;
+			}
+
 	    }
     }
 
 	free(name_buf);
 	name_buf = NULL;
-
+#endif
     return 0;
 }
 
@@ -587,7 +622,13 @@ int file_browse_enter_onchane(void)
             __this->cur_total = __this->fs->file_number + 1;
         }
 
-        file_list_flush(0);
+		printf("dir cur_total: %d\n", __this->cur_total);
+
+		if(__this->cur_total != 0) {
+
+			file_list_flush(0);
+
+		}
 
 		if (__this->fs) {
             fscan_release(__this->fs);

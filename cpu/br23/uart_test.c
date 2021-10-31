@@ -110,9 +110,16 @@ static void uart_u_task_handle(void *arg)
 
 			//uart_bus->read()在尚未收到串口数据时会pend信号量，挂起task，直到UART_RX_PND或UART_RX_OT_PND中断发生，post信号量，唤醒task
 			uart_rxcnt = uart_bus->read(uart_rxbuf, sizeof(uart_rxbuf), 0);
-			if (uart_rxcnt && recoder_state) {
-				rx_total += uart_rxcnt;
-				//printf("%d, %d ", uart_rxcnt, rx_total);
+			
+			printf("%d, %x %x", uart_rxcnt, uart_rxbuf[0], uart_rxbuf[1]);
+
+			if (uart_rxcnt && recoder_state && \
+					uart_rxbuf[0] == 0xcd && uart_rxbuf[1] == 0xab &&\ 
+					uart_rxbuf[2] == 0x40 && uart_rxbuf[3] == 0x01) {
+
+				printf("%d", rx_total);
+
+				rx_total += uart_rxcnt - 4;
 #if 0
 				for (int i = 0; i < uart_rxcnt; i++) {
 					my_put_u8hex(uart_rxbuf[i]);
@@ -128,8 +135,8 @@ static void uart_u_task_handle(void *arg)
 				/*push receive data to fifo*/
 				ret = lwrb_is_ready(&receive_buff);
 
-				int	n_written = lwrb_write(&receive_buff, uart_rxbuf, uart_rxcnt);
-				if (n_written != uart_rxcnt) {
+				int	n_written = lwrb_write(&receive_buff, &uart_rxbuf[4], uart_rxcnt - 4);
+				if (n_written != uart_rxcnt - 4) {
 					printf("write lwrb buffer error \n");
 				} else {
 					os_taskq_post_msg("file_write", 1, APP_USER_MSG_BUFFER_HAVE_DATA);
@@ -188,7 +195,7 @@ void uart_dev_receive_init()
     u_arg.rx_pin = IO_PORTA_06;
     u_arg.rx_cbuf = uart_cbuf;
     u_arg.rx_cbuf_size = 512;
-    u_arg.frame_length = 320;
+    u_arg.frame_length = 324;
     u_arg.rx_timeout = 100;
     u_arg.isr_cbfun = uart_isr_hook;
     u_arg.baud = 921600;//460800;
