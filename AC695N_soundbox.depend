@@ -14421,7 +14421,7 @@
 	"application/audio_eq_drc_apply.h"
 	"audio_eq.h"
 
-1635664990 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\ui\lcd\style_02\file_brower.c
+1635894397 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\ui\lcd\style_02\file_brower.c
 	"ui/ui.h"
 	"app_config.h"
 	"ui/ui_api.h"
@@ -15595,7 +15595,7 @@
 1635780387 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\misc_driver.h
 	"generic/typedef.h"
 
-1635787912 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\at_4g_driver.c
+1635894713 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\at_4g_driver.c
 	"includes.h"
 	"system/includes.h"
 	"asm/uart_dev.h"

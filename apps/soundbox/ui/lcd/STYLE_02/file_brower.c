@@ -511,10 +511,14 @@ __find:
 
 extern char target_bp_dir[20];
 extern char target_bp_file[20];
+extern bool have_target_dir;
+extern bool have_target_file;
+extern bool have_target_addr;
+
 
 int file_list_flush(int from_index)
 {
-#if 0
+
     FILE *dir = NULL;
     FILE *file = NULL;
 
@@ -545,19 +549,51 @@ int file_list_flush(int from_index)
 
 				if(!memcmp(target_bp_dir, name_buf, 8)) {
 
-					printf("find target dir %s\n", target_bp_dir);
+					printf("find target dir %s\n", name_buf);
 					__this->fs = fscan_enterdir(__this->fs, name_buf);
-					printf("%s have %d	files\n", name_buf, __this->cur_total);
+					__this->cur_total = __this->fs->file_number + 1;
 
-					for (int j = 1; j < __this->cur_total; j++) {
-						file = fselect(__this->fs, FSEL_BY_NUMBER, j);
-						fget_name(file, name_buf, TEXT_NAME_LEN);
-						printf("file[%d]: %s\n", j, name_buf);
-						fclose(file);
-						file = NULL;
+					printf("%s have %d	files\n", name_buf, __this->cur_total);
+					if (have_target_file) {
+						printf("have target file\n");
+						for (int n = 1; n < __this->cur_total; n++) {
+							file = fselect(__this->fs, FSEL_BY_NUMBER, n);
+							fget_name(file, name_buf, TEXT_NAME_LEN);
+
+							if(!memcmp(target_bp_file, name_buf, 8)) {
+								printf("find target file %s\n", name_buf);
+								// TODO:sned file to AT
+								#if 0
+								if(have_target_addr) {//have target addr
+									//send form target addr
+								} else {
+									//send form 0 addr
+								}
+								#endif
+
+							} else {
+								printf("not target file continue\n");
+								continue;
+							}
+
+							printf("file[%d]: %s\n", n, name_buf);
+							fclose(file);
+							file = NULL;
+						}
+
+					} else {
+
+						printf("have no target file\n");
+						for (int n = 1; n < __this->cur_total; n++) {
+							file = fselect(__this->fs, FSEL_BY_NUMBER, n);
+							fget_name(file, name_buf, TEXT_NAME_LEN);
+							printf("file[%d]: %s\n", n, name_buf);
+							fclose(file);
+							file = NULL;
+						}
+
 					}
 
-					
 
 				} else {
 					printf("not target dir, continue\n");
@@ -565,26 +601,27 @@ int file_list_flush(int from_index)
 					continue;
 				}
 
+			} else {//have no target dir
 
-			} else {
+				printf("have no target dir\n");
+				__this->fs = fscan_enterdir(__this->fs, name_buf);
+				__this->cur_total = __this->fs->file_number + 1;
+				printf("%s have %d  files\n", name_buf, __this->cur_total);
 
-			__this->fs = fscan_enterdir(__this->fs, name_buf);
-			__this->cur_total = __this->fs->file_number;
-			printf("%s have %d  files\n", name_buf, __this->cur_total);
+				for (int j = 1; j < __this->cur_total; j++) {
+					file = fselect(__this->fs, FSEL_BY_NUMBER, j);
+					fget_name(file, name_buf, TEXT_NAME_LEN);
+					printf("file[%d]: %s\n", j, name_buf);
+					// TODO: sned this file
+					fclose(file);
+		        	file = NULL;
+				}
 
-			for (int j = 1; j < __this->cur_total; j++) {
-				file = fselect(__this->fs, FSEL_BY_NUMBER, j);
-				fget_name(file, name_buf, TEXT_NAME_LEN);
-				printf("file[%d]: %s\n", j, name_buf);
-				fclose(file);
-	        	file = NULL;
-			}
+				__this->fs = fscan_exitdir(__this->fs);
+				printf("exitdir\n");
 
-			__this->fs = fscan_exitdir(__this->fs);
-			printf("exitdir\n");
-
-			fclose(dir);
-			dir = NULL;
+				fclose(dir);
+				dir = NULL;
 			}
 
 	    }
@@ -592,7 +629,7 @@ int file_list_flush(int from_index)
 
 	free(name_buf);
 	name_buf = NULL;
-#endif
+
     return 0;
 }
 

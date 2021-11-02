@@ -90,7 +90,7 @@ static void at_4g_task_handle(void *arg)
 					/*power on 4g module and send file to at*/
 					if (module_status == POWER_OFF) {
 						
-					#if 1
+					#if 0
 						module_power_on();
 						while(gsm_init_to_access_mode() == GSM_FALSE){
 							retry++;
@@ -192,8 +192,12 @@ void file_read_and_send(void *priv)
 static FILE *config_file = NULL;
 char target_bp_dir[20] = {0};
 char target_bp_file[20] = {0};
+char target_bp_addr[20] = {0};
+
 bool have_target_dir = false;
 bool have_target_file = false;
+bool have_target_addr = false;
+
 
 void check_config_file(void)
 {
@@ -234,17 +238,15 @@ void check_config_file(void)
 		// TODO:  check bp_dir and bp_file
 		
 		if(target_bp_dir[0] != 0x00 || target_bp_dir[1] != 0x00 || target_bp_dir[2] != 0x00) {
-			have_target_dir = true;
+			//have_target_dir = true;
 			printf("have targe dir\n");
 		}
 
-		if(target_bp_dir[32] == 'M' && target_bp_dir[33] == 'P' && target_bp_dir[34] == '3') {
-			have_target_file = true;
+		if(target_bp_file[7] == 'm' && target_bp_file[8] == 'p' && target_bp_file[9] == '3') {
+			//have_target_file = true;
 			printf("have targe file\n");
 		}
 
-		
-		
 	}
 
 	fclose(config_file);
@@ -257,6 +259,7 @@ void check_config_file(void)
 //call it when send file to AT
 //int ret = file_browse_enter_onchane();
 
+extern int file_browse_enter_onchane(void);
 
 //----------------------------------------------------------
 
@@ -264,8 +267,10 @@ void check_config_file(void)
 void file_read_from_sd_card(void)
 {
 
-	//check_config_file();
+	check_config_file();
+	file_browse_enter_onchane();
 
+	#if 0
 	//fp = fopen("storage/sd0/C/20211130/231521.MP3","rb");
 	fp = fopen("storage/sd0/C/MLtest01.pcm","rb");
 
@@ -279,6 +284,8 @@ void file_read_from_sd_card(void)
 		packet_num = 0;
 		file_send_timer = sys_timer_add(NULL, file_read_and_send, 30);
 	}
+
+	#endif
 }
 
 

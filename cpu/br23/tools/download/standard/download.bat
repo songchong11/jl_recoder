@@ -12,8 +12,8 @@ copy ..\..\effects_cfg.bin .
 copy ..\..\ota_all.bin .
 copy ..\..\ota_nor.bin .
 
-..\..\isd_download.exe -tonorflash -dev br23 -boot 0x12000 -div8 -wait 300 -uboot uboot.boot -app app.bin cfg_tool.bin -res tone.cfg -key 003-keypulong-AC690X-7247.key -format all
-::..\..\isd_download.exe -tonorflash -dev br23 -boot 0x12000 -div8 -wait 300 -uboot uboot.boot -app app.bin cfg_tool.bin -res tone.cfg -format all
+::..\..\isd_download.exe -tonorflash -dev br23 -boot 0x12000 -div8 -wait 300 -uboot uboot.boot -app app.bin cfg_tool.bin -res tone.cfg -key 003-keypulong-AC690X-7247.key -format all
+..\..\isd_download.exe -tonorflash -dev br23 -boot 0x12000 -div8 -wait 300 -uboot uboot.boot -app app.bin cfg_tool.bin -res tone.cfg -format all
 :: -format all
 ::-reboot 2500
 
