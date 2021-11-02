@@ -7,6 +7,8 @@ void misc_driver_init(void);
 
 void bes_power_on(void);
 void bes_power_off(void);
+void bes_start_recoder(void);
+void bes_stop_recoder(void);
 
 
 #endif

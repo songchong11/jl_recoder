@@ -10,6 +10,7 @@
 
 
 #define MODULE_PWR_GPIO		IO_PORTB_03
+#define SIM_CARD_TYPE	CMNET
 
 enum {
     KEY_USER_DEAL_POST = 0,
@@ -510,15 +511,16 @@ uint8_t gsm_init_to_access_mode(void)
 
 	GSM_DELAY(500);
 	retry = 0;
-#if (SIM_CARD_TYPE == CTNET)
+#if 0
+#if  (SIM_CARD_TYPE == CTNET)
 		while(gsm_cmd("AT+CGDCONT=1,\"IP\",\"CTNET\"\r","OK", 8000) != GSM_TRUE)// 设置激活时APN。电信
 #elif (SIM_CARD_TYPE == CMNET)
 		while(gsm_cmd("AT+CGDCONT=1,\"IP\",\"CMNET\"\r","OK", 8000) != GSM_TRUE)// 设置激活时APN。移动
 #elif (SIM_CARD_TYPE == TGNET)
 		while(gsm_cmd("AT+CGDCONT=1,\"IP\",\"3GNET\"\r","OK", 8000) != GSM_TRUE)// 设置激活时APN。联通
 #endif
-
-
+#endif
+	while(gsm_cmd("AT+CGDCONT=1,\"IP\",\"CMNET\"\r","OK", 8000) != GSM_TRUE)// 设置激活时APN。移动
 
 	{
 		printf("\r\n AT+CGDCONT= not replay AT OK, retry %d\r\n", retry);
@@ -593,6 +595,7 @@ uint8_t gsm_init_to_access_mode(void)
 
 	GSM_DELAY(500);
 	retry = 0;
+#if 0
 #if (SIM_CARD_TYPE == CTNET)
 	while(gsm_cmd("AT+MIPCALL=1,\"CTNET\"\r","+MIPCALL", 1000 * 150) != GSM_TRUE)// 链接TCP
 #elif ((SIM_CARD_TYPE == CMNET))
@@ -601,6 +604,9 @@ uint8_t gsm_init_to_access_mode(void)
 #elif((SIM_CARD_TYPE == TGNET))
 	while(gsm_cmd("AT+MIPCALL=1,\"TGNET\"\r","+MIPCALL", 1000 * 150) != GSM_TRUE)// 链接TCP
 #endif
+#endif
+	while(gsm_cmd("AT+MIPCALL=1,\"CMNET\"\r","+MIPCALL", 1000 * 150) != GSM_TRUE)// 链接TCP
+
 	{
 		printf("\r\n AT+MIPCALL= not replay AT OK, retry %d\r\n", retry);
 

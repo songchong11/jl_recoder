@@ -4680,9 +4680,9 @@ obj/Release/cpu/br23/file_write.o
 -r=obj/Release/cpu/br23/file_write.o,strcat,l
 -r=obj/Release/cpu/br23/file_write.o,fopen,l
 -r=obj/Release/cpu/br23/file_write.o,led_blue_on,l
--r=obj/Release/cpu/br23/file_write.o,bes_power_on,l
+-r=obj/Release/cpu/br23/file_write.o,bes_start_recoder,l
 -r=obj/Release/cpu/br23/file_write.o,led_blue_off,l
--r=obj/Release/cpu/br23/file_write.o,bes_power_off,l
+-r=obj/Release/cpu/br23/file_write.o,bes_stop_recoder,l
 -r=obj/Release/cpu/br23/file_write.o,puts,l
 -r=obj/Release/cpu/br23/file_write.o,strlen,l
 -r=obj/Release/cpu/br23/file_write.o,root_path,pl
@@ -4837,7 +4837,10 @@ obj/Release/cpu/br23/misc_driver.o
 -r=obj/Release/cpu/br23/misc_driver.o,bes_power_on,pl
 -r=obj/Release/cpu/br23/misc_driver.o,delay_2ms,l
 -r=obj/Release/cpu/br23/misc_driver.o,bes_power_off,pl
+-r=obj/Release/cpu/br23/misc_driver.o,bes_start_recoder,pl
+-r=obj/Release/cpu/br23/misc_driver.o,bes_stop_recoder,pl
 -r=obj/Release/cpu/br23/misc_driver.o,puts,l
+-r=obj/Release/cpu/br23/misc_driver.o,rx_total,l
 obj/Release/cpu/br23/overlay_code.o
 -r=obj/Release/cpu/br23/overlay_code.o,overlay_load_code,pl
 -r=obj/Release/cpu/br23/overlay_code.o,audio_overlay_load_code,pl
@@ -5048,6 +5051,7 @@ obj/Release/cpu/br23/uart_test.o
 -r=obj/Release/cpu/br23/uart_test.o,os_taskq_post_msg,l
 -r=obj/Release/cpu/br23/uart_test.o,puts,l
 -r=obj/Release/cpu/br23/uart_test.o,__event_handler_uart_event_handler,pl
+-r=obj/Release/cpu/br23/uart_test.o,rx_total,pl
 -r=obj/Release/cpu/br23/uart_test.o,uart_bus,pl
 -r=obj/Release/cpu/br23/uart_test.o,recoder_state,l
 -r=obj/Release/cpu/br23/uart_test.o,receive_buff,l

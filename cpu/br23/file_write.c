@@ -133,7 +133,8 @@ static void file_write_task_handle(void *arg)
 					led_blue_on();
 					memset(file_path, 0, sizeof(file_path));
 
-					bes_power_on();
+					//bes_power_on();
+					bes_start_recoder();
 #endif
 					break;
 				case APP_USER_MSG_STOP_RECODER:
@@ -145,7 +146,8 @@ static void file_write_task_handle(void *arg)
 							test_file = NULL;
 						}
 						led_blue_off();
-						bes_power_off();
+						//bes_power_off();
+						bes_stop_recoder();
 					break;
 	            default:
 	                break;

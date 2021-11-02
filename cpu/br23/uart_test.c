@@ -98,7 +98,7 @@ static void uart_event_handler(struct sys_event *e)
 SYS_EVENT_HANDLER(SYS_DEVICE_EVENT, uart_event_handler, 0);
 
 extern lwrb_t receive_buff;
-static u32 rx_total = 0;
+u32 rx_total = 0;
 static void uart_u_task_handle(void *arg)
 {
 		const uart_bus_t *uart_bus = arg;
@@ -111,7 +111,7 @@ static void uart_u_task_handle(void *arg)
 			//uart_bus->read()在尚未收到串口数据时会pend信号量，挂起task，直到UART_RX_PND或UART_RX_OT_PND中断发生，post信号量，唤醒task
 			uart_rxcnt = uart_bus->read(uart_rxbuf, sizeof(uart_rxbuf), 0);
 			
-			//printf("%d, %x %x", uart_rxcnt, uart_rxbuf[0], uart_rxbuf[1]);
+			printf("%d, %x %x", uart_rxcnt, uart_rxbuf[0], uart_rxbuf[1]);
 
 			if (uart_rxcnt && recoder_state && \
 					uart_rxbuf[0] == 0xcd && uart_rxbuf[1] == 0xab &&\ 

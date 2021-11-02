@@ -2,6 +2,8 @@
 #include "misc_driver.h"
 
 #define BES_PWR_GPIO	IO_PORTA_12
+#define BES_RECODER_GPIO	IO_PORTB_07
+
 
 #define CE_GPIO			IO_PORTC_03
 #define SYSOFF_GPIO		IO_PORTC_02
@@ -12,11 +14,18 @@ void misc_driver_init(void)
 {
 
 	/*bes power gpio init*/
-	gpio_set_pull_up(BES_PWR_GPIO, 1);
+	gpio_set_pull_up(BES_PWR_GPIO, 0);
 	gpio_set_pull_down(BES_PWR_GPIO, 0);
 	gpio_set_die(BES_PWR_GPIO, 0);
 	gpio_set_direction(BES_PWR_GPIO, 0);
 	gpio_set_output_value(BES_PWR_GPIO, 0);
+
+	/*bes start or stop gpio init*/
+	gpio_set_pull_up(BES_RECODER_GPIO, 0);
+	gpio_set_pull_down(BES_RECODER_GPIO, 0);
+	gpio_set_die(BES_RECODER_GPIO, 0);
+	gpio_set_direction(BES_RECODER_GPIO, 0);
+	gpio_set_output_value(BES_RECODER_GPIO, 1);
 
 	/*charge ic init*/
 	gpio_set_pull_up(SYSOFF_GPIO, 0);
@@ -51,7 +60,7 @@ void bes_power_on(void)
 {
 	printf("bes_power_on\r\n");
 	gpio_set_output_value(BES_PWR_GPIO, 1);
-	delay_2ms(100);
+	delay_2ms(400);
 	gpio_set_output_value(BES_PWR_GPIO, 0);
 }
 
@@ -64,6 +73,20 @@ void bes_power_off(void)// TODO:check
 
 }
 
+extern u32 rx_total;
+void bes_start_recoder(void)
+{
+	printf("bes_start_recoder\r\n");
+	//gpio_set_output_value(BES_RECODER_GPIO, 0);
+	gpio_set_output_value(BES_PWR_GPIO, 1);
+	rx_total = 0;
+}
 
+void bes_stop_recoder(void)
+{
+	printf("bes_stop_recoder\r\n");
+	//gpio_set_output_value(BES_RECODER_GPIO, 1);
+	gpio_set_output_value(BES_PWR_GPIO, 0);
+}
 
 /*****************************************************************************/
