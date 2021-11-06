@@ -382,6 +382,7 @@ void app_pc_task()
 
         if (app_task_exitting()) {
             pc_task_close();
+			app_task_switch_to(APP_IDLE_TASK);
             return;
         }
     }
