@@ -537,7 +537,7 @@ int file_list_flush(int from_index)
 	for (from_index = 0; from_index <  dir_num; from_index++) {
         dir = fselect(__this->fs, FSEL_BY_NUMBER, from_index);
 
-	    if (dir) { // TODO: check the logic of 
+	    if (dir) {
 
 			__this->text_list[from_index].len = fget_name(dir, name_buf, TEXT_NAME_LEN);
 
@@ -587,6 +587,7 @@ int file_list_flush(int from_index)
 						for (int n = 1; n < __this->cur_total; n++) {
 							file = fselect(__this->fs, FSEL_BY_NUMBER, n);
 							fget_name(file, name_buf, TEXT_NAME_LEN);
+							// TODO:sned file to AT
 							printf("file[%d]: %s\n", n, name_buf);
 							fclose(file);
 							file = NULL;

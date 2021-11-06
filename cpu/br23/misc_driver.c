@@ -54,13 +54,14 @@ void misc_driver_init(void)
 	gpio_set_output_value(CE_GPIO, 1);
 
 	bes_power_on();
+
 }
 
 void bes_power_on(void)
 {
 	printf("bes_power_on\r\n");
 	gpio_set_output_value(BES_PWR_GPIO, 1);
-	delay_2ms(400);
+	delay_2ms(600);
 	gpio_set_output_value(BES_PWR_GPIO, 0);
 }
 
@@ -76,17 +77,17 @@ void bes_power_off(void)// TODO:check
 extern u32 rx_total;
 void bes_start_recoder(void)
 {
+	//bes_power_on();
+	//delay_2ms(100);
 	printf("bes_start_recoder\r\n");
-	//gpio_set_output_value(BES_RECODER_GPIO, 0);
-	gpio_set_output_value(BES_PWR_GPIO, 1);
+	gpio_set_output_value(BES_RECODER_GPIO, 0);
 	rx_total = 0;
 }
 
 void bes_stop_recoder(void)
 {
 	printf("bes_stop_recoder\r\n");
-	//gpio_set_output_value(BES_RECODER_GPIO, 1);
-	gpio_set_output_value(BES_PWR_GPIO, 0);
+	gpio_set_output_value(BES_RECODER_GPIO, 1);
 }
 
 /*****************************************************************************/

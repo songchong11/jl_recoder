@@ -32,6 +32,8 @@ typedef enum
 
 extern  uint8_t     gsm_cmd(char *cmd, char *reply, uint32_t waittime);
 extern  uint8_t     gsm_cmd_check   	(char *reply);
+void check_config_file(void);
+extern int file_browse_enter_onchane(void);
 
 extern void clean_rebuff(void);
 extern char *get_rebuff(uint8_t *len);

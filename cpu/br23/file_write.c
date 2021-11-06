@@ -26,7 +26,7 @@ enum {
 
 /* Declare rb instance & raw data */
 lwrb_t receive_buff;
-uint8_t buff_data[320 * 8];
+uint8_t buff_data[320 * 20];
 uint8_t write_buffer[1024];
 extern bool recoder_state;
 
@@ -117,11 +117,11 @@ static void file_write_task_handle(void *arg)
 					strcat(file_path, year_month_day);
 					strcat(file_path, "/");
 					strcat(file_path, hour_min_sec);
-					strcat(file_path, ".mp3");
+					strcat(file_path, ".pcm");
 					printf("file_path:%s\n", file_path);
 					if (!test_file) {
-						//test_file = fopen(file_path, "w+");
-						test_file = fopen("storage/sd0/C/MLtest01.pcm", "w+");
+						test_file = fopen(file_path, "w+");
+						//test_file = fopen("storage/sd0/C/MLtest01.pcm", "w+");
 						if (!test_file) {
 							printf("fopen file faild!\n");
 						} else {
@@ -133,7 +133,6 @@ static void file_write_task_handle(void *arg)
 					led_blue_on();
 					memset(file_path, 0, sizeof(file_path));
 
-					//bes_power_on();
 					bes_start_recoder();
 #endif
 					break;
@@ -146,7 +145,6 @@ static void file_write_task_handle(void *arg)
 							test_file = NULL;
 						}
 						led_blue_off();
-						//bes_power_off();
 						bes_stop_recoder();
 					break;
 	            default:

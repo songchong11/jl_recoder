@@ -104,8 +104,18 @@ static void at_4g_task_handle(void *arg)
 					}
 					printf("gsm enter into access mode success\n");
 
-					file_read_from_sd_card();
+					check_config_file();
+
+					os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GET_NEXT_FILE);
 	                break;
+
+				case APP_USER_MSG_GET_NEXT_FILE:
+					printf("APP_USER_MSG_GET_NEXT_FILE");
+					file_browse_enter_onchane();
+
+					file_read_from_sd_card();
+
+					break;
 
 				case APP_USER_MSG_STOP_SEND_FILE_TO_AT:
 					printf("APP_USER_MSG_STOP_SEND_FILE_TO_AT");
@@ -259,7 +269,6 @@ void check_config_file(void)
 //call it when send file to AT
 //int ret = file_browse_enter_onchane();
 
-extern int file_browse_enter_onchane(void);
 
 //----------------------------------------------------------
 
@@ -267,12 +276,11 @@ extern int file_browse_enter_onchane(void);
 void file_read_from_sd_card(void)
 {
 
-	check_config_file();
-	file_browse_enter_onchane();
 
-	#if 0
-	//fp = fopen("storage/sd0/C/20211130/231521.MP3","rb");
-	fp = fopen("storage/sd0/C/MLtest01.pcm","rb");
+
+	#if 1
+	fp = fopen("storage/sd0/C/20211130/231521.MP3","rb");
+	//fp = fopen("storage/sd0/C/MLtest01.pcm","rb");
 
 	if (fp)
 		printf("open file successd\r\n");

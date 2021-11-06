@@ -111,7 +111,7 @@ static void uart_u_task_handle(void *arg)
 			//uart_bus->read()在尚未收到串口数据时会pend信号量，挂起task，直到UART_RX_PND或UART_RX_OT_PND中断发生，post信号量，唤醒task
 			uart_rxcnt = uart_bus->read(uart_rxbuf, sizeof(uart_rxbuf), 0);
 			
-			printf("%d, %x %x", uart_rxcnt, uart_rxbuf[0], uart_rxbuf[1]);
+			//printf("%d, %x %x", uart_rxcnt, uart_rxbuf[0], uart_rxbuf[1]);
 
 			if (uart_rxcnt && recoder_state && \
 					uart_rxbuf[0] == 0xcd && uart_rxbuf[1] == 0xab &&\ 
@@ -137,7 +137,8 @@ static void uart_u_task_handle(void *arg)
 
 				int	n_written = lwrb_write(&receive_buff, &uart_rxbuf[4], uart_rxcnt - 4);
 				if (n_written != uart_rxcnt - 4) {
-					printf("write lwrb buffer error \n");
+					printf("write lwrb buffer error %d %d\n", n_written, uart_rxcnt);
+					
 				} else {
 					os_taskq_post_msg("file_write", 1, APP_USER_MSG_BUFFER_HAVE_DATA);
 				}
