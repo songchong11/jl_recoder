@@ -329,6 +329,7 @@ static int idle_key_event_opr(struct sys_event *event)
 			recoder_state = false;
 			os_taskq_post_msg("file_write", 1, APP_USER_MSG_STOP_RECODER);
 		}
+		ret = true;
 
 		break;
 	case KEY_AT_SEND_PCM:
@@ -344,6 +345,7 @@ static int idle_key_event_opr(struct sys_event *event)
 			send_pcm_state = false;
 			os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_STOP_SEND_FILE_TO_AT);
 		}
+		ret = true;
 		break;
 
 	}

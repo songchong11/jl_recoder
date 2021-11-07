@@ -416,7 +416,12 @@ static u32 TEXT_FNAME_ID[10] = {
 
 
 static const u8 MUSIC_SCAN_PARAM[] = "-t"
-                                     "MP3"
+                                     "PCM"
+                                     " -sn -d"
+                                     ;
+
+static const u8 RECODER_SCAN_PARAM[] = "-t"
+                                     "PCM"
                                      " -sn -d"
                                      ;
 
@@ -513,9 +518,8 @@ extern char target_bp_dir[20];
 extern char target_bp_file[20];
 extern bool have_target_dir;
 extern bool have_target_file;
-extern bool have_target_addr;
 
-
+#if 1
 int file_list_flush(int from_index)
 {
 
@@ -543,7 +547,6 @@ int file_list_flush(int from_index)
 
 			printf("dir[%d]=%s\n", from_index, name_buf);
 
-			///if(target_bp_dir[0] != 0 || target_bp_dir[1] != 0 || target_bp_dir[2] != 0){
 
 			if(have_target_dir) {
 
@@ -633,12 +636,381 @@ int file_list_flush(int from_index)
 
     return 0;
 }
+#endif
+
+#if 0
+int file_list_flush(int from_index, u8 *dir_name, u8 *file_name)
+{
+
+    FILE *dir = NULL;
+    FILE *file = NULL;
+	int from_index;
+
+    int i = 0;
+   /// char *name_buf = NULL;
+	int dir_num = __this->cur_total;
+
+    for (i = 0; i < sizeof(TEXT_FNAME_ID) / sizeof(TEXT_FNAME_ID[0]); i++) {
+        memset(__this->text_list[i].fname, 0, TEXT_NAME_LEN);
+        __this->text_list[i].len = 0;
+    }
+	printf("file_list_flush  -------------\r\n");
+
+	//name_buf = malloc(TEXT_NAME_LEN);
+
+	for (from_index = 0; from_index <  dir_num; from_index++) {
+        dir = fselect(__this->fs, FSEL_BY_NUMBER, from_index);
+
+	    if (dir) {
+
+			__this->text_list[from_index].len = fget_name(dir, dir_name, TEXT_NAME_LEN);
+
+			printf("dir[%d]=%s\n", from_index, dir);
 
 
+			if(have_target_dir) {
 
+				if(!memcmp(target_bp_dir, dir_name, 8)) {
+
+					printf("find target dir %s\n", dir_name);
+					__this->fs = fscan_enterdir(__this->fs, dir_name);
+					__this->cur_total = __this->fs->file_number + 1;
+
+					printf("%s have %d	files\n", dir_name, __this->cur_total);
+					if (have_target_file) {
+						printf("have target file\n");
+						for (int n = 1; n < __this->cur_total; n++) {
+							file = fselect(__this->fs, FSEL_BY_NUMBER, n);
+							fget_name(file, file_name, TEXT_NAME_LEN);
+
+							if(!memcmp(target_bp_file, file_name, 8)) {
+								printf("find target file %s\n", file_name);
+								// TODO:find   the file to AT
+
+
+							} else {
+								printf("not target file continue\n");
+								continue;
+							}
+
+							printf("file[%d]: %s\n", n, file_name);
+							fclose(file);
+							file = NULL;
+						}
+
+					} else {
+
+						printf("have no target file\n");
+						for (int n = 1; n < __this->cur_total; n++) {
+							file = fselect(__this->fs, FSEL_BY_NUMBER, n);
+							fget_name(file, file_name, TEXT_NAME_LEN);
+							// TODO:sned file to AT
+							printf("file[%d]: %s\n", n, file_name);
+							fclose(file);
+							file = NULL;
+						}
+
+					}
+
+
+				} else {
+					printf("not target dir, continue\n");
+
+					continue;
+				}
+
+			} else {//have no target dir
+
+				printf("have no target dir\n");
+				__this->fs = fscan_enterdir(__this->fs, dir_name);
+				__this->cur_total = __this->fs->file_number + 1;
+				printf("%s have %d  files\n", dir_name, __this->cur_total);
+
+				for (int j = 1; j < __this->cur_total; j++) {
+					file = fselect(__this->fs, FSEL_BY_NUMBER, j);
+
+					if (!file) {
+						fget_name(file, file_name, TEXT_NAME_LEN);// get name for send
+						printf("file[%d]: %s\n", j, file_name);
+						fclose(file);
+		        		file = NULL;
+						printf("find file %s break\n", file_name);
+						break;
+					} else {
+						fclose(file);
+		        		file = NULL;
+						printf("no file return");
+						break;
+					}
+
+				}
+
+			}
+
+	    }
+
+		__this->fs = fscan_exitdir(__this->fs);
+		printf("exitdir\n");
+
+		if (dir) {
+
+			fclose(dir);
+			dir = NULL;
+		}
+
+    }
+
+    return 0;
+}
+#endif
+#if 0
+bool file_get_next_file(u8 *dir_name, u8 *file_name)
+{
+    FILE *dir = NULL;
+    FILE *file = NULL;
+	int from_index = 0;
+	bool find_target_file = false;
+    int i = 0;
+    char *name_buf = NULL;
+	u8 tmp_dir_name[9];
+	bool ret = false;
+
+	int dir_num = __this->cur_total;
+
+    for (i = 0; i < sizeof(TEXT_FNAME_ID) / sizeof(TEXT_FNAME_ID[0]); i++) {
+        memset(__this->text_list[i].fname, 0, TEXT_NAME_LEN);
+        __this->text_list[i].len = 0;
+    }
+	printf("file_list_flush  -------------\r\n");
+
+	name_buf = malloc(TEXT_NAME_LEN);
+
+	for (from_index = 0; from_index <  dir_num; from_index++) {
+        dir = fselect(__this->fs, FSEL_BY_NUMBER, from_index);
+
+	    if (dir) {
+
+			__this->text_list[from_index].len = fget_name(dir, name_buf, TEXT_NAME_LEN);
+
+			memcpy(tmp_dir_name, name_buf, 9);
+			printf("dir[%d]=%s\n", from_index, tmp_dir_name);
+
+#if 1
+			if(have_target_dir) {
+
+				if(!memcmp(target_bp_dir, name_buf, 8)) {
+
+					printf("find target dir %s\n", name_buf);
+					__this->fs = fscan_enterdir(__this->fs, name_buf);
+					__this->cur_total = __this->fs->file_number + 1;
+
+					printf("%s have %d	files\n", name_buf, __this->cur_total);
+					if (have_target_file) {
+						printf("have target file\n");
+						for (int n = 1; n < __this->cur_total; n++) {
+							file = fselect(__this->fs, FSEL_BY_NUMBER, n);
+							fget_name(file, name_buf, TEXT_NAME_LEN);
+							if(!memcmp(target_bp_file, name_buf, 8)) {
+								printf("find target file %s\n", name_buf);
+								find_target_file = true;
+
+							} else {
+								printf("not target file continue\n");
+								if (find_target_file) {
+									memcpy(file_name, name_buf, 10 + 1);
+									memcpy(dir_name, tmp_dir_name, 8 + 1);
+									printf("-------find the next file is %s/%s\n", dir_name, file_name);
+									ret = true;
+								}
+								find_target_file = false;
+								continue;
+							}
+
+							if (n == (__this->cur_total - 1)){//target is last file in dir
+								find_target_file = false;
+								have_target_dir = false;
+							}
+
+							printf("file[%d]: %s\n", n, name_buf);
+							fclose(file);
+							file = NULL;
+
+						}
+
+					}
+
+
+				} else {
+					printf("not target dir, continue\n");
+
+					continue;
+				}
+
+			} else {//have no target dir
+
+				printf("have no target dir\n");
+				__this->fs = fscan_enterdir(__this->fs, name_buf);
+				__this->cur_total = __this->fs->file_number + 1;
+				printf("%s have %d  files\n", name_buf, __this->cur_total);
+
+				memcpy(file_name, name_buf, 10 + 1);
+
+				for (int j = 1; j < __this->cur_total; j++) {
+					file = fselect(__this->fs, FSEL_BY_NUMBER, j);
+					fget_name(file, name_buf, TEXT_NAME_LEN);
+					printf("file[%d]: %s\n", j, name_buf);
+
+					if (file && find_target_file == false) {
+						memcpy(dir_name, tmp_dir_name, 8 + 1);
+						printf("+++++++ find the next file is %s/%s\n", dir_name, file_name);
+						find_target_file = true;
+						ret = true;
+					}
+
+
+					fclose(file);
+		        	file = NULL;
+					break;
+				}
+
+				__this->fs = fscan_exitdir(__this->fs);
+				printf("exitdir\n");
+
+			}
+#endif
+		fclose(dir);
+		dir = NULL;
+
+	    }
+    }
+
+	free(name_buf);
+	name_buf = NULL;
+
+    return ret;
+
+}
+#endif
+
+#if 1
+bool file_get_next_file(u8 *dir_name, u8 *file_name)
+{
+    FILE *dir = NULL;
+    FILE *file = NULL;
+	int from_index = 0;
+	bool find_target_file = false;
+    int i = 0;
+    char *name_buf = NULL;
+	u8 tmp_dir_name[9];
+	bool ret = false;
+
+	int dir_num = __this->cur_total;
+
+    for (i = 0; i < sizeof(TEXT_FNAME_ID) / sizeof(TEXT_FNAME_ID[0]); i++) {
+        memset(__this->text_list[i].fname, 0, TEXT_NAME_LEN);
+        __this->text_list[i].len = 0;
+    }
+	printf("file_list_flush  -------------\r\n");
+
+	name_buf = malloc(TEXT_NAME_LEN);
+
+	for (from_index = 0; from_index <  dir_num; from_index++) {
+        dir = fselect(__this->fs, FSEL_BY_NUMBER, from_index);
+
+	    if (dir) {
+
+			__this->text_list[from_index].len = fget_name(dir, name_buf, TEXT_NAME_LEN);
+
+			memcpy(tmp_dir_name, name_buf, 9);
+			printf("dir[%d]=%s\n", from_index, tmp_dir_name);
+
+			__this->fs = fscan_enterdir(__this->fs, name_buf);
+			__this->cur_total = __this->fs->file_number + 1;
+
+			printf("%s have %d	files\n", name_buf, __this->cur_total -1);
+
+			if (have_target_file) {
+				printf("have target file\n");
+				for (int n = 1; n < __this->cur_total; n++) {
+					file = fselect(__this->fs, FSEL_BY_NUMBER, n);
+					fget_name(file, name_buf, TEXT_NAME_LEN);
+					if(!memcmp(target_bp_file, name_buf, 8)) {
+
+						if(n == (__this->cur_total - 1)) {//target is last file
+							fclose(file);
+							file = NULL;
+							have_target_file = false;//search next dir
+							break;
+						} else {
+							find_target_file = true;
+						}
+
+					} else {
+
+						if (find_target_file) {
+							memcpy(file_name, name_buf, 10 + 1);
+							memcpy(dir_name, tmp_dir_name, 8 + 1);
+							printf("-------find the next file is %s/%s\n", dir_name, file_name);
+							ret = true;
+							fclose(file);
+							file = NULL;
+							break;
+						}
+
+						printf("not target file continue\n");
+						continue;
+					}
+
+					printf("file[%d]: %s\n", n, name_buf);
+					fclose(file);
+					file = NULL;
+				}
+
+			} else {//no  target file k
+
+				for (int j = 1; j < __this->cur_total; j++) {
+					file = fselect(__this->fs, FSEL_BY_NUMBER, j);
+					fget_name(file, name_buf, TEXT_NAME_LEN);
+					printf("file[%d]: %s\n", j, name_buf);
+
+					if (file && find_target_file == false) {
+						memcpy(file_name, name_buf, 10 + 1);
+						memcpy(dir_name, tmp_dir_name, 8 + 1);
+
+						printf("+++++++ find the next file is %s/%s\n", dir_name, file_name);
+						find_target_file = true;
+						ret = true;
+					}
+					fclose(file);
+					file = NULL;
+					break;
+				}
+			}
+
+
+			fclose(dir);
+			dir = NULL;
+
+			if (find_target_file)
+				break;
+
+	    }
+    }
+
+	free(name_buf);
+	name_buf = NULL;
+
+    return ret;
+
+}
+#endif
+
+
+#if 1
 //static int file_browse_enter_onchane(void *ctr, enum element_change_event e, void *arg)
 int file_browse_enter_onchane(void)
 {
+		int ret;
 
         if (!__this) {
             __this = zalloc(sizeof_this);
@@ -654,7 +1026,7 @@ int file_browse_enter_onchane(void)
 				printf("no dev \n");
                 return false;
             }
-            __this->fs = fscan(dev_manager_get_root_path(dev), MUSIC_SCAN_PARAM, 9);
+            __this->fs = fscan(dev_manager_get_root_path(dev), RECODER_SCAN_PARAM, 9);
 
             printf(">>> dir number=%d \n", __this->fs->file_number);
             __this->cur_total = __this->fs->file_number + 1;
@@ -662,10 +1034,12 @@ int file_browse_enter_onchane(void)
 
 		printf("dir cur_total: %d\n", __this->cur_total);
 
-		if(__this->cur_total != 0) {
+		if(__this->fs->file_number != 0) {
 
-			file_list_flush(0);
-
+			ret = file_list_flush(0);
+		} else {
+			printf("have no file\n");
+			return false;
 		}
 
 		if (__this->fs) {
@@ -678,7 +1052,61 @@ int file_browse_enter_onchane(void)
             __this = NULL;
         }
 
-    return false;
+    return true;
+}
+#endif
+
+int get_recoder_file_path(u8 *tmp_dir, u8 *tmp_file)
+{
+		bool ret;
+
+        if (!__this) {
+            __this = zalloc(sizeof_this);
+        }
+
+        if (!__this->fs) {
+            if (!dev_manager_get_total(1)) {
+                return false;
+            }
+
+            void *dev = dev_manager_find_active(1);
+            if (!dev) {
+				printf("no dev \n");
+                return false;
+            }
+            __this->fs = fscan(dev_manager_get_root_path(dev), RECODER_SCAN_PARAM, 9);
+
+            printf(">>> dir number=%d \n", __this->fs->file_number);
+            __this->cur_total = __this->fs->file_number + 1;
+        }
+
+		printf("dir cur_total: %d\n", __this->cur_total);
+
+		if(__this->fs->file_number != 0) {
+
+			ret = file_get_next_file(tmp_dir, tmp_file);
+
+			if (ret) {
+				printf("find next file ok %s/%s\n", tmp_dir,tmp_file);
+			} else {
+				printf("not find next file\n");
+			}
+		} else {
+			printf("have no dir\n");
+			ret = false;
+		}
+
+		if (__this->fs) {
+            fscan_release(__this->fs);
+            __this->fs = NULL;
+        }
+
+        if (__this) {
+            free(__this);
+            __this = NULL;
+        }
+
+    return ret;
 }
 
 static int file_browse_onkey(void *ctr, struct element_key_event *e)

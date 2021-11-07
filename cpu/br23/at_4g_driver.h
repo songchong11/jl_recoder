@@ -33,7 +33,8 @@ typedef enum
 extern  uint8_t     gsm_cmd(char *cmd, char *reply, uint32_t waittime);
 extern  uint8_t     gsm_cmd_check   	(char *reply);
 void check_config_file(void);
-extern int file_browse_enter_onchane(void);
+extern int get_recoder_file_path(u8 *tmp_dir, u8 *tmp_file);
+
 
 extern void clean_rebuff(void);
 extern char *get_rebuff(uint8_t *len);
@@ -118,7 +119,8 @@ uint8_t gsm_gprs_init(void);
 int clsoe_tcp_link(void);
 uint8_t gsm_init_to_access_mode(void);
 int gsm_set_to_access_mode(void);
-void file_read_from_sd_card(void);
+bool file_read_from_sd_card(u8 *dir, u8 *file_name);
 void module_4g_gpio_init(void);
+int write_config_file_when_send_over(char *dir, char *file);
 
 #endif
