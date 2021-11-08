@@ -900,9 +900,10 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 	int from_index = 0;
 	bool find_target_file = false;
     int i = 0;
-    char *name_buf = NULL;
-	u8 tmp_dir_name[9];
+    char name_buf[20] = {0};
+	u8 tmp_dir_name[20];
 	bool ret = false;
+	int len;
 
 	int dir_num = __this->cur_total;
 
@@ -912,7 +913,6 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
     }
 	printf("file_list_flush  -------------\r\n");
 
-	name_buf = malloc(TEXT_NAME_LEN);
 
 	for (from_index = 0; from_index <  dir_num; from_index++) {
         dir = fselect(__this->fs, FSEL_BY_NUMBER, from_index);
@@ -927,19 +927,30 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 			__this->fs = fscan_enterdir(__this->fs, name_buf);
 			__this->cur_total = __this->fs->file_number + 1;
 
-			printf("%s have %d	files\n", name_buf, __this->cur_total -1);
+			printf("%s have %d	files\n", name_buf, __this->cur_total);
 
 			if (have_target_file) {
 				printf("have target file\n");
 				for (int n = 1; n < __this->cur_total; n++) {
 					file = fselect(__this->fs, FSEL_BY_NUMBER, n);
-					fget_name(file, name_buf, TEXT_NAME_LEN);
+					len = fget_name(file, name_buf, TEXT_NAME_LEN);
+
+					if (len != 10) {
+						if (file)
+							fdelete(file);
+						printf("delet a unknown file, continue\n");
+						file = NULL;
+						memset(name_buf, 0x00, sizeof(name_buf));
+						continue;
+					}
+					printf("len = %d  file[%d]: %s\n", len, n, name_buf);
 					if(!memcmp(target_bp_file, name_buf, 8)) {
 
 						if(n == (__this->cur_total - 1)) {//target is last file
 							fclose(file);
 							file = NULL;
 							have_target_file = false;//search next dir
+							memset(name_buf, 0x00, sizeof(name_buf));
 							break;
 						} else {
 							find_target_file = true;
@@ -948,20 +959,24 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 					} else {
 
 						if (find_target_file) {
-							memcpy(file_name, name_buf, 10 + 1);
 							memcpy(dir_name, tmp_dir_name, 8 + 1);
+							memcpy(file_name, name_buf, 10 + 1);
 							printf("-------find the next file is %s/%s\n", dir_name, file_name);
 							ret = true;
 							fclose(file);
 							file = NULL;
+							memset(name_buf, 0x00, sizeof(name_buf));
 							break;
 						}
 
+						fclose(file);
+						file = NULL;
+
 						printf("not target file continue\n");
+						memset(name_buf, 0x00, sizeof(name_buf));
 						continue;
 					}
 
-					printf("file[%d]: %s\n", n, name_buf);
 					fclose(file);
 					file = NULL;
 				}
@@ -983,22 +998,27 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 					}
 					fclose(file);
 					file = NULL;
+					memset(name_buf, 0x00, sizeof(name_buf));
 					break;
 				}
 			}
 
+			__this->fs = fscan_exitdir(__this->fs);
+			printf("exitdir\n");
 
-			fclose(dir);
-			dir = NULL;
+			if (dir) {
+
+				fclose(dir);
+				dir = NULL;
+			}
 
 			if (find_target_file)
 				break;
 
 	    }
+
     }
 
-	free(name_buf);
-	name_buf = NULL;
 
     return ret;
 

@@ -303,7 +303,7 @@ int write_config_file_when_send_over(char *dir, char *file)
 	} else {
 		printf("fopen config file succed\r\n");
 
-		sprintf(bp_data, "%s%s\n%s%s\n","bp_dir:", dir, "bp_file:",file);
+		sprintf(bp_data, "%s%s\r\n%s%s\r\n","bp_dir:", dir, "bp_file:",file);
 		printf("bp_data:%s\n", bp_data);
 
 		//fseek(config_file, 0, SEEK_SET);
