@@ -896,8 +896,6 @@ bool check_dir_is_sended(u8 *dir_name)
 {
 	bool ret;
 
-	printf("%c %c %c %c\n", dir_name[0], dir_name[1], dir_name[2], dir_name[3]);
-
 	if ((dir_name[0] == 'S' && dir_name[1] == 'S') ||
 		(dir_name[0] == 's' && dir_name[1] == 's')) {
 		ret = true;
@@ -1029,7 +1027,7 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 						} else { //sended
 							printf("file %s is sended , continue\n", temp_file_name);
 							//check all file is sended in the dir, if all sended,need rename the dir name
-							if (n == __this->cur_total) {
+							if (n == (__this->cur_total) - 1) {
 								printf("all file sended , rename dir\n");
 								need_rename_dir = true;
 							}
@@ -1044,30 +1042,22 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 				if (result == true)// break out dir loop
 					break;
 
-				if (need_rename_dir) {
-
-					rt = rename_dir_name(__this->fs, tmp_dir_name);
-
-					if (rt) {
-						printf("rename dir fail\n");
-					} else {
-						printf("rename dir ok\n");
-					}
-
-
-				}
 
 			} else { //dir send over
 				printf("dir is sended , continue\n");
-				__this->fs = fscan_exitdir(__this->fs);
-				printf("exitdir\n");
-				continue;
 			}
 
-			if (dir) {
+		}
 
-				fclose(dir);
-				dir = NULL;
+		if (need_rename_dir) {
+
+			need_rename_dir = false;
+			rt = rename_dir_name(dir, tmp_dir_name);
+		
+			if (rt) {
+				printf("rename dir successed\n");
+			} else {
+				printf("rename dir fail\n");
 			}
 		}
 
@@ -1091,10 +1081,8 @@ int rename_dir_name(FILE* fs, char *dir_name)
 
 		ret = frename(fs, rename);
 		if (ret) {
-			printf("rename dir fail\n");
 			ret = false;
 		} else {
-			printf("rename dir ok\n");
 			ret = true;
 		}
 

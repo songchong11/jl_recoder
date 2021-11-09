@@ -349,22 +349,14 @@ int write_config_file_when_send_over(char *dir, char *file)
 
 int rename_file_when_send_over(FILE* fs, char *file_name)
 {
-	//u8 tmp_path[40];
 	char rename[15] = {0};
-	//FILE* fb = NULL;
 	int ret;
 	int result;
 
-	sprintf(rename, "%s%s", "s", &file_name[1]);
+	sprintf(rename, "%s%s", "s", file_name);
 
 	printf("new name is %s\n", rename);
 
-
-	//sprintf(tmp_path, "%s%s/%s", "storage/sd0/C/",dir_name, file_name);	
-
-	//printf("rename path:%s\n", tmp_path);
-
-	//fb = fopen(tmp_path,"r");
 	if (fs) {
 		
 		printf("open file successd\r\n");
@@ -382,8 +374,6 @@ int rename_file_when_send_over(FILE* fs, char *file_name)
 		printf("open file error\r\n");
 		ret = false;
 	}
-
-	//fclose(fb);
 
 	return ret;
 }
