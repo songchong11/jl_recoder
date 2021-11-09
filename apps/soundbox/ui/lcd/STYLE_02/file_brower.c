@@ -892,18 +892,96 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 }
 #endif
 
-#if 1
+bool check_dir_is_sended(u8 *dir_name)
+{
+	bool ret;
+
+	printf("%c %c %c %c\n", dir_name[0], dir_name[1], dir_name[2], dir_name[3]);
+
+	if ((dir_name[0] == 'S' && dir_name[1] == 'S') ||
+		(dir_name[0] == 's' && dir_name[1] == 's')) {
+		ret = true;
+		printf("this dir sended, skip it\n");
+	} else {
+		ret = false;
+		printf("this dir is not sended, enter in it\n");
+	}
+
+	return ret;
+}
+
+bool check_file_is_sended(u8 *file_name)
+{
+	bool ret;
+
+	if ((file_name[0] == 's' /*&& file_name[1] == 's'*/)
+		||(file_name[0] == 'S' /*&& file_name[1] == 'S'*/)) {
+		ret = true;
+		printf("this file sended, skip it\n");
+	} else {
+		ret = false;
+		printf("this file is not sended\n");
+	}
+
+	return ret;
+}
+
+
+bool check_the_file_all_sended_indir(u8 *dir_name)
+{
+	bool ret;
+	static u8 temp_file_name[20];
+	static FILE* fb = NULL;
+	int len;
+	int num = 0;
+
+	__this->fs = fscan_enterdir(__this->fs, dir_name);
+	__this->cur_total = __this->fs->file_number + 1;
+
+	printf("dir %s have %d	files\n", temp_file_name, __this->cur_total);
+
+	for (int n = 1; n < __this->cur_total; n++) {
+		fb = fselect(__this->fs, FSEL_BY_NUMBER, n);
+		len = fget_name(fb, temp_file_name, TEXT_NAME_LEN);
+
+		fclose(fb);
+		fb = NULL;
+
+		printf("file[%d]: %s\n", n, temp_file_name);
+		ret = check_file_is_sended(temp_file_name);
+
+		if(ret) {
+			printf("%s sended, num++\n", dir_name);
+			num++;
+		}
+	}
+	__this->fs = fscan_exitdir(__this->fs);
+	printf("exitdir\n");
+
+	if (num == __this->fs->file_number) {
+		printf("this dir all file has been sned, need rename this dir\n");
+		ret = true;
+	} else
+		ret = false;
+
+	return ret;
+}
+
+int rename_dir_name(FILE* fs, char *dir_name);
+
 bool file_get_next_file(u8 *dir_name, u8 *file_name)
 {
     FILE *dir = NULL;
     FILE *file = NULL;
 	int from_index = 0;
-	bool find_target_file = false;
     int i = 0;
-    char name_buf[20] = {0};
-	u8 tmp_dir_name[20];
+    char temp_file_name[20] = {0};
+	char tmp_dir_name[20];
 	bool ret = false;
 	int len;
+	int rt;
+	bool result = false;
+	bool need_rename_dir = false;
 
 	int dir_num = __this->cur_total;
 
@@ -919,111 +997,113 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 
 	    if (dir) {
 
-			__this->text_list[from_index].len = fget_name(dir, name_buf, TEXT_NAME_LEN);
+			__this->text_list[from_index].len = fget_name(dir, tmp_dir_name, TEXT_NAME_LEN);
 
-			memcpy(tmp_dir_name, name_buf, 9);
-			printf("dir[%d]=%s\n", from_index, tmp_dir_name);
+			printf("dir[%d]= %s\n", from_index, tmp_dir_name);
 
-			__this->fs = fscan_enterdir(__this->fs, name_buf);
-			__this->cur_total = __this->fs->file_number + 1;
+			ret = check_dir_is_sended(tmp_dir_name);
 
-			printf("%s have %d	files\n", name_buf, __this->cur_total);
+			if (!ret) { //dir not send over
+					__this->fs = fscan_enterdir(__this->fs, tmp_dir_name);
+					__this->cur_total = __this->fs->file_number + 1;
 
-			if (have_target_file) {
-				printf("have target file\n");
-				for (int n = 1; n < __this->cur_total; n++) {
-					file = fselect(__this->fs, FSEL_BY_NUMBER, n);
-					len = fget_name(file, name_buf, TEXT_NAME_LEN);
+					printf("%s have %d	files\n", tmp_dir_name, __this->cur_total);
 
-					if (len != 10) {
-						if (file)
-							fdelete(file);
-						printf("delet a unknown file, continue\n");
-						file = NULL;
-						memset(name_buf, 0x00, sizeof(name_buf));
-						continue;
-					}
-					printf("len = %d  file[%d]: %s\n", len, n, name_buf);
-					if(!memcmp(target_bp_file, name_buf, 8)) {
-
-						if(n == (__this->cur_total - 1)) {//target is last file
-							fclose(file);
-							file = NULL;
-							have_target_file = false;//search next dir
-							memset(name_buf, 0x00, sizeof(name_buf));
-							break;
-						} else {
-							find_target_file = true;
-						}
-
-					} else {
-
-						if (find_target_file) {
-							memcpy(dir_name, tmp_dir_name, 8 + 1);
-							memcpy(file_name, name_buf, 10 + 1);
-							printf("-------find the next file is %s/%s\n", dir_name, file_name);
-							ret = true;
-							fclose(file);
-							file = NULL;
-							memset(name_buf, 0x00, sizeof(name_buf));
-							break;
-						}
+					for (int n = 1; n < __this->cur_total; n++) {
+						file = fselect(__this->fs, FSEL_BY_NUMBER, n);
+						len = fget_name(file, temp_file_name, TEXT_NAME_LEN);
 
 						fclose(file);
 						file = NULL;
 
-						printf("not target file continue\n");
-						memset(name_buf, 0x00, sizeof(name_buf));
-						continue;
+						printf("len = %d  file[%d]: %s\n", len, n, temp_file_name);
+						ret = check_file_is_sended(temp_file_name);
+
+						if(!ret) { // file not sended
+							memcpy(dir_name, tmp_dir_name, 8 + 1);
+							memcpy(file_name, temp_file_name, 10 + 1);
+							printf("-------find the next file is %s/%s\n", dir_name, file_name);
+							result = true;
+
+							break;
+						} else { //sended
+							printf("file %s is sended , continue\n", temp_file_name);
+							//check all file is sended in the dir, if all sended,need rename the dir name
+							if (n == __this->cur_total) {
+								printf("all file sended , rename dir\n");
+								need_rename_dir = true;
+							}
+
+							continue;
+						}
 					}
 
-					fclose(file);
-					file = NULL;
-				}
+				__this->fs = fscan_exitdir(__this->fs);
+				printf("exitdir\n");
 
-			} else {//no  target file k
-
-				for (int j = 1; j < __this->cur_total; j++) {
-					file = fselect(__this->fs, FSEL_BY_NUMBER, j);
-					fget_name(file, name_buf, TEXT_NAME_LEN);
-					printf("file[%d]: %s\n", j, name_buf);
-
-					if (file && find_target_file == false) {
-						memcpy(file_name, name_buf, 10 + 1);
-						memcpy(dir_name, tmp_dir_name, 8 + 1);
-
-						printf("+++++++ find the next file is %s/%s\n", dir_name, file_name);
-						find_target_file = true;
-						ret = true;
-					}
-					fclose(file);
-					file = NULL;
-					memset(name_buf, 0x00, sizeof(name_buf));
+				if (result == true)// break out dir loop
 					break;
-				}
-			}
 
-			__this->fs = fscan_exitdir(__this->fs);
-			printf("exitdir\n");
+				if (need_rename_dir) {
+
+					rt = rename_dir_name(__this->fs, tmp_dir_name);
+
+					if (rt) {
+						printf("rename dir fail\n");
+					} else {
+						printf("rename dir ok\n");
+					}
+
+
+				}
+
+			} else { //dir send over
+				printf("dir is sended , continue\n");
+				__this->fs = fscan_exitdir(__this->fs);
+				printf("exitdir\n");
+				continue;
+			}
 
 			if (dir) {
 
 				fclose(dir);
 				dir = NULL;
 			}
-
-			if (find_target_file)
-				break;
-
-	    }
+		}
 
     }
 
-
-    return ret;
+    return result;
 
 }
-#endif
+
+
+int rename_dir_name(FILE* fs, char *dir_name)
+{
+	char rename[15] = {0};
+	int ret;
+
+	sprintf(rename, "%s%s", "ss", dir_name);
+
+	printf("new dir name is %s\n", rename);
+
+	if (fs) {
+
+		ret = frename(fs, rename);
+		if (ret) {
+			printf("rename dir fail\n");
+			ret = false;
+		} else {
+			printf("rename dir ok\n");
+			ret = true;
+		}
+
+	}
+
+	return ret;
+}
+
+
 
 
 #if 1
@@ -1076,57 +1156,72 @@ int file_browse_enter_onchane(void)
 }
 #endif
 
-int get_recoder_file_path(u8 *tmp_dir, u8 *tmp_file)
+bool scan_sd_card_before_get_path(void)
 {
-		bool ret;
+	bool ret;
 
-        if (!__this) {
-            __this = zalloc(sizeof_this);
-        }
+	if (!__this) {
+		__this = zalloc(sizeof_this);
+	}
 
-        if (!__this->fs) {
-            if (!dev_manager_get_total(1)) {
-                return false;
-            }
-
-            void *dev = dev_manager_find_active(1);
-            if (!dev) {
-				printf("no dev \n");
-                return false;
-            }
-            __this->fs = fscan(dev_manager_get_root_path(dev), RECODER_SCAN_PARAM, 9);
-
-            printf(">>> dir number=%d \n", __this->fs->file_number);
-            __this->cur_total = __this->fs->file_number + 1;
-        }
-
-		printf("dir cur_total: %d\n", __this->cur_total);
-
-		if(__this->fs->file_number != 0) {
-
-			ret = file_get_next_file(tmp_dir, tmp_file);
-
-			if (ret) {
-				printf("find next file ok %s/%s\n", tmp_dir,tmp_file);
-			} else {
-				printf("not find next file\n");
-			}
-		} else {
-			printf("have no dir\n");
-			ret = false;
+	if (!__this->fs) {
+		if (!dev_manager_get_total(1)) {
+			return false;
 		}
 
-		if (__this->fs) {
-            fscan_release(__this->fs);
-            __this->fs = NULL;
-        }
+		void *dev = dev_manager_find_active(1);
+		if (!dev) {
+			printf("no dev \n");
+			return false;
+		}
+		__this->fs = fscan(dev_manager_get_root_path(dev), RECODER_SCAN_PARAM, 9);
 
-        if (__this) {
-            free(__this);
-            __this = NULL;
-        }
+		printf(">>> dir number=%d \n", __this->fs->file_number);
+		__this->cur_total = __this->fs->file_number + 1;
+	}
+
+	printf("dir cur_total: %d\n", __this->cur_total);
+
+	return true;
+}
+
+int get_recoder_file_path(u8 *tmp_dir, u8 *tmp_file)
+{
+
+	bool ret = false;
+
+	if(__this->fs->file_number != 0) {
+
+		ret = file_get_next_file(tmp_dir, tmp_file);
+
+		if (ret) {
+			printf("find next file ok %s/%s\n", tmp_dir,tmp_file);
+		} else {
+			printf("not find next file\n");
+		}
+	} else {
+		printf("have no dir\n");
+		ret = false;
+	}
 
     return ret;
+}
+
+
+void release_all_fs_source(void)
+{
+
+	printf("release_all_fs_source \n");
+	if (__this->fs) {
+		fscan_release(__this->fs);
+		__this->fs = NULL;
+	}
+
+	if (__this) {
+		free(__this);
+		__this = NULL;
+	}
+
 }
 
 static int file_browse_onkey(void *ctr, struct element_key_event *e)

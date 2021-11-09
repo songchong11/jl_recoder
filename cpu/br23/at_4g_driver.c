@@ -72,6 +72,9 @@ void module_power_off(void)
 
 u8 tmp_dir_name[10];
 u8 tmp_file_name[10];
+extern bool scan_sd_card_before_get_path(void);
+extern void release_all_fs_source(void);
+int rename_file_when_send_over(FILE* fs, char *file_name);
 
 static void at_4g_task_handle(void *arg)
 {
@@ -109,15 +112,23 @@ static void at_4g_task_handle(void *arg)
 					}
 					printf("gsm enter into access mode success\n");
 
-					check_config_file();
+					//check_config_file();
+					ret = scan_sd_card_before_get_path();
 
-					os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GET_NEXT_FILE);
+					if (ret)
+						os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GET_NEXT_FILE);
+					else
+						os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SEND_FILE_OVER);
+
 	                break;
 
 				case APP_USER_MSG_GET_NEXT_FILE:
 					printf("APP_USER_MSG_GET_NEXT_FILE");
 
-					check_config_file();
+					memset(tmp_dir_name, 0x00, sizeof(tmp_dir_name));
+					memset(tmp_file_name, 0x00, sizeof(tmp_file_name));
+
+					//check_config_file();
 					ret = get_recoder_file_path(tmp_dir_name, tmp_file_name);
 
 					if (ret) {
@@ -134,12 +145,21 @@ static void at_4g_task_handle(void *arg)
 					break;
 
 				case APP_USER_MSG_STOP_SEND_FILE_TO_AT:
+					release_all_fs_source();
+					memset(tmp_dir_name, 0x00, sizeof(tmp_dir_name));
+					memset(tmp_file_name, 0x00, sizeof(tmp_file_name));
+
 					printf("user stop send file, close 4G module\n");
 					/*power off 4g module */
 					//clsoe_tcp_link();
 					//module_power_off();
 					break;
 				case APP_USER_MSG_SEND_FILE_OVER:
+
+					release_all_fs_source();
+					memset(tmp_dir_name, 0x00, sizeof(tmp_dir_name));
+					memset(tmp_file_name, 0x00, sizeof(tmp_file_name));
+
 					printf("send file over, close 4G module\n");
 					/*power off 4g module */
 					//clsoe_tcp_link();
@@ -208,17 +228,20 @@ void file_read_and_send(void *priv)
 		gsm_send_buffer(read_buffer, ret);//send last packet
 
 		printf("send over, close file!!!\r\n");
-		fclose(read_p);
+		//fclose(read_p);
 		led_green_off();
 		printf("send a msg to get next file\r\n");
 
-		ret = write_config_file_when_send_over(tmp_dir_name, tmp_file_name);
-		if (!ret) {
+		//ret = write_config_file_when_send_over(tmp_dir_name, tmp_file_name);
+		ret = rename_file_when_send_over(read_p, tmp_file_name);
+		if (ret) {
 			os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GET_NEXT_FILE);
-
 		} else {
+			printf("rename fail, stop send\n");
 			os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SEND_FILE_OVER);
 		}
+
+		fclose(read_p);
 	}
 
 }
@@ -324,6 +347,46 @@ int write_config_file_when_send_over(char *dir, char *file)
 	return val;
 }
 
+int rename_file_when_send_over(FILE* fs, char *file_name)
+{
+	//u8 tmp_path[40];
+	char rename[15] = {0};
+	//FILE* fb = NULL;
+	int ret;
+	int result;
+
+	sprintf(rename, "%s%s", "s", &file_name[1]);
+
+	printf("new name is %s\n", rename);
+
+
+	//sprintf(tmp_path, "%s%s/%s", "storage/sd0/C/",dir_name, file_name);	
+
+	//printf("rename path:%s\n", tmp_path);
+
+	//fb = fopen(tmp_path,"r");
+	if (fs) {
+		
+		printf("open file successd\r\n");
+
+		ret = frename(fs, rename);
+		if (ret) {
+			printf("rename fail\n");
+			ret = false;
+		} else {
+			printf("rename ok\n");
+			ret = true;
+		}
+
+	} else {
+		printf("open file error\r\n");
+		ret = false;
+	}
+
+	//fclose(fb);
+
+	return ret;
+}
 
 //----------------------------------------------------------
 
