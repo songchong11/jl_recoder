@@ -1047,18 +1047,21 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 				printf("dir is sended , continue\n");
 			}
 
-		}
+			 if (need_rename_dir) {
 
-		if (need_rename_dir) {
+				need_rename_dir = false;
+				rt = rename_dir_name(dir, tmp_dir_name);
 
-			need_rename_dir = false;
-			rt = rename_dir_name(dir, tmp_dir_name);
-		
-			if (rt) {
-				printf("rename dir successed\n");
-			} else {
-				printf("rename dir fail\n");
+				if (rt) {
+					printf("rename dir successed\n");
+				} else {
+					printf("rename dir fail\n");
+				}
+
 			}
+
+			fclose(dir);
+
 		}
 
     }
@@ -1073,7 +1076,7 @@ int rename_dir_name(FILE* fs, char *dir_name)
 	char rename[15] = {0};
 	int ret;
 
-	sprintf(rename, "%s%s", "ss", dir_name);
+	sprintf(rename, "%s%s", "ss", &dir_name[2]);
 
 	printf("new dir name is %s\n", rename);
 

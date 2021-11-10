@@ -107,7 +107,7 @@ static void file_write_task_handle(void *arg)
 					printf("path:%s\n", file_path);
 					#endif
 
-					sprintf(year_month_day, "%d%02d%02d", (g_time.year  & 0xff), g_time.month, g_time.day);
+					sprintf(year_month_day, "%d%02d%02d", g_time.year, g_time.month, g_time.day);
 					printf("year_month_day:%s\n", year_month_day);
 
 					sprintf(hour_min_sec, "%02d%02d%02d", g_time.hour, g_time.min, g_time.sec);
