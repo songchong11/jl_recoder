@@ -247,6 +247,8 @@ static void poweroff_app_start()
     }
 }
 
+void module_power_off(void);
+
 //*----------------------------------------------------------------------------*/
 /**@brief   poweroff 主任务
   @param    无
@@ -259,6 +261,10 @@ void app_poweroff_task()
     int res;
     int msg[32];
     poweroff_app_start();
+
+	printf("power off task, module_power_off \n");
+	module_power_off();
+
     while (1) {
         app_task_get_msg(msg, ARRAY_SIZE(msg), 1);
 
