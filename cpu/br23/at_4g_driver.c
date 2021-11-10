@@ -10,7 +10,7 @@
 
 
 #define MODULE_PWR_GPIO		IO_PORTB_03
-#define SIM_CARD_TYPE	CMNET
+#define SIM_CARD_TYPE	CTNET//CMNET
 
 enum {
     KEY_USER_DEAL_POST = 0,
@@ -434,6 +434,30 @@ bool file_read_from_sd_card(u8 *dir, u8 *file_name)
 }
 
 
+
+
+//====startdata====年月日时分秒===设备号===文件大小===电量===内存总大小===内存使用量===内存剩余量===文件名称===路径
+//====enddata====
+#if 0
+void send_the_start_packet(void)
+{
+	u8 start[320];
+	u8 year_month_day[14] = {0};
+	struct sys_time _time;
+
+
+	get_sys_time(&_time);20211100 002222
+
+	sprintf(year_month_day, "%d%02d%02d", _time.year, _time.month, _time.day);
+	//printf("year_month_day:%s\n", year_month_day);
+
+	sprintf(start, "%s%d%02d%02d%02d%02d%02d%s", \
+							"====startdata====", \
+			_time.year, _time.month, _time.day, _time.hour, _time.min, _time.sec \
+			"====",)
+
+}
+#endif
 //////////////////////////////////////////////////////////////////////////////////////
 static uint8_t MaxMessAdd=50;
 
@@ -671,7 +695,7 @@ uint8_t gsm_init_to_access_mode(void)
 		while(gsm_cmd("AT+CGDCONT=1,\"IP\",\"3GNET\"\r","OK", 8000) != GSM_TRUE)// 设置激活时APN。联通
 #endif
 #endif
-	while(gsm_cmd("AT+CGDCONT=1,\"IP\",\"CMNET\"\r","OK", 8000) != GSM_TRUE)// 设置激活时APN。移动
+	while(gsm_cmd("AT+CGDCONT=1,\"IP\",\"CTNET\"\r","OK", 8000) != GSM_TRUE)// 设置激活时APN。移动
 
 	{
 		printf("\r\n AT+CGDCONT= not replay AT OK, retry %d\r\n", retry);
@@ -756,7 +780,7 @@ uint8_t gsm_init_to_access_mode(void)
 	while(gsm_cmd("AT+MIPCALL=1,\"TGNET\"\r","+MIPCALL", 1000 * 150) != GSM_TRUE)// 链接TCP
 #endif
 #endif
-	while(gsm_cmd("AT+MIPCALL=1,\"CMNET\"\r","+MIPCALL", 1000 * 150) != GSM_TRUE)// 链接TCP
+	while(gsm_cmd("AT+MIPCALL=1,\"CTNET\"\r","+MIPCALL", 1000 * 150) != GSM_TRUE)// 链接TCP
 
 	{
 		printf("\r\n AT+MIPCALL= not replay AT OK, retry %d\r\n", retry);
