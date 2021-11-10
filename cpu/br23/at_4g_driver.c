@@ -98,7 +98,7 @@ static void at_4g_task_handle(void *arg)
 					/*power on 4g module and send file to at*/
 					if (module_status == POWER_OFF) {
 
-					#if 0
+					#if 1
 						module_power_on();
 						while(gsm_init_to_access_mode() == GSM_FALSE){
 							retry++;
@@ -112,7 +112,6 @@ static void at_4g_task_handle(void *arg)
 					}
 					printf("gsm enter into access mode success\n");
 
-					//check_config_file();
 					ret = scan_sd_card_before_get_path();
 
 					if (ret)
@@ -128,7 +127,6 @@ static void at_4g_task_handle(void *arg)
 					memset(tmp_dir_name, 0x00, sizeof(tmp_dir_name));
 					memset(tmp_file_name, 0x00, sizeof(tmp_file_name));
 
-					//check_config_file();
 					ret = get_recoder_file_path(tmp_dir_name, tmp_file_name);
 
 					if (ret) {
@@ -151,8 +149,8 @@ static void at_4g_task_handle(void *arg)
 
 					printf("user stop send file, close 4G module\n");
 					/*power off 4g module */
-					//clsoe_tcp_link();
-					//module_power_off();
+					clsoe_tcp_link();
+					module_power_off();
 					break;
 				case APP_USER_MSG_SEND_FILE_OVER:
 
@@ -162,9 +160,9 @@ static void at_4g_task_handle(void *arg)
 
 					printf("send file over, close 4G module\n");
 					/*power off 4g module */
-					//clsoe_tcp_link();
-					//module_power_off();
-					
+					clsoe_tcp_link();
+					module_power_off();
+
 					break;
 
 	            default:
