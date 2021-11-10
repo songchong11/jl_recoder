@@ -121,12 +121,7 @@ static void at_4g_task_handle(void *arg)
 					}
 					printf("gsm enter into access mode success\n");
 
-					ret = scan_sd_card_before_get_path();
-
-					if (ret)
-						os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GET_NEXT_FILE);
-					else
-						os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SEND_FILE_OVER);
+					os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GET_NEXT_FILE);
 
 	                break;
 
@@ -136,18 +131,27 @@ static void at_4g_task_handle(void *arg)
 					memset(tmp_dir_name, 0x00, sizeof(tmp_dir_name));
 					memset(tmp_file_name, 0x00, sizeof(tmp_file_name));
 
-					ret = get_recoder_file_path(tmp_dir_name, tmp_file_name);
+					ret = scan_sd_card_before_get_path();
 
 					if (ret) {
 
-						printf("find a file to send %s/%s", tmp_dir_name, tmp_file_name);
+						ret = get_recoder_file_path(tmp_dir_name, tmp_file_name);
 
-						file_read_from_sd_card(tmp_dir_name, tmp_file_name);
+						if (ret) {
 
-					} else {
-						printf("no file to send \n");
+							printf("find a file to send %s/%s", tmp_dir_name, tmp_file_name);
+
+							file_read_from_sd_card(tmp_dir_name, tmp_file_name);
+
+						} else {
+							printf("no file to send \n");
+							os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SEND_FILE_OVER);
+						}
+
+					} else
 						os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SEND_FILE_OVER);
-					}
+
+
 
 					break;
 
@@ -242,13 +246,16 @@ void file_read_and_send(void *priv)
 		//ret = write_config_file_when_send_over(tmp_dir_name, tmp_file_name);
 		ret = rename_file_when_send_over(read_p, tmp_file_name);
 		if (ret) {
+			fclose(read_p);
+			release_all_fs_source();
 			os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GET_NEXT_FILE);
 		} else {
+			fclose(read_p);
 			printf("rename fail, stop send\n");
 			os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SEND_FILE_OVER);
 		}
 
-		fclose(read_p);
+
 	}
 
 }
