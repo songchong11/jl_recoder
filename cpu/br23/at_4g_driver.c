@@ -46,28 +46,37 @@ void module_4g_gpio_init(void)
 
 void module_power_on(void)
 {
-	printf("4g module power on\r\n");
-	gpio_set_output_value(MODULE_PWR_GPIO, 1);
-	led_green_on();
-	delay_2ms(1500);//need more over 2s
-	gpio_set_output_value(MODULE_PWR_GPIO, 0);
-	led_green_off();
+	if (module_status == POWER_OFF) {
 
-	delay_2ms(1500);//delay 3s
+		printf("4g module power on\r\n");
 
-	module_status = POWER_ON;
+		gpio_set_output_value(MODULE_PWR_GPIO, 1);
+		led_green_on();
+		delay_2ms(1500);//need more over 2s
+		gpio_set_output_value(MODULE_PWR_GPIO, 0);
+		led_green_off();
+
+		delay_2ms(1500);//delay 3s
+
+		module_status = POWER_ON;
+	}
 }
 
 void module_power_off(void)
 {
-	printf("4g module power off\r\n");
-	gpio_set_output_value(MODULE_PWR_GPIO, 1);
-	led_red_on();
-	delay_2ms(2000);//need more over 3.1s
-	gpio_set_output_value(MODULE_PWR_GPIO, 0);
-	led_red_off();
 
-	module_status = POWER_OFF;
+	if (module_status == POWER_ON) {
+
+		printf("4g module power off\r\n");
+		gpio_set_output_value(MODULE_PWR_GPIO, 1);
+		led_red_on();
+		delay_2ms(2000);//need more over 3.1s
+		gpio_set_output_value(MODULE_PWR_GPIO, 0);
+		led_red_off();
+
+		module_status = POWER_OFF;
+	}
+
 }
 
 u8 tmp_dir_name[10];
