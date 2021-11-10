@@ -77,8 +77,8 @@ void bes_power_off(void)// TODO:check
 extern u32 rx_total;
 void bes_start_recoder(void)
 {
-	//bes_power_on();
-	//delay_2ms(100);
+	bes_power_on();
+	delay_2ms(100);
 	printf("bes_start_recoder\r\n");
 	gpio_set_output_value(BES_RECODER_GPIO, 0);
 	rx_total = 0;
