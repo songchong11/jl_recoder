@@ -81,6 +81,8 @@ void module_power_off(void)
 
 u8 tmp_dir_name[10];
 u8 tmp_file_name[10];
+extern bool send_pcm_state;
+
 extern bool scan_sd_card_before_get_path(void);
 extern void release_all_fs_source(void);
 int rename_file_when_send_over(FILE* fs, char *file_name);
@@ -157,6 +159,8 @@ static void at_4g_task_handle(void *arg)
 
 				case APP_USER_MSG_STOP_SEND_FILE_TO_AT:
 					release_all_fs_source();
+
+					send_pcm_state = false;
 					memset(tmp_dir_name, 0x00, sizeof(tmp_dir_name));
 					memset(tmp_file_name, 0x00, sizeof(tmp_file_name));
 
@@ -168,6 +172,8 @@ static void at_4g_task_handle(void *arg)
 				case APP_USER_MSG_SEND_FILE_OVER:
 
 					release_all_fs_source();
+
+				
 					memset(tmp_dir_name, 0x00, sizeof(tmp_dir_name));
 					memset(tmp_file_name, 0x00, sizeof(tmp_file_name));
 
@@ -239,11 +245,13 @@ void file_read_and_send(void *priv)
 		gsm_send_buffer(read_buffer, ret);//send last packet
 
 		printf("send over, close file!!!\r\n");
-		//fclose(read_p);
+
+		send_end_packet();
+
 		led_green_off();
 		printf("send a msg to get next file\r\n");
 
-		//ret = write_config_file_when_send_over(tmp_dir_name, tmp_file_name);
+		delay_2ms(200);
 		ret = rename_file_when_send_over(read_p, tmp_file_name);
 		if (ret) {
 			fclose(read_p);
@@ -251,6 +259,7 @@ void file_read_and_send(void *priv)
 			os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GET_NEXT_FILE);
 		} else {
 			fclose(read_p);
+			release_all_fs_source();
 			printf("rename fail, stop send\n");
 			os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SEND_FILE_OVER);
 		}
@@ -372,7 +381,7 @@ int rename_file_when_send_over(FILE* fs, char *file_name)
 	printf("new name is %s\n", rename);
 
 	if (fs) {
-		
+
 		printf("open file successd\r\n");
 
 		ret = frename(fs, rename);
@@ -394,46 +403,25 @@ int rename_file_when_send_over(FILE* fs, char *file_name)
 
 //----------------------------------------------------------
 
-#if 0
-void file_read_from_sd_card(void)
-{
-
-
-
-	#if 1
-	//fp = fopen("storage/sd0/C/20211130/231521.MP3","rb");
-	//fp = fopen("storage/sd0/C/MLtest01.pcm","rb");
-
-	if (fp)
-		printf("open file successd\r\n");
-	else
-		printf("open file error\r\n");
-	//fseek(fp,0,SEEK_END);
-
-	if (file_send_timer == 0) {
-		packet_num = 0;
-		file_send_timer = sys_timer_add(NULL, file_read_and_send, 30);
-	}
-
-	#endif
-}
-
-#endif
 
 static FILE *fp = NULL;
 bool file_read_from_sd_card(u8 *dir, u8 *file_name)
 {
 	u8 tmp_path[40];
 
-	sprintf(tmp_path, "%s%s/%s", "storage/sd0/C/",dir, file_name);	
+	sprintf(tmp_path, "%s%s/%s", "storage/sd0/C/",dir, file_name);
 
 	printf("read path:%s\n", tmp_path);
 
 	//fp = fopen("storage/sd0/C/20211130/231521.MP3","rb");
 	fp = fopen(tmp_path,"rb");
 
-	if (fp)
-		printf("open file successd\r\n");
+	if (fp) {
+
+		printf("open file successd, send the start packet\n");
+		send_the_start_packet(file_name, dir);
+	}
+
 	else {
 		printf("open file error\r\n");
 		return false;
@@ -454,23 +442,56 @@ bool file_read_from_sd_card(u8 *dir, u8 *file_name)
 
 //====startdata====年月日时分秒===设备号===文件大小===电量===内存总大小===内存使用量===内存剩余量===文件名称===路径
 //====enddata====
-#if 0
-void send_the_start_packet(void)
+#if 1 //sn:867366051072616
+extern void get_sys_time(struct sys_time *time);
+
+void send_the_start_packet(char * filename, char* dir_name)
 {
 	u8 start[320];
 	u8 year_month_day[14] = {0};
 	struct sys_time _time;
+	u8 imei[16] = "123456789abcdef\0";
+	u32 file_size = 0x3592;
+	u8 battery = 0x64;
+	u32 mem_size = 32*1024;
+	u32 mem_use = 16*1024;
+	u32 mem_left = 16*1024;
+	u8 path[30];
 
+	sprintf(path, "%s/%s", dir_name, filename);
+	printf("path:%s\n", path);
 
-	get_sys_time(&_time);20211100 002222
+	get_sys_time(&_time);
 
 	sprintf(year_month_day, "%d%02d%02d", _time.year, _time.month, _time.day);
-	//printf("year_month_day:%s\n", year_month_day);
+	printf("year_month_day:%s\n", year_month_day);
 
-	sprintf(start, "%s%d%02d%02d%02d%02d%02d%s", \
+	sprintf(start, "%s%d%02d%02d%02d%02d%02d%s%s%s%x%s%x%s%x%s%x%s%x%s%s%s%s%s", \
 							"====startdata====", \
-			_time.year, _time.month, _time.day, _time.hour, _time.min, _time.sec \
-			"====",)
+			_time.year, _time.month, _time.day, _time.hour, _time.min, _time.sec, \
+			"===", imei, "===", file_size,  "===", battery, "===", mem_size, \
+			"===", mem_use, "===", mem_left, "===", filename, "===", path, "====enddata====");
+
+	printf("\n");
+
+	printf("%s\n", start);
+
+	packet_num++;
+	printf("sending %d\r\n", packet_num);
+	gsm_send_buffer(start, READ_LEN);
+
+}
+
+void send_end_packet(void)
+{
+	u8 data[320];
+	sprintf(data, "%s", "====end====");
+
+	packet_num++;
+	printf("sending %d\r\n", packet_num);
+	printf("%s\n", data);
+
+	gsm_send_buffer(data, sizeof(data));
 
 }
 #endif
@@ -699,7 +720,19 @@ uint8_t gsm_init_to_access_mode(void)
 			goto sms_failure;
 		}
 	}
+#if 0  // TODO: get the sn
+	GSM_DELAY(500);
+	retry = 0;
+	while(gsm_cmd("AT+GSN?\r","OK", 1000) != GSM_TRUE)//查询SN
+	{
+		printf("\r\n AT+GSN not replay OK, retry %d\r\n", retry);
+		if(++retry > 90) {
+			printf("\r\n GET GSN ERROR\r\n");
 
+			goto sms_failure;
+		}
+	}
+#endif
 	GSM_DELAY(500);
 	retry = 0;
 #if 0
@@ -811,7 +844,8 @@ uint8_t gsm_init_to_access_mode(void)
 
 	GSM_DELAY(500);
 	retry = 0;
-	while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9999,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
+	//while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9999,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
+	while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
 	{
 		printf("\r\n AT+MIPODM= not replay AT OK, retry %d\r\n", retry);
 
