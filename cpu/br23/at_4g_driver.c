@@ -452,6 +452,7 @@ bool file_read_from_sd_card(u8 *dir, u8 *file_name)
 //====enddata====
 #if 1 //sn:867366051072616
 extern void get_sys_time(struct sys_time *time);
+extern u8 get_vbat_percent(void);
 
 void send_the_start_packet(char * filename, char* dir_name, u32 size)
 {
@@ -460,13 +461,15 @@ void send_the_start_packet(char * filename, char* dir_name, u32 size)
 	struct sys_time _time;
 	u8 imei[16] = "123456789abcdef\0";
 	u32 file_size;
-	u8 battery = 0x64;
+	u8 battery;
 	u32 mem_size = 32*1024;
 	u32 mem_use = 16*1024;
 	u32 mem_left = 16*1024;
 	u8 path[30];
 
 	file_size = size;
+
+	battery = get_vbat_percent();
 
 	sprintf(path, "%s/%s", dir_name, filename);
 	printf("path:%s\n", path);

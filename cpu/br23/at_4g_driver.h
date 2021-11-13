@@ -123,6 +123,6 @@ bool file_read_from_sd_card(u8 *dir, u8 *file_name);
 void module_4g_gpio_init(void);
 int write_config_file_when_send_over(char *dir, char *file);
 void send_end_packet(void);
-void send_the_start_packet(char * filename, char* dir_name);
+void send_the_start_packet(char * filename, char* dir_name, u32 size);
 
 #endif
