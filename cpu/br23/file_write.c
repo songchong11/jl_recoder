@@ -129,8 +129,6 @@ static void file_write_task_handle(void *arg)
 						}
 					}
 
-
-					led_blue_on();
 					memset(file_path, 0, sizeof(file_path));
 
 					bes_start_recoder();
@@ -144,7 +142,6 @@ static void file_write_task_handle(void *arg)
 							fclose(test_file);
 							test_file = NULL;
 						}
-						led_blue_off();
 						bes_stop_recoder();
 					break;
 	            default:

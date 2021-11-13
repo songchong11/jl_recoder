@@ -1,5 +1,6 @@
 #include "includes.h"
 #include "misc_driver.h"
+#include "led_driver.h"
 
 #define BES_PWR_GPIO	IO_PORTA_12
 #define BES_RECODER_GPIO	IO_PORTB_07
@@ -77,7 +78,7 @@ void bes_power_on(void)
 {
 	printf("bes_power_on\r\n");
 	gpio_set_output_value(BES_PWR_GPIO, 1);
-	delay_2ms(600);
+	delay_2ms(500);
 	gpio_set_output_value(BES_PWR_GPIO, 0);
 }
 
@@ -94,16 +95,18 @@ extern u32 rx_total;
 void bes_start_recoder(void)
 {
 	bes_power_on();
-	delay_2ms(100);
+	delay_2ms(30);
 	printf("bes_start_recoder\r\n");
 	gpio_set_output_value(BES_RECODER_GPIO, 0);
 	rx_total = 0;
+	led_blue_on();
 }
 
 void bes_stop_recoder(void)
 {
 	printf("bes_stop_recoder\r\n");
 	gpio_set_output_value(BES_RECODER_GPIO, 1);
+	led_blue_off();
 }
 
 void check_charge_usb_status(void *priv)
