@@ -9,6 +9,9 @@
 #define SYSOFF_GPIO		IO_PORTC_02
 #define EN01_GPIO		IO_PORTC_01
 #define EN02_GPIO		IO_PORTC_00
+#define USB_DECT		IO_PORTA_09
+
+int usb_check_timer;
 
 void misc_driver_init(void)
 {
@@ -53,6 +56,19 @@ void misc_driver_init(void)
 	gpio_set_direction(CE_GPIO, 0);
 	gpio_set_output_value(CE_GPIO, 1);
 
+
+	gpio_direction_input(USB_DECT);
+	gpio_set_pull_down(USB_DECT, 0);
+	gpio_set_pull_up(USB_DECT, 0);
+	gpio_set_die(USB_DECT, 1);
+
+	// add a timer to check the usb plug
+	printf("start a timer to check usb plug in\n");
+
+	if (usb_check_timer == 0) {
+		usb_check_timer = sys_timer_add(NULL, check_charge_usb_status, 100);
+	}
+
 	bes_power_on();
 
 }
@@ -88,6 +104,28 @@ void bes_stop_recoder(void)
 {
 	printf("bes_stop_recoder\r\n");
 	gpio_set_output_value(BES_RECODER_GPIO, 1);
+}
+
+void check_charge_usb_status(void *priv)
+{
+	static int pre_status = 0;
+
+	int ret = gpio_read(USB_DECT);
+
+	if (ret != pre_status) {
+
+		if (ret == 1) {
+			printf("usb charge insert\n");
+			gpio_set_output_value(SYSOFF_GPIO, 1);
+
+		} else {
+			printf("usb charge remove\n");
+			gpio_set_output_value(SYSOFF_GPIO, 0);
+		}
+	}
+
+	pre_status = ret;
+
 }
 
 /*****************************************************************************/
