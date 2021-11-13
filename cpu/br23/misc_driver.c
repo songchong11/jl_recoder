@@ -86,7 +86,7 @@ void bes_power_off(void)// TODO:check
 {
 	printf("bes_power_off\r\n");
 	gpio_set_output_value(BES_PWR_GPIO, 1);
-	delay_2ms(40);
+	delay_2ms(500);
 	gpio_set_output_value(BES_PWR_GPIO, 0);
 
 }
@@ -130,6 +130,7 @@ void check_charge_usb_status(void *priv)
 			//gpio_set_output_value(SYSOFF_GPIO, 0);
 			gpio_set_output_value(EN01_GPIO, 1); //standby mode
 			gpio_set_output_value(EN02_GPIO, 1);
+
 		}
 	}
 

@@ -119,7 +119,7 @@ static void uart_u_task_handle(void *arg)
 
 				printf("%d", rx_total);
 
-				rx_total += uart_rxcnt - 4;
+				rx_total++;
 #if 0
 				for (int i = 0; i < uart_rxcnt; i++) {
 					my_put_u8hex(uart_rxbuf[i]);
