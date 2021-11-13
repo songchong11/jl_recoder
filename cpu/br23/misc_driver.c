@@ -116,11 +116,17 @@ void check_charge_usb_status(void *priv)
 
 		if (ret == 1) {
 			printf("usb charge insert\n");
-			gpio_set_output_value(SYSOFF_GPIO, 1);
+			//gpio_set_output_value(SYSOFF_GPIO, 1);
+			gpio_set_output_value(CE_GPIO, 0);//CE low start charing
+			gpio_set_output_value(EN01_GPIO, 1); //500mA
+			gpio_set_output_value(EN02_GPIO, 0);
 
 		} else {
 			printf("usb charge remove\n");
-			gpio_set_output_value(SYSOFF_GPIO, 0);
+			gpio_set_output_value(CE_GPIO, 1);//CE high stop charing
+			//gpio_set_output_value(SYSOFF_GPIO, 0);
+			gpio_set_output_value(EN01_GPIO, 1); //standby mode
+			gpio_set_output_value(EN02_GPIO, 1);
 		}
 	}
 
