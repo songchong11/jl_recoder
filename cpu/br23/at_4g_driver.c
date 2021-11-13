@@ -427,7 +427,7 @@ bool file_read_from_sd_card(u8 *dir, u8 *file_name)
 		u32 file_len =	flen(fp);
 		printf("this file len = %x\n", file_len);
 
-		send_the_start_packet(file_name, dir);
+		send_the_start_packet(file_name, dir, file_len);
 	}
 
 	else {
@@ -453,18 +453,20 @@ bool file_read_from_sd_card(u8 *dir, u8 *file_name)
 #if 1 //sn:867366051072616
 extern void get_sys_time(struct sys_time *time);
 
-void send_the_start_packet(char * filename, char* dir_name)
+void send_the_start_packet(char * filename, char* dir_name, u32 size)
 {
 	u8 start[320];
 	u8 year_month_day[14] = {0};
 	struct sys_time _time;
 	u8 imei[16] = "123456789abcdef\0";
-	u32 file_size = 0x3592;
+	u32 file_size;
 	u8 battery = 0x64;
 	u32 mem_size = 32*1024;
 	u32 mem_use = 16*1024;
 	u32 mem_left = 16*1024;
 	u8 path[30];
+
+	file_size = size;
 
 	sprintf(path, "%s/%s", dir_name, filename);
 	printf("path:%s\n", path);
