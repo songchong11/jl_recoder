@@ -115,6 +115,8 @@ void check_charge_usb_status(void *priv)
 
 	int ret = gpio_read(USB_DECT);
 
+	wdt_clear();
+
 	if (ret != pre_status) {
 
 		if (ret == 1) {

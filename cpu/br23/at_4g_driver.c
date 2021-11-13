@@ -56,7 +56,9 @@ void module_power_on(void)
 		gpio_set_output_value(MODULE_PWR_GPIO, 0);
 		led_green_off();
 
+		wdt_clear();
 		delay_2ms(1500);//delay 3s
+		wdt_clear();
 
 		module_status = POWER_ON;
 	}
@@ -69,10 +71,12 @@ void module_power_off(void)
 
 		printf("4g module power off\r\n");
 		gpio_set_output_value(MODULE_PWR_GPIO, 1);
-		led_red_on();
+
+		wdt_clear();
 		delay_2ms(2000);//need more over 3.1s
+		wdt_clear();
 		gpio_set_output_value(MODULE_PWR_GPIO, 0);
-		led_red_off();
+		led_green_off();
 
 		module_status = POWER_OFF;
 	}
@@ -419,6 +423,10 @@ bool file_read_from_sd_card(u8 *dir, u8 *file_name)
 	if (fp) {
 
 		printf("open file successd, send the start packet\n");
+
+		u32 file_len =	flen(fp);
+		printf("this file len = %x\n", file_len);
+
 		send_the_start_packet(file_name, dir);
 	}
 
@@ -521,6 +529,7 @@ uint8_t gsm_cmd(char *cmd, char *reply, uint32_t waittime)
 
 		for (int i = 0; i < (waittime /1000); i++)
 		{
+			wdt_clear();
 			GSM_DELAY(1000);				 //延时
 			ret = gsm_cmd_check(reply);
 			if (ret == GSM_TRUE)
@@ -528,6 +537,7 @@ uint8_t gsm_cmd(char *cmd, char *reply, uint32_t waittime)
 		}
 	}
 
+	wdt_clear();
 	GSM_DELAY(1000);				 //延时
     return ret = gsm_cmd_check(reply);    //对接收数据进行处理
 }
@@ -673,6 +683,7 @@ uint8_t gsm_init_to_access_mode(void)
 		}
 	}
 
+	wdt_clear();
 	GSM_DELAY(500);
 	retry = 0;
 	while(gsm_cmd("ATE0\r","OK", 1000) != GSM_TRUE)// 关闭回显
@@ -684,6 +695,7 @@ uint8_t gsm_init_to_access_mode(void)
 		}
 	}
 
+	wdt_clear();
 	GSM_DELAY(500);
 	retry = 0;
 	while(gsm_cmd("AT+CFUN=1\r","OK", 1000) != GSM_TRUE)// 设置工作模式是正常工作模式
@@ -696,6 +708,7 @@ uint8_t gsm_init_to_access_mode(void)
 		}
 	}
 
+	wdt_clear();
 	GSM_DELAY(500);
 
 	retry = 0;
@@ -709,6 +722,7 @@ uint8_t gsm_init_to_access_mode(void)
 		}
 	}
 
+	wdt_clear();
 	GSM_DELAY(500);
 	retry = 0;
 	while(gsm_cmd("AT+CIMI\r","OK", 1000) != GSM_TRUE)//确认SIM卡可用
@@ -733,6 +747,7 @@ uint8_t gsm_init_to_access_mode(void)
 		}
 	}
 #endif
+	wdt_clear();
 	GSM_DELAY(500);
 	retry = 0;
 #if 0
@@ -755,6 +770,7 @@ uint8_t gsm_init_to_access_mode(void)
 		}
 	}
 
+	wdt_clear();
 	GSM_DELAY(500);
 	retry = 0;
 	while(gsm_cmd("AT+CSQ?\r","OK", 800) != GSM_TRUE)//查询信号值
@@ -769,7 +785,7 @@ uint8_t gsm_init_to_access_mode(void)
 		}
 	}
 
-
+	wdt_clear();
 	GSM_DELAY(500);
 	retry = 0;
 	while(gsm_cmd("AT+COPS?\r","OK", 800) != GSM_TRUE)//查询注册状态
@@ -781,6 +797,8 @@ uint8_t gsm_init_to_access_mode(void)
 			goto sms_failure;
 		}
 	}
+
+	wdt_clear();
 	GSM_DELAY(500);
 	retry = 0;
 	while(gsm_cmd("AT+CGREG?\r","OK", 800) != GSM_TRUE)//确认PS数据业务可用
@@ -792,6 +810,8 @@ uint8_t gsm_init_to_access_mode(void)
 			goto sms_failure;
 		}
 	}
+
+	wdt_clear();
 	GSM_DELAY(500);
 	retry = 0;
 	while(gsm_cmd("AT+CEREG?\r","OK", 800) != GSM_TRUE)//查询4G状态业务是否可用
@@ -817,6 +837,7 @@ uint8_t gsm_init_to_access_mode(void)
 	}
 	#endif
 
+	wdt_clear();
 	GSM_DELAY(500);
 	retry = 0;
 #if 0
@@ -841,7 +862,7 @@ uint8_t gsm_init_to_access_mode(void)
 		}
 	}
 
-
+	wdt_clear();
 	GSM_DELAY(500);
 	retry = 0;
 	//while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9999,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
@@ -880,6 +901,7 @@ int clsoe_tcp_link(void)
 
 	GSM_CLEAN_RX();                 //清空了接收缓冲区数据
 
+	wdt_clear();
 	GSM_DELAY(2000);//delay 2s
 
 	while(gsm_cmd("+++","OK", 800) != GSM_TRUE)// 设置接收到的数据为原始模式
@@ -908,6 +930,7 @@ int clsoe_tcp_link(void)
 		}
 	}
 #endif
+	wdt_clear();
 	GSM_DELAY(500);
 	retry = 0;
 	while(gsm_cmd("AT+MIPCLOSE=1\r","+MIPCLOSE: 1,0", 1000 * 30) != GSM_TRUE)//关闭会话
@@ -922,6 +945,7 @@ int clsoe_tcp_link(void)
 	}
 
 #if 1
+	wdt_clear();
 	GSM_DELAY(500);
 	retry = 0;
 	while(gsm_cmd("AT+MIPCALL=0\r","+MIPCALL: 0", 1000 * 30) != GSM_TRUE)//释放IP

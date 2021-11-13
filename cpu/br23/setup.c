@@ -190,7 +190,7 @@ void setup_arch()
     memset(stack_magic0, 0x5a, sizeof(stack_magic0));
 
 
-    wdt_init(WDT_4S); //removed by sc
+    wdt_init(WDT_8S); //removed by sc
     /* wdt_close(); */
 
 #if (AUDIO_OUTPUT_WAY == AUDIO_OUTPUT_WAY_FM)
