@@ -114,7 +114,7 @@ static void uart_at_task_handle(void *arg)
         uart_rxcnt = uart_bus->read(uart_rxbuf, sizeof(uart_rxbuf), 0);
 
 		//printf("----------------------------------uart_rxcnt %d\n", uart_rxcnt);
-        if (uart_rxcnt > 5) { //some time , it maybe received 1 byte data, it no use
+        if (uart_rxcnt >= 4) { //some time , it maybe received 1 byte data, it no use
 
 			received_len = uart_rxcnt;
 			memcpy(received_buffer, uart_rxbuf, received_len);

@@ -912,12 +912,13 @@ int clsoe_tcp_link(void)
 
 	wdt_clear();
 	GSM_DELAY(2000);//delay 2s
+	wdt_clear();
 
-	while(gsm_cmd("+++","OK", 800) != GSM_TRUE)//
+	while(gsm_cmd("+++","OK", 1000) != GSM_TRUE)//
 	{
 		printf("\r\n +++ not replay AT OK, retry %d\r\n", retry);
 
-		if(++retry > 200) {
+		if(++retry > 90) {
 			printf("\r\n模块响应测试不正常！！\r\n");
 
 			goto sms_failure;
