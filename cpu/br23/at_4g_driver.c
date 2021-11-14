@@ -54,7 +54,6 @@ void module_power_on(void)
 		led_green_on();
 		delay_2ms(1500);//need more over 2s
 		gpio_set_output_value(MODULE_PWR_GPIO, 0);
-		led_green_off();
 
 		wdt_clear();
 		delay_2ms(1500);//delay 3s
@@ -86,6 +85,7 @@ void module_power_off(void)
 u8 tmp_dir_name[10];
 u8 tmp_file_name[10];
 extern bool send_pcm_state;
+u8 gsn_str[30];
 
 extern bool scan_sd_card_before_get_path(void);
 extern void release_all_fs_source(void);
@@ -162,22 +162,11 @@ static void at_4g_task_handle(void *arg)
 					break;
 
 				case APP_USER_MSG_STOP_SEND_FILE_TO_AT:
-					release_all_fs_source();
-
-					send_pcm_state = false;
-					memset(tmp_dir_name, 0x00, sizeof(tmp_dir_name));
-					memset(tmp_file_name, 0x00, sizeof(tmp_file_name));
-
-					printf("user stop send file, close 4G module\n");
-					/*power off 4g module */
-					clsoe_tcp_link();
-					module_power_off();
-					break;
 				case APP_USER_MSG_SEND_FILE_OVER:
 
 					release_all_fs_source();
+					send_pcm_state = false;
 
-				
 					memset(tmp_dir_name, 0x00, sizeof(tmp_dir_name));
 					memset(tmp_file_name, 0x00, sizeof(tmp_file_name));
 
@@ -201,7 +190,6 @@ void at_4g_thread_init(void)
     printf("at_4g_thread_init\n");
 
 	os_task_create(at_4g_task_handle, NULL, 7, 512, 512, "at_4g_task");
-	//task_create(at_4g_task_handle,NULL, "at_4g_task");
 }
 
 
@@ -252,7 +240,6 @@ void file_read_and_send(void *priv)
 
 		send_end_packet();
 
-		led_green_off();
 		printf("send a msg to get next file\r\n");
 
 		delay_2ms(200);
@@ -280,7 +267,7 @@ char target_bp_file[20] = {0};
 bool have_target_dir = false;
 bool have_target_file = false;
 
-#if 1
+#if 0
 void check_config_file(void)
 {
 
@@ -334,7 +321,6 @@ void check_config_file(void)
 	fclose(config_file);
 	config_file = NULL;
 }
-#endif
 //-----------------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------------
@@ -373,6 +359,7 @@ int write_config_file_when_send_over(char *dir, char *file)
 
 	return val;
 }
+#endif
 
 int rename_file_when_send_over(FILE* fs, char *file_name)
 {
@@ -459,7 +446,7 @@ void send_the_start_packet(char * filename, char* dir_name, u32 size)
 	u8 start[320];
 	u8 year_month_day[14] = {0};
 	struct sys_time _time;
-	u8 imei[16] = "123456789abcdef\0";
+	//u8 imei[16] = "123456789abcdef\0";
 	u32 file_size;
 	u8 battery;
 	u32 mem_size = 32*1024;
@@ -482,7 +469,7 @@ void send_the_start_packet(char * filename, char* dir_name, u32 size)
 	sprintf(start, "%s%d%02d%02d%02d%02d%02d%s%s%s%x%s%x%s%x%s%x%s%x%s%s%s%s%s", \
 							"====startdata====", \
 			_time.year, _time.month, _time.day, _time.hour, _time.min, _time.sec, \
-			"===", imei, "===", file_size,  "===", battery, "===", mem_size, \
+			"===", gsn_str, "===", file_size,  "===", battery, "===", mem_size, \
 			"===", mem_use, "===", mem_left, "===", filename, "===", path, "====enddata====");
 
 	printf("\n");
@@ -554,16 +541,31 @@ uint8_t gsm_cmd_check(char *reply)
     uint8_t len;
     uint8_t n;
     uint8_t off;
-    char *redata;
+    u8 *redata;
 
 	//GSM_DEBUG_FUNC();
 
     redata = GSM_RX(len);   //接收数据
 
-	  *(redata+len) = '\0';
-	  GSM_DEBUG("Reply:%s",redata);
+#if 0
+	printf(" %p ++++++++++check len = %d\n", redata, len);
+	for (int i = 0; i < len; i++) {
 
-	  //GSM_DEBUG_ARRAY((uint8_t *)redata,len);
+		printf("%c", redata[i]);
+	}
+#endif
+
+	 *(redata+len) = '\0';
+	 GSM_DEBUG("Reply:%s",redata);
+
+	 //+GSN: "867366051072525"
+
+	 if (!memcmp("+GSN",  redata + 2, 4)) {//OD OA
+
+	 	memcpy(gsn_str, redata + 9, 15);
+		gsn_str[15] = '\0';
+		printf("get GSN : %s\n", gsn_str);
+	 }
 
     n = 0;
     off = 0;
@@ -691,6 +693,7 @@ uint8_t gsm_init_to_access_mode(void)
 	wdt_clear();
 	GSM_DELAY(500);
 	retry = 0;
+
 	while(gsm_cmd("ATE0\r","OK", 1000) != GSM_TRUE)// 关闭回显
 	{
 		printf("\r\n ATE0 not replay AT OK, retry %d\r\n", retry);
@@ -739,10 +742,11 @@ uint8_t gsm_init_to_access_mode(void)
 			goto sms_failure;
 		}
 	}
-#if 0  // TODO: get the sn
+
+	wdt_clear();
 	GSM_DELAY(500);
 	retry = 0;
-	while(gsm_cmd("AT+GSN?\r","OK", 1000) != GSM_TRUE)//查询SN
+	while(gsm_cmd("AT+GSN?\r","+GSN", 1000) != GSM_TRUE)//查询SN
 	{
 		printf("\r\n AT+GSN not replay OK, retry %d\r\n", retry);
 		if(++retry > 90) {
@@ -751,7 +755,7 @@ uint8_t gsm_init_to_access_mode(void)
 			goto sms_failure;
 		}
 	}
-#endif
+
 	wdt_clear();
 	GSM_DELAY(500);
 	retry = 0;
@@ -909,7 +913,7 @@ int clsoe_tcp_link(void)
 	wdt_clear();
 	GSM_DELAY(2000);//delay 2s
 
-	while(gsm_cmd("+++","OK", 800) != GSM_TRUE)// 设置接收到的数据为原始模式
+	while(gsm_cmd("+++","OK", 800) != GSM_TRUE)//
 	{
 		printf("\r\n +++ not replay AT OK, retry %d\r\n", retry);
 

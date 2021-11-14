@@ -101,6 +101,8 @@ SYS_EVENT_HANDLER(SYS_DEVICE_EVENT, uart_event_4g_at_handler, 0);
 
 static FILE *test_file = NULL;
 u32 uart_rxcnt = 0;
+static u32 received_len = 0;
+static u8 received_buffer[320];
 
 static void uart_at_task_handle(void *arg)
 {
@@ -110,14 +112,17 @@ static void uart_at_task_handle(void *arg)
     while (1) {
         //uart_bus->read()在尚未收到串口数据时会pend信号量，挂起task，直到UART_RX_PND或UART_RX_OT_PND中断发生，post信号量，唤醒task
         uart_rxcnt = uart_bus->read(uart_rxbuf, sizeof(uart_rxbuf), 0);
-        if (uart_rxcnt) {
-            for (int i = 0; i < uart_rxcnt; i++) {
-                my_put_u8hex(uart_rxbuf[i]);
-                if (i % 16 == 15) {
-                    putchar('\n');
-                }
-            }
+
+		//printf("----------------------------------uart_rxcnt %d\n", uart_rxcnt);
+        if (uart_rxcnt > 5) { //some time , it maybe received 1 byte data, it no use
+
+			received_len = uart_rxcnt;
+			memcpy(received_buffer, uart_rxbuf, received_len);
+
+            for (int i = 0; i < uart_rxcnt; i++)
+				printf("%c", uart_rxbuf[i]);
         }
+
     }
 }
 
@@ -268,16 +273,35 @@ static char *itoa(int value, char *string, int radix)
 //获取接收到的数据和长度
 char *get_rebuff(uint8_t *len)
 {
-    *len = uart_rxcnt;
-    return (char *)&uart_rxbuf;
+    //*len = uart_rxcnt;
+    //return (char *)&uart_rxbuf;
+
+	*len = received_len;
+
+#if 0
+	printf("get bufffer %p -------------------\n", received_buffer);
+
+	for (int i = 0; i < uart_rxcnt; i++) {
+		printf("%c", uart_rxbuf[i]);
+		//my_put_u8hex(uart_rxbuf[i]);
+		if (i % 16 == 15) {
+			putchar('\n');
+		}
+	}
+	printf("\n");
+#endif
+
+    return received_buffer;
 }
 
 void clean_rebuff(void)
 {
-	uint16_t i=UART_BUFF_SIZE+1;
+	//printf("clear rebuff\n");
     uart_rxcnt = 0;
-	while(i)
-		uart_rxbuf[--i]=0;
+	received_len = 0;
+
+	memset(uart_rxbuf, 0x00, sizeof(uart_rxbuf));
+	memset(received_buffer, 0x00, sizeof(received_buffer));
 }
 
 #endif
