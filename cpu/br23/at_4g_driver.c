@@ -8,6 +8,7 @@
 #include "led_driver.h"
 #include "stdlib.h"
 
+#define DEBUG_FILE_SYS	1
 
 #define MODULE_PWR_GPIO		IO_PORTB_03
 #define SIM_CARD_TYPE	CTNET//CMNET
@@ -29,6 +30,11 @@ enum {
 
 #define POWER_ON	1
 #define POWER_OFF	2
+
+int file_send_timer;
+extern void gsm_send_buffer(u8 *buf, int len);
+uint8_t read_buffer[320];
+#define READ_LEN	320
 
 static u8 module_status ;
 #if 1
@@ -90,7 +96,6 @@ u8 gsn_str[30];
 extern bool scan_sd_card_before_get_path(void);
 extern void release_all_fs_source(void);
 int rename_file_when_send_over(FILE* fs, char *file_name);
-
 static void at_4g_task_handle(void *arg)
 {
     int ret;
@@ -113,7 +118,7 @@ static void at_4g_task_handle(void *arg)
 					/*power on 4g module and send file to at*/
 					if (module_status == POWER_OFF) {
 
-					#if 1
+					#if DEBUG_FILE_SYS
 						module_power_on();
 						while(gsm_init_to_access_mode() == GSM_FALSE){
 							retry++;
@@ -164,6 +169,15 @@ static void at_4g_task_handle(void *arg)
 				case APP_USER_MSG_STOP_SEND_FILE_TO_AT:
 				case APP_USER_MSG_SEND_FILE_OVER:
 
+					sys_timer_del(file_send_timer);
+					file_send_timer = 0;
+
+					gsm_send_buffer(read_buffer, ret);//send last packet
+
+					printf("user active stop send!!!\r\n");
+
+					send_end_packet();
+
 					release_all_fs_source();
 					send_pcm_state = false;
 
@@ -171,10 +185,11 @@ static void at_4g_task_handle(void *arg)
 					memset(tmp_file_name, 0x00, sizeof(tmp_file_name));
 
 					printf("send file over, close 4G module\n");
+#if DEBUG_FILE_SYS
 					/*power off 4g module */
 					clsoe_tcp_link();
 					module_power_off();
-
+#endif
 					break;
 
 	            default:
@@ -202,10 +217,7 @@ void at_4g_task_del(void)
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////
-uint8_t read_buffer[320];
-#define READ_LEN	320
-int file_send_timer;
-extern void gsm_send_buffer(u8 *buf, int len);
+
 static u32 packet_num = 0;
 
 void file_read_and_send(void *priv)
@@ -267,99 +279,6 @@ char target_bp_file[20] = {0};
 bool have_target_dir = false;
 bool have_target_file = false;
 
-#if 0
-void check_config_file(void)
-{
-
-	char temp[100] = {0};
-
-	config_file =  fopen("storage/sd0/C/config.ini", "r");
-	if (!config_file) {
-		printf("Have no config files\n");
-		config_file =  fopen("storage/sd0/C/config.ini", "w+");
-		if (!config_file) {
-			printf("fopen config file faild!\n");
-		} else {
-			printf("fopen config file succed\r\n");
-		}
-	}
-
-	if (config_file) {
-		printf("config_file is exist\n");
-
-		fread(config_file, temp, sizeof(temp));
-
-		#if 1
-		for (int i = 0; i < 40; i++) {
-			printf("[%d]:%c %x", i, temp[i], temp[i]);
-		}
-		printf("\n");
-		#endif
-
-		memcpy(target_bp_dir, &temp[7], 8 + 1);
-		memcpy(target_bp_file, &temp[25], 10 + 1);
-
-		if(target_bp_dir[0] != 0x00 || target_bp_dir[1] != 0x00 || target_bp_dir[2] != 0x00) {
-			have_target_dir = true;
-			printf("have targe dir :%s\n", target_bp_dir);
-		} else {
-			have_target_dir = false;
-			printf("have no targe dir\n");
-		}
-
-		if(target_bp_file[7] == 'p' && target_bp_file[8] == 'c' && target_bp_file[9] == 'm') {
-			have_target_file = true;
-			printf("have targe file: %s\n", target_bp_file);
-		} else {
-			have_target_file = false;
-			printf("have no targe file\n");
-
-		}
-
-	}
-
-	fclose(config_file);
-	config_file = NULL;
-}
-//-----------------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------------
-
-int write_config_file_when_send_over(char *dir, char *file)
-{
-
-	char bp_data[40] = {0};
-	u8 val;
-
-	config_file =  fopen("storage/sd0/C/config.ini", "w+");
-
-	if (!config_file) {
-		printf("fopen config file faild!\n");
-		return -1;
-	} else {
-		printf("fopen config file succed\r\n");
-
-		sprintf(bp_data, "%s%s\r\n%s%s\r\n","bp_dir:", dir, "bp_file:",file);
-		printf("bp_data:%s\n", bp_data);
-
-		//fseek(config_file, 0, SEEK_SET);
-		int ret = fwrite(config_file, bp_data, 40);
-		if(ret != 40) {
-
-			printf("write config file fail %d\n", ret);
-			val = -1;
-		} else {
-			printf("write config file succed\n");
-			val = 0;
-		}
-	}
-
-	fclose(config_file);
-	config_file = NULL;
-
-	return val;
-}
-#endif
 
 int rename_file_when_send_over(FILE* fs, char *file_name)
 {
@@ -476,14 +395,16 @@ void send_the_start_packet(char * filename, char* dir_name, u32 size)
 
 	printf("%s\n", start);
 
+	int len = strlen(start);
+	printf("len = %d \n", len);
 	packet_num = 0;
-	gsm_send_buffer(start, READ_LEN);
+	gsm_send_buffer(start, len);
 
 }
 
 void send_end_packet(void)
 {
-	u8 data[320];
+	u8 data[12];
 	sprintf(data, "%s", "====end====");
 
 	packet_num = 0;
