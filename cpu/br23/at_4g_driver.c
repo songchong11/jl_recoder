@@ -226,7 +226,7 @@ void file_read_and_send(void *priv)
 
 	if(ret == READ_LEN) {
 		packet_num++;
-		printf("sending %d\r\n", packet_num);
+		printf("s%d", packet_num);
 		gsm_send_buffer(read_buffer, READ_LEN);
 
 	} else {
@@ -476,8 +476,7 @@ void send_the_start_packet(char * filename, char* dir_name, u32 size)
 
 	printf("%s\n", start);
 
-	packet_num++;
-	printf("sending %d\r\n", packet_num);
+	packet_num = 0;
 	gsm_send_buffer(start, READ_LEN);
 
 }
@@ -487,8 +486,7 @@ void send_end_packet(void)
 	u8 data[320];
 	sprintf(data, "%s", "====end====");
 
-	packet_num++;
-	printf("sending %d\r\n", packet_num);
+	packet_num = 0;
 	printf("%s\n", data);
 
 	gsm_send_buffer(data, sizeof(data));
