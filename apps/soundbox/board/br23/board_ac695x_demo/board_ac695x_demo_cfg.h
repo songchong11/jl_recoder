@@ -615,7 +615,7 @@ DAC硬件上的连接方式,可选的配置：
 //*********************************************************************************//
 #define TCFG_AUTO_SHUT_DOWN_TIME		    0   //没有蓝牙连接自动关机时间
 #define TCFG_SYS_LVD_EN						1   //电量检测使能
-#define TCFG_POWER_ON_NEED_KEY				0	  //是否需要按按键开机配置
+#define TCFG_POWER_ON_NEED_KEY				1	  //是否需要按按键开机配置
 #define TWFG_APP_POWERON_IGNORE_DEV         0//上电忽略挂载设备，0时不忽略，非0则n毫秒忽略
 
 #define TCFG_AUDIO_DEC_OUT_TASK				0	// 解码使用单独任务做输出
