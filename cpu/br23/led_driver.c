@@ -1,5 +1,6 @@
 #include "includes.h"
 #include "app_config.h"
+#include "led_driver.h"
 
 #define LED_R_GPIO		IO_PORTA_10
 #define LED_G_GPIO		IO_PORTA_08
@@ -71,5 +72,28 @@ void led_blink_time(int blink_gap_2ms, int blink_time)
 		led_red_off();
 	}
 }
+
+
+void led_power_on_show(void)
+{
+	printf("led_power_on_show \n");
+	led_blue_on();
+	wdt_clear();
+	delay_2ms(500 * 3);//3s
+	wdt_clear();
+	led_blue_off();
+}
+
+
+void led_power_off_show(void)
+{
+	led_green_on();
+	wdt_clear();
+	delay_2ms(500 * 3);//3s
+	wdt_clear();
+	led_green_off();
+}
+
+
 
 /*****************************************************************************/

@@ -57,7 +57,6 @@ void module_power_on(void)
 		printf("4g module power on\r\n");
 
 		gpio_set_output_value(MODULE_PWR_GPIO, 1);
-		led_green_on();
 		delay_2ms(1500);//need more over 2s
 		gpio_set_output_value(MODULE_PWR_GPIO, 0);
 
@@ -81,7 +80,6 @@ void module_power_off(void)
 		delay_2ms(2000);//need more over 3.1s
 		wdt_clear();
 		gpio_set_output_value(MODULE_PWR_GPIO, 0);
-		led_green_off();
 
 		module_status = POWER_OFF;
 	}
@@ -190,6 +188,7 @@ static void at_4g_task_handle(void *arg)
 					clsoe_tcp_link();
 					module_power_off();
 #endif
+					led_blue_off();
 					break;
 
 	            default:
@@ -230,9 +229,9 @@ void file_read_and_send(void *priv)
 	}
 
 	if(packet_num % 2)
-		led_green_off();
+		led_blue_off();
 	else
-		led_green_on();
+		led_blue_on();
 
 	int ret = fread(read_p, read_buffer, READ_LEN);
 
@@ -412,6 +411,7 @@ void send_end_packet(void)
 
 	gsm_send_buffer(data, sizeof(data));
 
+	led_blue_off();
 }
 #endif
 //////////////////////////////////////////////////////////////////////////////////////

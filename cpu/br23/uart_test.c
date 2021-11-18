@@ -3,6 +3,7 @@
 #include "system/event.h"
 #include "common/app_common.h"
 #include "lwrb.h"
+#include "led_driver.h"
 
 extern bool recoder_state;
 extern lwrb_t receive_buff;
@@ -99,6 +100,7 @@ SYS_EVENT_HANDLER(SYS_DEVICE_EVENT, uart_event_handler, 0);
 
 extern lwrb_t receive_buff;
 u32 rx_total = 0;
+u8 led_cnt;
 static void uart_u_task_handle(void *arg)
 {
 		const uart_bus_t *uart_bus = arg;
@@ -120,6 +122,17 @@ static void uart_u_task_handle(void *arg)
 				printf("%d", rx_total);
 
 				rx_total++;
+
+				if (led_cnt < 5)// bilnk green led when recoder
+					led_green_on();
+				else {
+					led_green_off();
+
+					if (led_cnt >= 10)
+						led_cnt = 0;
+				}
+
+				led_cnt++;
 #if 0
 				for (int i = 0; i < uart_rxcnt; i++) {
 					my_put_u8hex(uart_rxbuf[i]);

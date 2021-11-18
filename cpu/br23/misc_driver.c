@@ -99,14 +99,13 @@ void bes_start_recoder(void)
 	printf("bes_start_recoder\r\n");
 	gpio_set_output_value(BES_RECODER_GPIO, 0);
 	rx_total = 0;
-	led_blue_on();
 }
 
 void bes_stop_recoder(void)
 {
 	printf("bes_stop_recoder\r\n");
 	gpio_set_output_value(BES_RECODER_GPIO, 1);
-	led_blue_off();
+	led_green_off();
 }
 
 void check_charge_usb_status(void *priv)

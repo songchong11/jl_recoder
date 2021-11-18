@@ -543,7 +543,7 @@ void app_idle_task()
 
     idle_app_start();
 
-	led_red_on();
+	led_power_on_show();
 
     while (1) {
         app_task_get_msg(msg, ARRAY_SIZE(msg), 1);

@@ -28,6 +28,7 @@
 #include "user_cfg.h"
 #include "bt_tws.h"
 #include "bt.h"
+#include "led_driver.h"
 
 #define LOG_TAG_CONST       APP_ACTION
 #define LOG_TAG             "[APP_ACTION]"
@@ -264,6 +265,8 @@ void app_poweroff_task()
 
 	printf("power off task, module_power_off \n");
 	module_power_off();
+
+	led_power_off_show();
 
     while (1) {
         app_task_get_msg(msg, ARRAY_SIZE(msg), 1);

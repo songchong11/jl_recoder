@@ -12,7 +12,7 @@
 #include "ui/ui_api.h"
 #include "app_task.h"
 #include "key_event_deal.h"
-
+#include "led_driver.h"
 
 #define LOG_TAG_CONST       APP_IDLE
 #define LOG_TAG             "[APP_IDLE]"
@@ -55,6 +55,7 @@ static void  lcd_ui_power_on()
 
 static int power_on_init(void)
 {
+
     ///有些需要在开机提示完成之后再初始化的东西， 可以在这里初始化
 #if (TCFG_SPI_LCD_ENABLE)
     lcd_ui_power_on();//由ui决定切换的模式
