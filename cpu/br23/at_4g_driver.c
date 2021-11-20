@@ -7,6 +7,7 @@
 #include "at_4g_driver.h"
 #include "led_driver.h"
 #include "stdlib.h"
+#include "syscfg_id.h"
 
 #define DEBUG_FILE_SYS	1
 
@@ -118,9 +119,7 @@ static void at_4g_task_handle(void *arg)
 
 					#if DEBUG_FILE_SYS
 						module_power_on();
-						//while(gsm_init_to_access_mode() == GSM_FALSE) {
-						while(gsm_sync_time_from_net() == GSM_FALSE) {
-
+						while(gsm_init_to_access_mode() == GSM_FALSE) {
 							retry++;
 							module_power_off();
 							delay_2ms(3000);
@@ -286,12 +285,6 @@ void file_read_and_send(void *priv)
 }
 
 
-static FILE *config_file = NULL;
-char target_bp_dir[20] = {0};
-char target_bp_file[20] = {0};
-bool have_target_dir = false;
-bool have_target_file = false;
-
 
 int rename_file_when_send_over(FILE* fs, char *file_name)
 {
@@ -437,7 +430,6 @@ static uint8_t MaxMessAdd=50;
 uint8_t gsm_cmd(char *cmd, char *reply, uint32_t waittime)
 {
 	uint8_t ret;
-	//GSM_DEBUG_FUNC();
 
     GSM_CLEAN_RX();                 //清空了接收缓冲区数据
 
@@ -476,8 +468,6 @@ uint8_t gsm_cmd_check(char *reply)
     uint8_t off;
     u8 *redata;
 
-	//GSM_DEBUG_FUNC();
-
     redata = GSM_RX(len);   //接收数据
 
 #if 0
@@ -490,8 +480,6 @@ uint8_t gsm_cmd_check(char *reply)
 
 	 *(redata+len) = '\0';
 	 GSM_DEBUG("Reply:%s",redata);
-
-	 //+GSN: "867366051072525"
 
 	 if (!memcmp("+GSN",  redata + 2, 4)) {//OD OA
 
@@ -763,6 +751,56 @@ uint8_t gsm_init_to_access_mode(void)
 	}
 
 	wdt_clear();
+	GSM_DELAY(50);
+	retry = 0;
+	while(gsm_cmd("AT+MIPNTP=\"cn.ntp.org.cn\",123\r","+MIPNTP: 1", 1000 * 60) != GSM_TRUE)// 同步时间
+	{
+		printf("\r\n AT+MIPNTP not replay AT OK, retry %d\r\n", retry);
+
+		if(++retry > 3) {
+			printf("\r\n模块响应测试不正常！！\r\n");
+
+			goto sms_failure;
+		}
+	}
+
+//--------------------------------------------------------------------
+	struct sys_time t;
+
+	char year_temp[3];
+	char month_temp[3];
+	char day_temp[3];
+	char hour_temp[3];
+	char min_temp[3];
+	char sec_temp[3];
+
+	//+CCLK: "21/11/18,16:04:54+00"
+	if(gsm_cmd("AT+CCLK?\r","OK", 1000 * 60) == GSM_TRUE) {
+
+		redata = GSM_RX(len);	//接收数据
+		printf("sync time: %s\n", redata);
+
+		memcpy(year_temp,  redata + 10, 2);
+		t.year = 2000 + atoi(year_temp);
+		memcpy(month_temp, redata + 13, 2);
+		t.month = atoi(month_temp);
+		memcpy(day_temp,   redata + 16, 2);
+
+		t.day = (atoi(day_temp) + 8) % 24;//add 8 hours
+
+		memcpy(hour_temp,  redata + 19, 2);
+		t.hour = atoi(hour_temp);
+		memcpy(min_temp,   redata + 22, 2);
+		t.min = atoi(min_temp);
+		memcpy(sec_temp,   redata + 25, 2);
+		t.sec = atoi(sec_temp);
+		printf(" sync time: %d-%d-%d:%d:%d:%d\n", t.year, t.month, t.day, t.hour, t.min, t.sec);
+		set_sys_time(&t);
+	}
+
+	//--------------------------------------------------------------------
+
+	wdt_clear();
 	GSM_DELAY(500);
 	retry = 0;
 	//while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9999,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
@@ -830,7 +868,7 @@ int clsoe_tcp_link(void)
 	}
 
 	wdt_clear();
-	GSM_DELAY(500);
+	GSM_DELAY(50);
 	retry = 0;
 	while(gsm_cmd("AT+MIPCALL=0\r","+MIPCALL: 0", 1000 * 30) != GSM_TRUE)//释放IP
 	{
@@ -855,13 +893,35 @@ int clsoe_tcp_link(void)
 /*---------------------------------------------------------------------*/
 
 /**同步时间接口***/
-
+#define HAD_SYNC	0xA5
 uint8_t gsm_sync_time_from_net(void)
 {
 	u8 retry;
 	char *redata;
 	uint8_t len;
 	int ret;
+	char tmp[10];
+
+	ret = syscfg_read(CFG_USER_SYNC_TIME, tmp, 1);
+	if (ret <= 0)
+		printf("syscfg_read failed\n");
+
+	else {
+
+		if (tmp[0] != HAD_SYNC) {
+
+			printf("sync time first \n");
+
+		} else {
+
+			printf("had sync time\n");
+
+			return 1;
+		}
+	}
+
+
+	module_power_on();
 
 	GSM_CLEAN_RX();                 //清空了接收缓冲区数据
 
@@ -895,7 +955,7 @@ uint8_t gsm_sync_time_from_net(void)
 	while(gsm_cmd("AT+CPIN?\r","+CPIN: READY", 200) != GSM_TRUE)//查询SIM卡
 	{
 		printf("\r\n replay AT OK, retry %d\r\n", retry);
-		if(++retry > 90) {
+		if(++retry > 10) {
 			printf("\r\n未检测到SIM卡\r\n");
 
 			goto sms_failure;
@@ -1017,7 +1077,6 @@ uint8_t gsm_sync_time_from_net(void)
 	char sec_temp[3];
 
 //--------------------------------------------------------------------
-
 	//+CCLK: "21/11/18,16:04:54+00"
 	if(gsm_cmd("AT+CCLK?\r","OK", 1000 * 60) == GSM_TRUE) {
 
@@ -1029,11 +1088,9 @@ uint8_t gsm_sync_time_from_net(void)
 		memcpy(month_temp, redata + 13, 2);
 		t.month = atoi(month_temp);
 		memcpy(day_temp,   redata + 16, 2);
-
-		t.day = (atoi(day_temp) + 8) % 24;//add 8 hours
-
+		t.day = atoi(day_temp);
 		memcpy(hour_temp,  redata + 19, 2);
-		t.hour = atoi(hour_temp);
+		t.hour = (atoi(hour_temp) + 8) % 24;//add 8 hours
 		memcpy(min_temp,   redata + 22, 2);
 		t.min = atoi(min_temp);
 		memcpy(sec_temp,   redata + 25, 2);
@@ -1041,6 +1098,11 @@ uint8_t gsm_sync_time_from_net(void)
 
 		printf("time: %d-%d-%d:%d:%d:%d\n", t.year, t.month, t.day, t.hour, t.min, t.sec);
 		set_sys_time(&t);
+
+		tmp[0] = HAD_SYNC;
+		ret = syscfg_write(CFG_USER_SYNC_TIME, tmp, 1);
+		if (ret <= 0)
+			printf("syscfg_write failed");
 
 		ret = GSM_TRUE;
 
@@ -1052,56 +1114,29 @@ uint8_t gsm_sync_time_from_net(void)
 
 	printf("\r\n sync time successed\r\n");
 
+	wdt_clear();
+	retry = 0;
+	while(gsm_cmd("AT+MIPCALL=0\r","+MIPCALL: 0", 1000 * 30) != GSM_TRUE)//释放IP
+	{
+		printf("\r\n AT+MIPCALL not replay AT OK, retry %d\r\n", retry);
+
+		if(++retry > 2) {
+			printf("\r\n模块响应测试不正常！！\r\n");
+
+			goto sms_failure;
+		}
+	}
+
+	module_power_off();
 
 	return GSM_TRUE;
 
 	sms_failure:
 		printf("\r\n GSM MODULE init fail... \r\n");
 		led_blink_time(100, 5000);//5s
+		module_power_off();
 		return GSM_FALSE;
 }
-
-
-/*---------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------*/
-/**
- * @brief  IsASSIC 判断是否纯ASSIC编码
- * @param  str: 字符串指针
- * @retval 纯ASSIC编码返回TRUE，非纯ASSIC编码返回FALSE
- */
-uint8_t IsASSIC(char * str)
-{
-	GSM_DEBUG_FUNC();
-
-    while(*str)
-    {
-        if(*str>0x7F)
-        {
-            return GSM_FALSE;
-        }
-        str++;
-    }
-
-    return GSM_TRUE;
-}
-
-/**
- * @brief  gsm_char2hex 把字符转换成16进制字符
- * @param  hex: 16进制字符存储的位置指针，ch：字符
- * @retval 无
- */
-void gsm_char2hex(char *hex,char ch)
-{
-    const char numhex[]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-
-	//GSM_DEBUG_FUNC();
-
-	*hex++  = numhex[(ch & 0xF0)>>4];
-    *hex    = numhex[ ch & 0x0F];
-}
-
-
 
 
 

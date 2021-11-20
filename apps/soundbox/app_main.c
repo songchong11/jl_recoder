@@ -14,6 +14,7 @@
 #include "soundcard/peripheral.h"
 #include "audio.h"
 #include "vm.h"
+#include "syscfg_id.h"
 
 
 #define LOG_TAG_CONST       APP

@@ -30,7 +30,7 @@
 #include "key_event_deal.h"
 #include "common/app_common.h"
 #include "led_driver.h"
-
+#include "at_4g_driver.h"
 
 #define LOG_TAG_CONST       APP_IDLE
 #define LOG_TAG             "[APP_IDLE]"
@@ -541,9 +541,13 @@ void app_idle_task()
     int res;
     int msg[32];
 
+	printf("idle task\n");
+	led_power_on_show();
+
+	gsm_sync_time_from_net();
+
     idle_app_start();
 
-	led_power_on_show();
 
     while (1) {
         app_task_get_msg(msg, ARRAY_SIZE(msg), 1);
