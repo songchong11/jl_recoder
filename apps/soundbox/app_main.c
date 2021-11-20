@@ -151,16 +151,6 @@ void app_main()
 	file_write_thread_init();//file write
 	at_4g_thread_init(); // 4g driver
 
-#if 0
-	struct sys_time t;
-	t.year  = 2021;
-	t.month = 10;
-	t.day	= 30;
-	t.hour	= 23;
-	t.min	= 15;
-	t.sec	= 21;
-	set_sys_time(&t);
-#endif
 
     app_task_loop();
 

@@ -1029,7 +1029,9 @@ uint8_t gsm_sync_time_from_net(void)
 		memcpy(month_temp, redata + 13, 2);
 		t.month = atoi(month_temp);
 		memcpy(day_temp,   redata + 16, 2);
-		t.day = atoi(day_temp);
+
+		t.day = (atoi(day_temp) + 8) % 24;//add 8 hours
+
 		memcpy(hour_temp,  redata + 19, 2);
 		t.hour = atoi(hour_temp);
 		memcpy(min_temp,   redata + 22, 2);
