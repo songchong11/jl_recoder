@@ -118,19 +118,33 @@ static void at_4g_task_handle(void *arg)
 
 					#if DEBUG_FILE_SYS
 						module_power_on();
-						while(gsm_init_to_access_mode() == GSM_FALSE){
+						//while(gsm_init_to_access_mode() == GSM_FALSE) {
+						while(gsm_sync_time_from_net() == GSM_FALSE) {
+
 							retry++;
+							module_power_off();
+							delay_2ms(3000);
+							module_power_on();
 							if(retry > 3) {
-								module_power_off();
-								delay_2ms(3000);
-								module_power_on();
+								ret = false;
+								break;
 							}
 						}
+
+						ret = true;
 					#endif
 					}
-					printf("gsm enter into access mode success\n");
 
-					os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GET_NEXT_FILE);
+					if (ret) {
+
+						printf("gsm enter into access mode success\n");
+						os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GET_NEXT_FILE);
+
+					} else {
+
+						printf("gsm init faild\n");
+						os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GSM_FAIL);
+					}
 
 	                break;
 
@@ -449,7 +463,7 @@ uint8_t gsm_cmd(char *cmd, char *reply, uint32_t waittime)
 	}
 
 	wdt_clear();
-	GSM_DELAY(1000);				 //延时
+	GSM_DELAY(200);				 //延时
     return ret = gsm_cmd_check(reply);    //对接收数据进行处理
 }
 
@@ -543,48 +557,6 @@ char * gsm_waitask(uint8_t waitask_hook(void))      //等待有数据应答
 }
 
 
-//本机号码
-//0表示成功，1表示失败
-uint8_t gsm_cnum(char *num)
-{
-    char *redata;
-    uint8_t len;
-
-	GSM_DEBUG_FUNC();
-
-    if(gsm_cmd("AT+CNUM\r","OK", 100) != GSM_TRUE)
-    {
-        return GSM_FALSE;
-    }
-
-    redata = GSM_RX(len);   //接收数据
-
-	GSM_DEBUG_ARRAY((uint8_t *)redata,len);
-
-    if(len == 0)
-    {
-        return GSM_FALSE;
-    }
-
-    //第一个逗号后面的数据为:"本机号码"
-    while(*redata != ',')
-    {
-        len--;
-        if(len==0)
-        {
-            return GSM_FALSE;
-        }
-        redata++;
-    }
-    redata+=2;
-
-    while(*redata != '"')
-    {
-        *num++ = *redata++;
-    }
-    *num = 0;               //字符串结尾需要清0
-    return GSM_TRUE;
-}
 
 
 //初始化并检测模块,自动注册网络
@@ -826,8 +798,6 @@ int clsoe_tcp_link(void)
 	char *redata;
 	uint8_t len;
 
-	//GSM_DEBUG_FUNC();
-
 	GSM_CLEAN_RX();                 //清空了接收缓冲区数据
 
 	wdt_clear();
@@ -845,21 +815,6 @@ int clsoe_tcp_link(void)
 		}
 	}
 
-#if 0
-
-	GSM_DELAY(500);
-	retry = 0;
-	while(gsm_cmd("AT+MIPODM?","OK", 1000 * 30) != GSM_TRUE)// 设置激活时APN。电信
-	{
-		printf("\r\n AT+MIPODM?  not replay AT OK, retry %d\r\n", retry);
-
-		if(++retry > 3) {
-			printf("\r\n模块响应测试不正常！！\r\n");
-
-			goto sms_failure;
-		}
-	}
-#endif
 	wdt_clear();
 	GSM_DELAY(500);
 	retry = 0;
@@ -874,7 +829,6 @@ int clsoe_tcp_link(void)
 		}
 	}
 
-#if 1
 	wdt_clear();
 	GSM_DELAY(500);
 	retry = 0;
@@ -888,7 +842,7 @@ int clsoe_tcp_link(void)
 			goto sms_failure;
 		}
 	}
-#endif
+
 	printf("\r\n close moudule!!！\r\n");
 	return GSM_TRUE;
 
@@ -900,7 +854,180 @@ int clsoe_tcp_link(void)
 
 /*---------------------------------------------------------------------*/
 
+/**同步时间接口***/
 
+uint8_t gsm_sync_time_from_net(void)
+{
+	u8 retry;
+	char *redata;
+	uint8_t len;
+
+	GSM_CLEAN_RX();                 //清空了接收缓冲区数据
+
+	while(gsm_cmd("AT\r","OK", 200) != GSM_TRUE)// AT
+	{
+		printf("\r\n module not replay AT OK, retry %d\r\n", retry);
+
+		if(++retry > 90) {
+			printf("\r\n AT not response！！\r\n");
+			goto sms_failure;
+		}
+	}
+
+	wdt_clear();
+	GSM_DELAY(50);
+	retry = 0;
+
+	while(gsm_cmd("ATE0\r","OK", 200) != GSM_TRUE)// 关闭回显
+	{
+		printf("\r\n ATE0 not replay AT OK, retry %d\r\n", retry);
+		if(++retry > 90) {
+			printf("\r\n模块响应测试不正常！！\r\n");
+			goto sms_failure;
+		}
+	}
+
+	wdt_clear();
+	GSM_DELAY(50);
+
+	retry = 0;
+	while(gsm_cmd("AT+CPIN?\r","+CPIN: READY", 200) != GSM_TRUE)//查询SIM卡
+	{
+		printf("\r\n replay AT OK, retry %d\r\n", retry);
+		if(++retry > 90) {
+			printf("\r\n未检测到SIM卡\r\n");
+
+			goto sms_failure;
+		}
+	}
+
+	wdt_clear();
+	GSM_DELAY(50);
+	retry = 0;
+	while(gsm_cmd("AT+GSN?\r","+GSN", 200) != GSM_TRUE)//查询SN
+	{
+		printf("\r\n AT+GSN not replay OK, retry %d\r\n", retry);
+		if(++retry > 90) {
+			printf("\r\n GET GSN ERROR\r\n");
+
+			goto sms_failure;
+		}
+	}
+
+	wdt_clear();
+	GSM_DELAY(50);
+	retry = 0;
+	while(gsm_cmd("AT+CSQ?\r","OK", 200) != GSM_TRUE)//查询信号值
+	{
+		printf("\r\n replay AT OK, retry %d\r\n", retry);
+		if(++retry > 90) {
+
+			goto sms_failure;
+		}
+	}
+
+	wdt_clear();
+	GSM_DELAY(50);
+	retry = 0;
+	while(gsm_cmd("AT+CGREG?\r","OK", 200) != GSM_TRUE)//确认PS数据业务可用
+	{
+		printf("\r\n AT+CGREG? not OK, retry %d\r\n", retry);
+		if(++retry > 90) {
+			printf("\r\n AT+CGREG? ERROR \r\n");
+
+			goto sms_failure;
+		}
+	}
+
+	wdt_clear();
+	GSM_DELAY(50);
+	retry = 0;
+#if 0
+#if  (SIM_CARD_TYPE == CTNET)
+		while(gsm_cmd("AT+CGDCONT=1,\"IP\",\"CTNET\"\r","OK", 8000) != GSM_TRUE)// 设置激活时APN。电信
+#elif (SIM_CARD_TYPE == CMNET)
+		while(gsm_cmd("AT+CGDCONT=1,\"IP\",\"CMNET\"\r","OK", 8000) != GSM_TRUE)// 设置激活时APN。移动
+#elif (SIM_CARD_TYPE == TGNET)
+		while(gsm_cmd("AT+CGDCONT=1,\"IP\",\"3GNET\"\r","OK", 8000) != GSM_TRUE)// 设置激活时APN。联通
+#endif
+#endif
+	while(gsm_cmd("AT+CGDCONT=1,\"IP\",\"CTNET\"\r","OK", 8000) != GSM_TRUE)// 设置激活时APN。移动
+
+	{
+		printf("\r\n AT+CGDCONT= not replay AT OK, retry %d\r\n", retry);
+
+		if(++retry > 2) {
+			printf("\r\n模块响应测试不正常！！\r\n");
+			goto sms_failure;
+		}
+	}
+
+
+	wdt_clear();
+	GSM_DELAY(00);
+	retry = 0;
+#if 0
+#if (SIM_CARD_TYPE == CTNET)
+	while(gsm_cmd("AT+MIPCALL=1,\"CTNET\"\r","+MIPCALL", 1000 * 150) != GSM_TRUE)// 链接TCP
+#elif ((SIM_CARD_TYPE == CMNET))
+	while(gsm_cmd("AT+MIPCALL=1,\"CMNET\"\r","+MIPCALL", 1000 * 150) != GSM_TRUE)// 链接TCP
+
+#elif((SIM_CARD_TYPE == TGNET))
+	while(gsm_cmd("AT+MIPCALL=1,\"TGNET\"\r","+MIPCALL", 1000 * 150) != GSM_TRUE)// 链接TCP
+#endif
+#endif
+	while(gsm_cmd("AT+MIPCALL=1,\"CTNET\"\r","+MIPCALL", 1000 * 150) != GSM_TRUE)// 链接TCP
+
+	{
+		printf("\r\n AT+MIPCALL= not replay AT OK, retry %d\r\n", retry);
+
+		if(++retry > 2) {
+			printf("\r\n模块响应测试不正常！！\r\n");
+
+			goto sms_failure;
+		}
+	}
+
+	wdt_clear();
+	GSM_DELAY(50);
+	retry = 0;
+	while(gsm_cmd("AT+MIPNTP=\"cn.ntp.org.cn\",123\r","+MIPNTP: 1", 1000 * 60) != GSM_TRUE)// 同步时间
+	{
+		printf("\r\n AT+MIPNTP not replay AT OK, retry %d\r\n", retry);
+
+		if(++retry > 3) {
+			printf("\r\n模块响应测试不正常！！\r\n");
+
+			goto sms_failure;
+		}
+	}
+
+	wdt_clear();
+	GSM_DELAY(50);
+	retry = 0;
+
+	//+CCLK: "21/11/18,16:04:54+00"
+	if(gsm_cmd("AT+CCLK?\r","OK", 1000 * 60) == GSM_TRUE) {
+
+		 redata = GSM_RX(len);   //接收数据
+		 printf("sync time ok %s\n", redata);
+
+	} else {
+
+		ret = false;
+	}
+
+
+	printf("\r\n sync time successed\r\n");
+
+
+	return GSM_TRUE;
+
+	sms_failure:
+		printf("\r\n GSM MODULE init fail... \r\n");
+		led_blink_time(100, 5000);//5s
+		return GSM_FALSE;
+}
 
 
 /*---------------------------------------------------------------------*/
@@ -944,150 +1071,6 @@ void gsm_char2hex(char *hex,char ch)
 
 
 
-
-/**
- * @brief  初始化GPRS网络
- * @param  无
- * @retval 失败GSM_FALSE  成功GSM_TRUE
- */
-uint8_t gsm_gprs_init(void)
-{
-	GSM_DEBUG_FUNC();
-
-	GSM_CLEAN_RX();
-	if(gsm_cmd("AT\r","OK", 200) != GSM_TRUE) return GSM_FALSE;
-
-	GSM_CLEAN_RX();
-	if(gsm_cmd("AT+CGDCONT=1,\"IP\",\"CMNET\"\r","OK", 200) != GSM_TRUE) return GSM_FALSE;
-
-	GSM_CLEAN_RX();
-	if(gsm_cmd("AT+CGATT=1\r","OK", 200)!= GSM_TRUE) return GSM_FALSE;
-
-	GSM_CLEAN_RX();
-	if(gsm_cmd("AT+CIPCSGP=1,\"CMNET\"\r","OK", 200)!= GSM_TRUE) return GSM_FALSE;
-
-	return GSM_TRUE;
-}
-
-/**
- * @brief  建立TCP连接，最长等待时间20秒，可自行根据需求修改
-	* @param  localport: 本地端口
-	* @param  serverip: 服务器IP
-	* @param  serverport: 服务器端口
- * @retval 失败GSM_FALSE  成功GSM_TRUE
- */
-uint8_t gsm_gprs_tcp_link(char *localport,char * serverip,char * serverport)
-{
-	char cmd_buf[100];
-	uint8_t testConnect=0;
-
-	GSM_DEBUG_FUNC();
-
-	sprintf(cmd_buf,"AT+CLPORT=\"TCP\",\"%s\"\r",localport);
-
-	if(gsm_cmd(cmd_buf,"OK", 100)!= GSM_TRUE)
-		return GSM_FALSE;
-
-	GSM_CLEAN_RX();
-
-	sprintf(cmd_buf,"AT+CIPSTART=\"TCP\",\"%s\",\"%s\"\r",serverip,serverport);
-	gsm_cmd(cmd_buf,0, 100);
-
-	//检测是否建立连接
-	while(gsm_cmd_check("CONNECT OK") != GSM_TRUE)
-	{
-		if(++testConnect >200)//最长等待20秒
-		{
-			return GSM_FALSE;
-		}
-		GSM_DELAY(100);
-	}
-	return GSM_TRUE;
-}
-
-
-/**
- * @brief  使用GPRS发送数据，发送前需要先建立UDP或TCP连接
-	* @param  str: 要发送的数据
- * @retval 失败GSM_FALSE  成功GSM_TRUE
- */
-uint8_t gsm_gprs_send(const char * str)
-{
-	char end = 0x1A;
-	uint8_t testSend=0;
-
-	GSM_DEBUG_FUNC();
-
-	GSM_CLEAN_RX();
-
-	if(gsm_cmd("AT+CIPSEND\r",">",500) == 0)
-	{
-		GSM_USART_printf("%s",str);
-		GSM_DEBUG("Send String:%s",str);
-
-		GSM_CLEAN_RX();
-		gsm_cmd(&end,0,100);
-
-		//检测是否发送完成
-		while(gsm_cmd_check("SEND OK") != GSM_TRUE )
-		{
-			if(++testSend >200)//最长等待20秒
-			{
-				goto gprs_send_failure;
-			}
-			GSM_DELAY(100);
-		}
-		return GSM_TRUE;
-	}
-	else
-	{
-
-gprs_send_failure:
-
-		end = 0x1B;
-		gsm_cmd(&end,0,0);	//ESC,取消发送
-
-		return GSM_FALSE;
-	}
-}
-
-/**
- * @brief  断开网络连接
- * @retval 失败GSM_FALSE  成功GSM_TRUE
- */
-uint8_t gsm_gprs_link_close(void)              //IP链接断开
-{
-	GSM_DEBUG_FUNC();
-
-	GSM_CLEAN_RX();
-	if(gsm_cmd("AT+CIPCLOSE=1\r","OK",200) != GSM_TRUE)
-    {
-        return GSM_FALSE;
-    }
-	return GSM_TRUE;
-}
-
-/**
- * @brief  关闭场景
- * @retval 失败GSM_FALSE  成功GSM_TRUE
- */
-uint8_t gsm_gprs_shut_close(void)               //关闭场景
-{
-	uint8_t  check_time=0;
-	GSM_DEBUG_FUNC();
-
-	GSM_CLEAN_RX();
-	gsm_cmd("AT+CIPSHUT\r",0,0) ;
-	while(	gsm_cmd_check("OK") != GSM_TRUE)
-	{
-		if(++check_time >50)
-			return GSM_FALSE;
-
-		GSM_DELAY(200);
-	}
-
-	return GSM_TRUE;
-}
 
 
 /*---------------------------------------------------------------------*/

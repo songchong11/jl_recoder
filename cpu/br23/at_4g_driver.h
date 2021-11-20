@@ -65,17 +65,6 @@ uint8_t 	IsReceiveMS				(void);
 uint8_t 	readmessage				(uint8_t messadd,char *num,char *str);
 uint8_t 	hexuni2gbk				(char *hexuni,char *chgbk);
 
-/*************************** GPRS 功能 ***************************/
-uint8_t gsm_gprs_init		(void);																//GPRS初始化环境
-uint8_t gsm_gprs_tcp_link	(char *localport,char * serverip,char * serverport);				//TCP连接
-uint8_t gsm_gprs_udp_link	(char *localport,char * serverip,char * serverport);				//UDP连接
-uint8_t gsm_gprs_send		(const char * str);														//发送数据
-uint8_t gsm_gprs_link_close	(void);              												//IP链接断开
-uint8_t gsm_gprs_shut_close	(void);               												//关闭场景
-
-
-
-
 
 /*调试用串口*/
 
@@ -115,7 +104,6 @@ uint8_t gsm_gprs_shut_close	(void);               												//关闭场景
 
 
 void at_4g_thread_init(void);
-uint8_t gsm_gprs_init(void);
 int clsoe_tcp_link(void);
 uint8_t gsm_init_to_access_mode(void);
 int gsm_set_to_access_mode(void);
@@ -124,5 +112,6 @@ void module_4g_gpio_init(void);
 int write_config_file_when_send_over(char *dir, char *file);
 void send_end_packet(void);
 void send_the_start_packet(char * filename, char* dir_name, u32 size);
+uint8_t gsm_sync_time_from_net(void);
 
 #endif
