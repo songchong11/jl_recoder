@@ -155,6 +155,7 @@ static void file_write_task_handle(void *arg)
 void file_write_thread_init(void)
 {
 
+	bes_power_on();
     printf("file_write_thread_init\n");
 
 	//os_task_create(file_write_task,NULL, 7, 512, 512, "file_write_task");

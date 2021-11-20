@@ -70,8 +70,6 @@ void misc_driver_init(void)
 		usb_check_timer = sys_timer_add(NULL, check_charge_usb_status, 100);
 	}
 
-	bes_power_on();
-
 }
 
 void bes_power_on(void)

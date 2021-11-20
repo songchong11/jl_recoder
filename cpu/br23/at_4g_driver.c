@@ -71,7 +71,7 @@ void module_power_on(void)
 void module_power_off(void)
 {
 
-	if (module_status == POWER_ON) {
+	//if (module_status == POWER_ON) {
 
 		printf("4g module power off\r\n");
 		gpio_set_output_value(MODULE_PWR_GPIO, 1);
@@ -82,7 +82,7 @@ void module_power_off(void)
 		gpio_set_output_value(MODULE_PWR_GPIO, 0);
 
 		module_status = POWER_OFF;
-	}
+	//}
 
 }
 
@@ -861,6 +861,7 @@ uint8_t gsm_sync_time_from_net(void)
 	u8 retry;
 	char *redata;
 	uint8_t len;
+	int ret;
 
 	GSM_CLEAN_RX();                 //清空了接收缓冲区数据
 
@@ -964,7 +965,7 @@ uint8_t gsm_sync_time_from_net(void)
 
 
 	wdt_clear();
-	GSM_DELAY(00);
+	GSM_DELAY(50);
 	retry = 0;
 #if 0
 #if (SIM_CARD_TYPE == CTNET)
@@ -1005,16 +1006,45 @@ uint8_t gsm_sync_time_from_net(void)
 	wdt_clear();
 	GSM_DELAY(50);
 	retry = 0;
+//--------------------------------------------------------------------
+	struct sys_time t;
+
+	char year_temp[3];
+	char month_temp[3];
+	char day_temp[3];
+	char hour_temp[3];
+	char min_temp[3];
+	char sec_temp[3];
+
+//--------------------------------------------------------------------
 
 	//+CCLK: "21/11/18,16:04:54+00"
 	if(gsm_cmd("AT+CCLK?\r","OK", 1000 * 60) == GSM_TRUE) {
 
-		 redata = GSM_RX(len);   //接收数据
-		 printf("sync time ok %s\n", redata);
+		redata = GSM_RX(len);   //接收数据
+		printf("sync time: %s\n", redata);
+
+		memcpy(year_temp,  redata + 10, 2);
+		t.year = 2000 + atoi(year_temp);
+		memcpy(month_temp, redata + 13, 2);
+		t.month = atoi(month_temp);
+		memcpy(day_temp,   redata + 16, 2);
+		t.day = atoi(day_temp);
+		memcpy(hour_temp,  redata + 19, 2);
+		t.hour = atoi(hour_temp);
+		memcpy(min_temp,   redata + 22, 2);
+		t.min = atoi(min_temp);
+		memcpy(sec_temp,   redata + 25, 2);
+		t.sec = atoi(sec_temp);
+
+		printf("time: %d-%d-%d:%d:%d:%d\n", t.year, t.month, t.day, t.hour, t.min, t.sec);
+		set_sys_time(&t);
+
+		ret = GSM_TRUE;
 
 	} else {
 
-		ret = false;
+		ret = GSM_FALSE;
 	}
 
 
@@ -1063,9 +1093,9 @@ void gsm_char2hex(char *hex,char ch)
 {
     const char numhex[]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 
-		GSM_DEBUG_FUNC();
+	//GSM_DEBUG_FUNC();
 
-		*hex++  = numhex[(ch & 0xF0)>>4];
+	*hex++  = numhex[(ch & 0xF0)>>4];
     *hex    = numhex[ ch & 0x0F];
 }
 
