@@ -204,6 +204,9 @@ static void at_4g_task_handle(void *arg)
 					led_blue_off();
 					break;
 
+				case APP_USER_MSG_SYNC_TIME:
+					gsm_sync_time_from_net();
+					break;
 	            default:
 	                break;
 	       }
@@ -900,15 +903,16 @@ uint8_t gsm_sync_time_from_net(void)
 	char *redata;
 	uint8_t len;
 	int ret;
-	char tmp[10];
+	u8 sync_time = 0;
 
-	ret = syscfg_read(CFG_USER_SYNC_TIME, tmp, 1);
+	ret = syscfg_read(CFG_USER_SYNC_TIME, &sync_time, 1);
 	if (ret <= 0)
 		printf("syscfg_read failed\n");
 
 	else {
+		printf("syscfg_read tmp = %x\n", sync_time);
 
-		if (tmp[0] != HAD_SYNC) {
+		if (sync_time != HAD_SYNC) {
 
 			printf("sync time first \n");
 
@@ -1099,8 +1103,8 @@ uint8_t gsm_sync_time_from_net(void)
 		printf("time: %d-%d-%d:%d:%d:%d\n", t.year, t.month, t.day, t.hour, t.min, t.sec);
 		set_sys_time(&t);
 
-		tmp[0] = HAD_SYNC;
-		ret = syscfg_write(CFG_USER_SYNC_TIME, tmp, 1);
+		sync_time = HAD_SYNC;
+		ret = syscfg_write(CFG_USER_SYNC_TIME, &sync_time, 1);
 		if (ret <= 0)
 			printf("syscfg_write failed");
 

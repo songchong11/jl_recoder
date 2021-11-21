@@ -264,9 +264,8 @@ void app_poweroff_task()
     poweroff_app_start();
 
 	printf("power off task, module_power_off \n");
-	module_power_off();
-
 	led_power_off_show();
+	//module_power_off();
 
     while (1) {
         app_task_get_msg(msg, ARRAY_SIZE(msg), 1);

@@ -544,15 +544,13 @@ void app_idle_task()
 	printf("idle task\n");
 	led_power_on_show();
 
-	gsm_sync_time_from_net();
-
     idle_app_start();
 
+	os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SYNC_TIME);
 
     while (1) {
         app_task_get_msg(msg, ARRAY_SIZE(msg), 1);
 
-		//printf("msg[0]: %x %x\r\n", msg[0], msg[1]);
         switch (msg[0]) {
         case APP_MSG_SYS_EVENT:
             if (idle_sys_event_handler((struct sys_event *)(&msg[1])) == false) {
