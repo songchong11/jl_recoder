@@ -58,6 +58,7 @@ void module_power_on(void)
 		printf("4g module power on\r\n");
 
 		gpio_set_output_value(MODULE_PWR_GPIO, 1);
+		wdt_clear();
 		delay_2ms(1500);//need more over 2s
 		gpio_set_output_value(MODULE_PWR_GPIO, 0);
 
@@ -122,7 +123,9 @@ static void at_4g_task_handle(void *arg)
 						while(gsm_init_to_access_mode() == GSM_FALSE) {
 							retry++;
 							module_power_off();
-							delay_2ms(3000);
+							wdt_clear();
+							delay_2ms(2000);
+							wdt_clear();
 							module_power_on();
 							if(retry > 3) {
 								ret = false;
