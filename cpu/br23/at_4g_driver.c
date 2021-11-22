@@ -247,7 +247,7 @@ void file_read_and_send(void *priv)
 		return;
 	}
 
-	if((packet_num % 10) == 0)
+	if((packet_num % 5) == 0)
 		led_blue_toggle();
 
 	int ret = fread(read_p, read_buffer, READ_LEN);
@@ -452,6 +452,7 @@ uint8_t gsm_cmd(char *cmd, char *reply, uint32_t waittime)
 		{
 			wdt_clear();
 			GSM_DELAY(1000);				 //延时
+			wdt_clear();
 			ret = gsm_cmd_check(reply);
 			if (ret == GSM_TRUE)
 				 return ret;
@@ -1146,4 +1147,38 @@ uint8_t gsm_sync_time_from_net(void)
 
 
 /*---------------------------------------------------------------------*/
+//判断4G模块是否处于开机状态
+void check_moudule_whether_is_power_on(void)
+{
+	u8 retry = 0;
+	int ret;
+
+
+	GSM_CLEAN_RX();                 //清空了接收缓冲区数据
+
+
+	while(gsm_cmd("+++","OK", 1000) != GSM_TRUE)//
+	{
+		printf("\r\n +++ not replay AT OK, retry %d\r\n", retry);
+
+		if(++retry > 2) {
+			printf("\r\n模块响应测试不正常！！\r\n");
+			break;
+		}
+	}
+
+	while(gsm_cmd("AT\r","OK", 2000) != GSM_TRUE)// AT
+	{
+
+		if(++retry > 1) {
+			printf("\r\n AT not response！！\r\n");
+			return;
+		}
+	}
+
+	printf("module is power on state\n");
+	module_power_off();
+
+}
+
 

@@ -543,6 +543,7 @@ void app_idle_task()
 
 	printf("idle task\n");
 	led_power_on_show();
+	check_moudule_whether_is_power_on();
 
     idle_app_start();
 
