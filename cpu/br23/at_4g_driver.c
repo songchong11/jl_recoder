@@ -247,10 +247,8 @@ void file_read_and_send(void *priv)
 		return;
 	}
 
-	if(packet_num % 2)
-		led_blue_off();
-	else
-		led_blue_on();
+	if((packet_num % 10) == 0)
+		led_blue_toggle();
 
 	int ret = fread(read_p, read_buffer, READ_LEN);
 

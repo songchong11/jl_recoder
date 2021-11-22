@@ -94,6 +94,41 @@ void led_power_off_show(void)
 	led_green_off();
 }
 
+void led_red_toggle(void)
+{
+	static u8 read_led_status;
 
+	if (read_led_status % 2)
+		led_red_on();
+	else
+		led_red_off();
+
+	read_led_status++;
+}
+
+
+void led_blue_toggle(void)
+{
+	static u8 blue_led_status;
+
+	if (blue_led_status % 2)
+		led_blue_on();
+	else
+		led_blue_off();
+
+	blue_led_status++;
+}
+
+void led_green_toggle(void)
+{
+	static u8 green_led_status;
+
+	if (green_led_status % 2)
+		led_green_on();
+	else
+		led_green_off();
+
+	green_led_status++;
+}
 
 /*****************************************************************************/

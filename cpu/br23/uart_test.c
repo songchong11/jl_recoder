@@ -123,16 +123,9 @@ static void uart_u_task_handle(void *arg)
 
 				rx_total++;
 
-				if (led_cnt < 5)// bilnk green led when recoder
-					led_green_on();
-				else {
-					led_green_off();
+				if ((rx_total % 10) == 0)// bilnk green led when recoder
+					led_green_toggle();
 
-					if (led_cnt >= 10)
-						led_cnt = 0;
-				}
-
-				led_cnt++;
 #if 0
 				for (int i = 0; i < uart_rxcnt; i++) {
 					my_put_u8hex(uart_rxbuf[i]);
