@@ -576,36 +576,36 @@ uint8_t gsm_init_to_access_mode(void)
 
 	GSM_CLEAN_RX();                 //清空了接收缓冲区数据
 
-	while(gsm_cmd("AT\r","OK", 1000) != GSM_TRUE)// AT
+	while(gsm_cmd("AT\r","OK", 200) != GSM_TRUE)// AT
 	{
 		printf("\r\n module not replay AT OK, retry %d\r\n", retry);
 
-		if(++retry > 90) {
+		if(++retry > 50) {
 			printf("\r\n AT not response！！\r\n");
 			goto sms_failure;
 		}
 	}
 
 	wdt_clear();
-	GSM_DELAY(500);
+	GSM_DELAY(50);
 	retry = 0;
 
-	while(gsm_cmd("ATE0\r","OK", 1000) != GSM_TRUE)// 关闭回显
+	while(gsm_cmd("ATE0\r","OK", 200) != GSM_TRUE)// 关闭回显
 	{
 		printf("\r\n ATE0 not replay AT OK, retry %d\r\n", retry);
-		if(++retry > 90) {
+		if(++retry > 50) {
 			printf("\r\n模块响应测试不正常！！\r\n");
 			goto sms_failure;
 		}
 	}
 
 	wdt_clear();
-	GSM_DELAY(500);
+	GSM_DELAY(50);
 	retry = 0;
-	while(gsm_cmd("AT+CFUN=1\r","OK", 1000) != GSM_TRUE)// 设置工作模式是正常工作模式
+	while(gsm_cmd("AT+CFUN=1\r","OK", 200) != GSM_TRUE)// 设置工作模式是正常工作模式
 	{
 		printf("\r\n AT+CFUN=1 not ok retry %d\r\n", retry);
-		if(++retry > 90) {
+		if(++retry > 50) {
 			printf("\r\n模块响应测试不正常！！\r\n");
 
 			goto sms_failure;
@@ -613,13 +613,13 @@ uint8_t gsm_init_to_access_mode(void)
 	}
 
 	wdt_clear();
-	GSM_DELAY(500);
+	GSM_DELAY(50);
 
 	retry = 0;
-	while(gsm_cmd("AT+CPIN?\r","+CPIN: READY", 1000) != GSM_TRUE)//查询SIM卡
+	while(gsm_cmd("AT+CPIN?\r","+CPIN: READY", 200) != GSM_TRUE)//查询SIM卡
 	{
 		printf("\r\n replay AT OK, retry %d\r\n", retry);
-		if(++retry > 90) {
+		if(++retry > 50) {
 			printf("\r\n未检测到SIM卡\r\n");
 
 			goto sms_failure;
@@ -627,12 +627,12 @@ uint8_t gsm_init_to_access_mode(void)
 	}
 
 	wdt_clear();
-	GSM_DELAY(500);
+	GSM_DELAY(50);
 	retry = 0;
-	while(gsm_cmd("AT+CIMI\r","OK", 1000) != GSM_TRUE)//确认SIM卡可用
+	while(gsm_cmd("AT+CIMI\r","OK", 200) != GSM_TRUE)//确认SIM卡可用
 	{
 		printf("\r\n AT+CIMI not replay OK, retry %d\r\n", retry);
-		if(++retry > 90) {
+		if(++retry > 50) {
 			printf("\r\nSIM卡 ERROR\r\n");
 
 			goto sms_failure;
@@ -640,12 +640,12 @@ uint8_t gsm_init_to_access_mode(void)
 	}
 
 	wdt_clear();
-	GSM_DELAY(500);
+	GSM_DELAY(50);
 	retry = 0;
-	while(gsm_cmd("AT+GSN?\r","+GSN", 1000) != GSM_TRUE)//查询SN
+	while(gsm_cmd("AT+GSN?\r","+GSN", 200) != GSM_TRUE)//查询SN
 	{
 		printf("\r\n AT+GSN not replay OK, retry %d\r\n", retry);
-		if(++retry > 90) {
+		if(++retry > 50) {
 			printf("\r\n GET GSN ERROR\r\n");
 
 			goto sms_failure;
@@ -653,7 +653,7 @@ uint8_t gsm_init_to_access_mode(void)
 	}
 
 	wdt_clear();
-	GSM_DELAY(500);
+	GSM_DELAY(50);
 	retry = 0;
 #if 0
 #if  (SIM_CARD_TYPE == CTNET)
@@ -676,9 +676,9 @@ uint8_t gsm_init_to_access_mode(void)
 	}
 
 	wdt_clear();
-	GSM_DELAY(500);
+	GSM_DELAY(50);
 	retry = 0;
-	while(gsm_cmd("AT+CSQ?\r","OK", 800) != GSM_TRUE)//查询信号值
+	while(gsm_cmd("AT+CSQ?\r","OK", 200) != GSM_TRUE)//查询信号值
 	{
 		printf("\r\n replay AT OK, retry %d\r\n", retry);
 		if(++retry > 90) {
@@ -691,9 +691,9 @@ uint8_t gsm_init_to_access_mode(void)
 	}
 
 	wdt_clear();
-	GSM_DELAY(500);
+	GSM_DELAY(50);
 	retry = 0;
-	while(gsm_cmd("AT+COPS?\r","OK", 800) != GSM_TRUE)//查询注册状态
+	while(gsm_cmd("AT+COPS?\r","OK", 200) != GSM_TRUE)//查询注册状态
 	{
 		printf("\r\n replay AT OK, retry %d\r\n", retry);
 		if(++retry > 90) {
@@ -704,9 +704,9 @@ uint8_t gsm_init_to_access_mode(void)
 	}
 
 	wdt_clear();
-	GSM_DELAY(500);
+	GSM_DELAY(50);
 	retry = 0;
-	while(gsm_cmd("AT+CGREG?\r","OK", 800) != GSM_TRUE)//确认PS数据业务可用
+	while(gsm_cmd("AT+CGREG?\r","OK", 200) != GSM_TRUE)//确认PS数据业务可用
 	{
 		printf("\r\n AT+CGREG? not OK, retry %d\r\n", retry);
 		if(++retry > 90) {
@@ -717,12 +717,12 @@ uint8_t gsm_init_to_access_mode(void)
 	}
 
 	wdt_clear();
-	GSM_DELAY(500);
+	GSM_DELAY(50);
 	retry = 0;
-	while(gsm_cmd("AT+CEREG?\r","OK", 800) != GSM_TRUE)//查询4G状态业务是否可用
+	while(gsm_cmd("AT+CEREG?\r","OK", 200) != GSM_TRUE)//查询4G状态业务是否可用
 	{
 		printf("\r\n replay AT OK, retry %d\r\n", retry);
-		if(++retry > 90) {
+		if(++retry > 50) {
 			printf("\r\n AT+CEREG? ERROR \r\n");
 
 			goto sms_failure;
@@ -743,7 +743,7 @@ uint8_t gsm_init_to_access_mode(void)
 	#endif
 
 	wdt_clear();
-	GSM_DELAY(500);
+	GSM_DELAY(50);
 	retry = 0;
 #if 0
 #if (SIM_CARD_TYPE == CTNET)
@@ -818,7 +818,7 @@ uint8_t gsm_init_to_access_mode(void)
 	//--------------------------------------------------------------------
 
 	wdt_clear();
-	GSM_DELAY(500);
+	GSM_DELAY(50);
 	retry = 0;
 	//while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9999,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
 	//while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
@@ -840,7 +840,6 @@ uint8_t gsm_init_to_access_mode(void)
 
 	sms_failure:
 		printf("\r\n GSM MODULE init fail... \r\n");
-		led_blink_time(100, 5000);//5s
 		return GSM_FALSE;
 }
 
@@ -859,11 +858,11 @@ int clsoe_tcp_link(void)
 	GSM_DELAY(2000);//delay 2s
 	wdt_clear();
 
-	while(gsm_cmd("+++","OK", 1000) != GSM_TRUE)//
+	while(gsm_cmd("+++","OK", 200) != GSM_TRUE)//
 	{
 		printf("\r\n +++ not replay AT OK, retry %d\r\n", retry);
 
-		if(++retry > 90) {
+		if(++retry > 50) {
 			printf("\r\n模块响应测试不正常！！\r\n");
 
 			goto sms_failure;
@@ -871,7 +870,7 @@ int clsoe_tcp_link(void)
 	}
 
 	wdt_clear();
-	GSM_DELAY(500);
+	GSM_DELAY(50);
 	retry = 0;
 	while(gsm_cmd("AT+MIPCLOSE=1\r","+MIPCLOSE: 1,0", 1000 * 30) != GSM_TRUE)//关闭会话
 	{
@@ -972,7 +971,7 @@ uint8_t gsm_sync_time_from_net(void)
 	retry = 0;
 	while(gsm_cmd("AT+CPIN?\r","+CPIN: READY", 200) != GSM_TRUE)//查询SIM卡
 	{
-		printf("\r\n replay AT OK, retry %d\r\n", retry);
+		printf("\r\n CPIN replay AT OK, retry %d\r\n", retry);
 		if(++retry > 10) {
 			printf("\r\n未检测到SIM卡\r\n");
 
@@ -987,7 +986,7 @@ uint8_t gsm_sync_time_from_net(void)
 	retry = 0;
 	while(gsm_cmd("AT+CSQ?\r","OK", 200) != GSM_TRUE)//查询信号值
 	{
-		printf("\r\n replay AT OK, retry %d\r\n", retry);
+		printf("\r\n AT+CSQ replay AT OK, retry %d\r\n", retry);
 		if(++retry > 90) {
 
 			goto sms_failure;
