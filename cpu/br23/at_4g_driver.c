@@ -629,19 +629,6 @@ uint8_t gsm_init_to_access_mode(void)
 	wdt_clear();
 	GSM_DELAY(50);
 	retry = 0;
-	while(gsm_cmd("AT+CIMI\r","OK", 200) != GSM_TRUE)//确认SIM卡可用
-	{
-		printf("\r\n AT+CIMI not replay OK, retry %d\r\n", retry);
-		if(++retry > 50) {
-			printf("\r\nSIM卡 ERROR\r\n");
-
-			goto sms_failure;
-		}
-	}
-
-	wdt_clear();
-	GSM_DELAY(50);
-	retry = 0;
 	while(gsm_cmd("AT+GSN?\r","+GSN", 200) != GSM_TRUE)//查询SN
 	{
 		printf("\r\n AT+GSN not replay OK, retry %d\r\n", retry);
@@ -858,7 +845,7 @@ int clsoe_tcp_link(void)
 	GSM_DELAY(2000);//delay 2s
 	wdt_clear();
 
-	while(gsm_cmd("+++","OK", 200) != GSM_TRUE)//
+	while(gsm_cmd("+++","OK", 2000) != GSM_TRUE)//
 	{
 		printf("\r\n +++ not replay AT OK, retry %d\r\n", retry);
 
@@ -901,7 +888,7 @@ int clsoe_tcp_link(void)
 	return GSM_TRUE;
 
 	sms_failure:
-	printf("\r\n GSM access mode fail... \r\n");
+	printf("\r\n close tcp link fail... \r\n");
 
 	return GSM_FALSE;
 }
@@ -1155,9 +1142,9 @@ void check_moudule_whether_is_power_on(void)
 	u8 retry = 0;
 	int ret;
 
+	GSM_DELAY(1000); 			 //延时
 
 	GSM_CLEAN_RX();                 //清空了接收缓冲区数据
-
 
 	while(gsm_cmd("+++","OK", 1000) != GSM_TRUE)//
 	{
@@ -1171,7 +1158,7 @@ void check_moudule_whether_is_power_on(void)
 	while(gsm_cmd("AT\r","OK", 2000) != GSM_TRUE)// AT
 	{
 
-		if(++retry > 1) {
+		if(++retry > 2) {
 			printf("\r\n AT not response！！\r\n");
 			return;
 		}
