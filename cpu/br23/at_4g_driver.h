@@ -16,6 +16,15 @@ typedef enum{
     
 }gsm_res_e;
 
+
+typedef enum{
+    NO_SIM_CARD = 0x81,
+	NET_ERROR,
+    NO_SD_CARD,
+    
+}error_code;
+
+
 typedef enum
 {
     GSM_NULL                = 0,

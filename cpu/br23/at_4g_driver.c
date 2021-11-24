@@ -210,6 +210,18 @@ static void at_4g_task_handle(void *arg)
 				case APP_USER_MSG_SYNC_TIME:
 					gsm_sync_time_from_net();
 					break;
+
+				case APP_USER_MSG_GSM_ERROR:
+					 if(msg[2] == NO_SIM_CARD) {
+						printf("NO sim card\n");
+					 } else if(msg[2] == NET_ERROR) {
+						printf("gsm internet is error\n");
+					 } else if (msg[2] == NO_SD_CARD){
+						 printf("NO sd card\n");
+						
+					 }
+					break;
+
 	            default:
 	                break;
 	       }
@@ -905,6 +917,7 @@ uint8_t gsm_sync_time_from_net(void)
 	char *redata;
 	uint8_t len;
 	int ret;
+	uint8_t error_code;
 	u8 sync_time = 0;
 
 	ret = syscfg_read(CFG_USER_SYNC_TIME, &sync_time, 1);
@@ -926,7 +939,6 @@ uint8_t gsm_sync_time_from_net(void)
 		}
 	}
 
-
 	module_power_on();
 
 	GSM_CLEAN_RX();                 //清空了接收缓冲区数据
@@ -935,7 +947,7 @@ uint8_t gsm_sync_time_from_net(void)
 	{
 		printf("\r\n module not replay AT OK, retry %d\r\n", retry);
 
-		if(++retry > 90) {
+		if(++retry > 50) {
 			printf("\r\n AT not response！！\r\n");
 			goto sms_failure;
 		}
@@ -964,22 +976,11 @@ uint8_t gsm_sync_time_from_net(void)
 		if(++retry > 10) {
 			printf("\r\n未检测到SIM卡\r\n");
 
+			error_code = NO_SIM_CARD;
 			goto sms_failure;
 		}
 	}
 
-	wdt_clear();
-	GSM_DELAY(50);
-	retry = 0;
-	while(gsm_cmd("AT+GSN?\r","+GSN", 200) != GSM_TRUE)//查询SN
-	{
-		printf("\r\n AT+GSN not replay OK, retry %d\r\n", retry);
-		if(++retry > 90) {
-			printf("\r\n GET GSN ERROR\r\n");
-
-			goto sms_failure;
-		}
-	}
 
 	wdt_clear();
 	GSM_DELAY(50);
@@ -1001,7 +1002,7 @@ uint8_t gsm_sync_time_from_net(void)
 		printf("\r\n AT+CGREG? not OK, retry %d\r\n", retry);
 		if(++retry > 90) {
 			printf("\r\n AT+CGREG? ERROR \r\n");
-
+			error_code = NET_ERROR;
 			goto sms_failure;
 		}
 	}
@@ -1025,6 +1026,7 @@ uint8_t gsm_sync_time_from_net(void)
 
 		if(++retry > 2) {
 			printf("\r\n模块响应测试不正常！！\r\n");
+			error_code = NET_ERROR;
 			goto sms_failure;
 		}
 	}
@@ -1049,6 +1051,7 @@ uint8_t gsm_sync_time_from_net(void)
 		printf("\r\n AT+MIPCALL= not replay AT OK, retry %d\r\n", retry);
 
 		if(++retry > 2) {
+			error_code = NET_ERROR;
 			printf("\r\n模块响应测试不正常！！\r\n");
 
 			goto sms_failure;
@@ -1064,7 +1067,7 @@ uint8_t gsm_sync_time_from_net(void)
 
 		if(++retry > 3) {
 			printf("\r\n模块响应测试不正常！！\r\n");
-
+			error_code = NET_ERROR;
 			goto sms_failure;
 		}
 	}
@@ -1138,8 +1141,8 @@ uint8_t gsm_sync_time_from_net(void)
 	return GSM_TRUE;
 
 	sms_failure:
-		printf("\r\n GSM MODULE init fail... \r\n");
-		led_blink_time(100, 5000);//5s
+		printf("\r\n sync time fail... \r\n");
+		os_taskq_post_msg("at_4g_task", 2, APP_USER_MSG_GSM_ERROR, error_code);
 		module_power_off();
 		return GSM_FALSE;
 }
@@ -1162,7 +1165,6 @@ void check_moudule_whether_is_power_on(void)
 		printf("\r\n +++ not replay AT OK, retry %d\r\n", retry);
 
 		if(++retry > 2) {
-			printf("\r\n模块响应测试不正常！！\r\n");
 			break;
 		}
 	}
