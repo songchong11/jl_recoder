@@ -103,6 +103,7 @@ static FILE *test_file = NULL;
 u32 uart_rxcnt = 0;
 static u32 received_len = 0;
 static u8 received_buffer[320];
+uint8_t need_len = 4;
 
 static void uart_at_task_handle(void *arg)
 {
@@ -114,7 +115,7 @@ static void uart_at_task_handle(void *arg)
         uart_rxcnt = uart_bus->read(uart_rxbuf, sizeof(uart_rxbuf), 0);
 
 		//printf("----------------------------------uart_rxcnt %d\n", uart_rxcnt);
-        if (uart_rxcnt >= 4) { //some time , it maybe received 1 byte data, it no use
+        if (uart_rxcnt >= need_len) { //some time , it maybe received 1 byte data, it no use
 
 			received_len = uart_rxcnt;
 			memcpy(received_buffer, uart_rxbuf, received_len);
@@ -172,8 +173,8 @@ void uart_dev_4g_at_init()
     u_arg.rx_pin = IO_PORTA_01;
     u_arg.rx_cbuf = uart_cbuf;
     u_arg.rx_cbuf_size = 512;
-    u_arg.frame_length = 32;
-    u_arg.rx_timeout = 100;
+    u_arg.frame_length = 256;
+    u_arg.rx_timeout = 200;
     u_arg.isr_cbfun = uart_isr_hook;
     u_arg.baud = 115200;
     u_arg.is_9bit = 0;
