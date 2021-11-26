@@ -46,6 +46,7 @@ extern int get_recoder_file_path(u8 *tmp_dir, u8 *tmp_file);
 
 uint8_t get_and_set_time(void);
 uint8_t get_and_set_time_form_our_server(void);
+void UTCToBeijing(struct sys_time* time);
 
 extern void clean_rebuff(void);
 extern char *get_rebuff(uint8_t *len);

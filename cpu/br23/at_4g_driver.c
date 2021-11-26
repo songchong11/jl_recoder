@@ -902,7 +902,7 @@ uint8_t gsm_sync_time_from_net(void)
 	u8 sync_time = 0;
 	u8 sync_ok = 0;
 
-#if 1
+#if 0
 	ret = syscfg_read(CFG_USER_SYNC_TIME, &sync_time, 1);
 	if (ret <= 0)
 		printf("syscfg_read failed\n");
@@ -993,6 +993,19 @@ uint8_t gsm_sync_time_from_net(void)
 	wdt_clear();
 	GSM_DELAY(50);
 	retry = 0;
+	while(gsm_cmd("AT+GTSET=\"IPRFMT\",2\r","OK", 200) != GSM_TRUE)//确认PS数据业务可用
+	{
+		printf("\r\n AT+GTSET? not OK, retry %d\r\n", retry);
+		if(++retry > 90) {
+			printf("\r\n AT+GTSET? ERROR \r\n");
+			error_code = NET_ERROR;
+			goto sms_failure;
+		}
+	}
+
+	wdt_clear();
+	GSM_DELAY(50);
+	retry = 0;
 #if 0
 #if  (SIM_CARD_TYPE == CTNET)
 		while(gsm_cmd("AT+CGDCONT=1,\"IP\",\"CTNET\"\r","OK", 8000) != GSM_TRUE)// 设置激活时APN。电信
@@ -1044,7 +1057,7 @@ uint8_t gsm_sync_time_from_net(void)
 	wdt_clear();
 	GSM_DELAY(50);
 	retry = 0;
-#if 0
+#if 1
 	while(gsm_cmd("AT+MIPOPEN=1,,\"47.113.105.118\",9899,0\r","+MIPOPEN", 1000 * 60) != GSM_TRUE)// 链接TCP
 	{
 		printf("\r\n AT+MIPOPEN not replay AT OK, retry %d\r\n", retry);
@@ -1071,7 +1084,7 @@ uint8_t gsm_sync_time_from_net(void)
 		}
 	}
 
-	wdt_clear();
+	wdt_clear();// sync time from ourself server
 	if(gsm_cmd("====AT+CCLK?====\r","+MIPRTCP", 1000 * 60) == GSM_TRUE) {
 
 		get_and_set_time_form_our_server();
@@ -1079,6 +1092,7 @@ uint8_t gsm_sync_time_from_net(void)
 		sync_ok = 1;
 	}
 #endif
+
 	wdt_clear();
 	GSM_DELAY(50);
 	retry = 0;
@@ -1230,11 +1244,14 @@ uint8_t get_and_set_time(void)
 	memcpy(day_temp,   redata + 16, 2);
 	t.day = atoi(day_temp);
 	memcpy(hour_temp,  redata + 19, 2);
-	t.hour = (atoi(hour_temp) + 8) % 24;//add 8 hours
+	//t.hour = (atoi(hour_temp) + 8) % 24;//add 8 hours
+	t.hour = atoi(hour_temp);
 	memcpy(min_temp,   redata + 22, 2);
 	t.min = atoi(min_temp);
 	memcpy(sec_temp,   redata + 25, 2);
 	t.sec = atoi(sec_temp);
+
+	UTCToBeijing(&t);
 
 	printf("time: %d-%d-%d:%d:%d:%d\n", t.year, t.month, t.day, t.hour, t.min, t.sec);
 	set_sys_time(&t);
@@ -1273,20 +1290,23 @@ uint8_t get_and_set_time_form_our_server(void)
 
 	redata = GSM_RX(len);   //接收数据
 	printf("sync time: %s\n", redata);
-
-	offset = 67;
-
-	memcpy(year_temp,  redata + offset, 2);
+#if 0
+	for (int i = 0; i < len; i++) {
+		printf("redata[%d] = %c\n", i, redata[i]);
+		printf("redata[%d] = %x\n", i, redata[i]);
+	}
+#endif
+	memcpy(year_temp,  redata + 78, 2);
 	t.year = 2000 + atoi(year_temp);
-	memcpy(month_temp, redata + offset + 3, 2);
+	memcpy(month_temp, redata + 81, 2);
 	t.month = atoi(month_temp);
-	memcpy(day_temp,   redata + offset + 6, 2);
+	memcpy(day_temp,   redata + 84, 2);
 	t.day = atoi(day_temp);
-	memcpy(hour_temp,  redata + offset + 9, 2);
+	memcpy(hour_temp,  redata + 87, 2);
 	t.hour = atoi(hour_temp);
-	memcpy(min_temp,   redata + offset + 12, 2);
+	memcpy(min_temp,   redata + 90, 2);
 	t.min = atoi(min_temp);
-	memcpy(sec_temp,   redata + offset + 15, 2);
+	memcpy(sec_temp,   redata + 93, 2);
 	t.sec = atoi(sec_temp);
 
 	printf("time: %d-%d-%d:%d:%d:%d\n", t.year, t.month, t.day, t.hour, t.min, t.sec);
@@ -1302,4 +1322,45 @@ uint8_t get_and_set_time_form_our_server(void)
 
 	return ret;
 }
+
+
+void UTCToBeijing(struct sys_time* time)
+{
+	uint8_t days = 0;
+	if (time->month == 1 || time->month == 3 || time->month == 5 || time->month == 7 || time->month == 8 || time->month == 10 || time->month == 12)
+	{
+		days = 31;
+	}
+	else if (time->month == 4 || time->month == 6 || time->month == 9 || time->month == 11)
+	{
+		days = 30;
+	}
+	else if (time->month == 2)
+	{
+		if ((time->year % 400 == 0) || ((time->year % 4 == 0) && (time->year % 100 != 0))) /* 判断平年还是闰年 */
+		{
+			days = 29;
+		}
+		else
+		{
+			days = 28;
+		}
+	}
+	time->hour += 8;                 /* 北京时间比格林威治时间快8小时 */
+	if (time->hour >= 24)            /* 跨天 */
+	{
+		time->hour -= 24;
+		time->day++;
+		if (time->day > days)        /* 跨月 */
+		{
+			time->day = 1;
+			time->month++;
+			if (time->month > 12)    /* 跨年 */
+			{
+				time->year++;
+			}
+		}
+	}
+}
+
 
