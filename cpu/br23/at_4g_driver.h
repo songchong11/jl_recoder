@@ -44,6 +44,8 @@ extern  uint8_t     gsm_cmd_check   	(char *reply);
 void check_config_file(void);
 extern int get_recoder_file_path(u8 *tmp_dir, u8 *tmp_file);
 
+uint8_t get_and_set_time(void);
+uint8_t get_and_set_time_form_our_server(void);
 
 extern void clean_rebuff(void);
 extern char *get_rebuff(uint8_t *len);

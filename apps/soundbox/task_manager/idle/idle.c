@@ -314,6 +314,7 @@ static int idle_key_event_opr(struct sys_event *event)
         break;
 
 	case KEY_START_STOP_RECODER:
+		//before start recoder , check the sd card
 		if(recoder_state == false) {
 			printf("start recoder task............\n");
 
@@ -548,7 +549,7 @@ void app_idle_task()
     idle_app_start();
 
 	os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SYNC_TIME);
-
+	// add a timer to check sd card
     while (1) {
         app_task_get_msg(msg, ARRAY_SIZE(msg), 1);
 

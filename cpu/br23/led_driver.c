@@ -79,9 +79,17 @@ void led_power_on_show(void)
 	printf("led_power_on_show \n");
 	led_blue_on();
 	wdt_clear();
-	delay_2ms(500 * 3);//3s
-	wdt_clear();
+	//delay_2ms(500 * 3);//3s
+	//wdt_clear();
+	//led_blue_off();
+}
+void led_power_on_show_end(void)
+{
 	led_blue_off();
+	wdt_clear();
+	//delay_2ms(500 * 3);//3s
+	//wdt_clear();
+	//led_blue_off();
 }
 
 

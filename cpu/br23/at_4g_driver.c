@@ -218,7 +218,7 @@ static void at_4g_task_handle(void *arg)
 						printf("gsm internet is error\n");
 					 } else if (msg[2] == NO_SD_CARD){
 						 printf("NO sd card\n");
-						
+
 					 }
 					break;
 
@@ -469,11 +469,16 @@ uint8_t gsm_cmd(char *cmd, char *reply, uint32_t waittime)
 			if (ret == GSM_TRUE)
 				 return ret;
 		}
+
+	} else {
+
+			wdt_clear();
+			GSM_DELAY(waittime);				 //延时
+			wdt_clear();
+			ret = gsm_cmd_check(reply);	  //对接收数据进行处理
 	}
 
-	wdt_clear();
-	GSM_DELAY(200);				 //延时
-    return ret = gsm_cmd_check(reply);    //对接收数据进行处理
+	return ret;
 }
 
 
@@ -571,6 +576,8 @@ uint8_t gsm_init_to_access_mode(void)
 	u8 retry;
 	char *redata;
 	uint8_t len;
+	uint8_t ret;
+	uint8_t error_code;
 
 	GSM_DEBUG_FUNC();
 
@@ -616,7 +623,7 @@ uint8_t gsm_init_to_access_mode(void)
 	GSM_DELAY(50);
 
 	retry = 0;
-	while(gsm_cmd("AT+CPIN?\r","+CPIN: READY", 200) != GSM_TRUE)//查询SIM卡
+	while(gsm_cmd("AT+CPIN?\r","+CPIN: READY", 1000) != GSM_TRUE)//查询SIM卡
 	{
 		printf("\r\n replay AT OK, retry %d\r\n", retry);
 		if(++retry > 50) {
@@ -627,7 +634,7 @@ uint8_t gsm_init_to_access_mode(void)
 	}
 
 	wdt_clear();
-	GSM_DELAY(50);
+	GSM_DELAY(1000);
 	retry = 0;
 	while(gsm_cmd("AT+GSN?\r","+GSN", 200) != GSM_TRUE)//查询SN
 	{
@@ -663,9 +670,9 @@ uint8_t gsm_init_to_access_mode(void)
 	}
 
 	wdt_clear();
-	GSM_DELAY(50);
+	GSM_DELAY(500);
 	retry = 0;
-	while(gsm_cmd("AT+CSQ?\r","OK", 200) != GSM_TRUE)//查询信号值
+	while(gsm_cmd("AT+CSQ?\r","OK", 1000) != GSM_TRUE)//查询信号值
 	{
 		printf("\r\n replay AT OK, retry %d\r\n", retry);
 		if(++retry > 90) {
@@ -678,9 +685,9 @@ uint8_t gsm_init_to_access_mode(void)
 	}
 
 	wdt_clear();
-	GSM_DELAY(50);
+	GSM_DELAY(500);
 	retry = 0;
-	while(gsm_cmd("AT+COPS?\r","OK", 200) != GSM_TRUE)//查询注册状态
+	while(gsm_cmd("AT+COPS?\r","OK", 2000) != GSM_TRUE)//查询注册状态
 	{
 		printf("\r\n replay AT OK, retry %d\r\n", retry);
 		if(++retry > 90) {
@@ -691,9 +698,9 @@ uint8_t gsm_init_to_access_mode(void)
 	}
 
 	wdt_clear();
-	GSM_DELAY(50);
+	GSM_DELAY(500);
 	retry = 0;
-	while(gsm_cmd("AT+CGREG?\r","OK", 200) != GSM_TRUE)//确认PS数据业务可用
+	while(gsm_cmd("AT+CGREG?\r","OK", 3000) != GSM_TRUE)//确认PS数据业务可用
 	{
 		printf("\r\n AT+CGREG? not OK, retry %d\r\n", retry);
 		if(++retry > 90) {
@@ -704,9 +711,9 @@ uint8_t gsm_init_to_access_mode(void)
 	}
 
 	wdt_clear();
-	GSM_DELAY(50);
+	GSM_DELAY(500);
 	retry = 0;
-	while(gsm_cmd("AT+CEREG?\r","OK", 200) != GSM_TRUE)//查询4G状态业务是否可用
+	while(gsm_cmd("AT+CEREG?\r","OK", 3000) != GSM_TRUE)//查询4G状态业务是否可用
 	{
 		printf("\r\n replay AT OK, retry %d\r\n", retry);
 		if(++retry > 50) {
@@ -730,7 +737,7 @@ uint8_t gsm_init_to_access_mode(void)
 	#endif
 
 	wdt_clear();
-	GSM_DELAY(50);
+	GSM_DELAY(500);
 	retry = 0;
 #if 0
 #if (SIM_CARD_TYPE == CTNET)
@@ -757,6 +764,7 @@ uint8_t gsm_init_to_access_mode(void)
 	wdt_clear();
 	GSM_DELAY(50);
 	retry = 0;
+	#if 0
 	while(gsm_cmd("AT+MIPNTP=\"cn.ntp.org.cn\",123\r","+MIPNTP: 1", 1000 * 60) != GSM_TRUE)// 同步时间
 	{
 		printf("\r\n AT+MIPNTP not replay AT OK, retry %d\r\n", retry);
@@ -767,49 +775,38 @@ uint8_t gsm_init_to_access_mode(void)
 			goto sms_failure;
 		}
 	}
+#endif
+	ret = gsm_cmd("AT+MIPNTP=\"cn.pool.ntp.org\",123\r","+MIPNTP: 1", 1000 * 60);
 
-//--------------------------------------------------------------------
-	struct sys_time t;
+	if (ret != GSM_TRUE)
+		ret = gsm_cmd("AT+MIPNTP=\"cn.ntp.org.cn\",123\r","+MIPNTP: 1", 1000 * 60);
 
-	char year_temp[3];
-	char month_temp[3];
-	char day_temp[3];
-	char hour_temp[3];
-	char min_temp[3];
-	char sec_temp[3];
+	if (ret != GSM_TRUE)
+		ret = gsm_cmd("AT+MIPNTP=\"edu.ntp.org.cn\",123\r","+MIPNTP: 1", 1000 * 60);
 
-	//+CCLK: "21/11/18,16:04:54+00"
-	if(gsm_cmd("AT+CCLK?\r","OK", 1000 * 60) == GSM_TRUE) {
+	if (ret != GSM_TRUE)
+		ret = gsm_cmd("AT+MIPNTP=\"ntp1.aliyun.com\",123\r","+MIPNTP: 1", 1000 * 60);
 
-		redata = GSM_RX(len);	//接收数据
-		printf("sync time: %s\n", redata);
+	if (ret != GSM_TRUE)
+		ret = gsm_cmd("AT+MIPNTP=\"ntp2.aliyun.com\",123\r","+MIPNTP: 1", 1000 * 60);
 
-		memcpy(year_temp,  redata + 10, 2);
-		t.year = 2000 + atoi(year_temp);
-		memcpy(month_temp, redata + 13, 2);
-		t.month = atoi(month_temp);
-		memcpy(day_temp,   redata + 16, 2);
+	if (ret != GSM_TRUE) {
+		error_code = NET_ERROR;
+		goto sms_failure;
 
-		t.day = (atoi(day_temp) + 8) % 24;//add 8 hours
+	} else {
 
-		memcpy(hour_temp,  redata + 19, 2);
-		t.hour = atoi(hour_temp);
-		memcpy(min_temp,   redata + 22, 2);
-		t.min = atoi(min_temp);
-		memcpy(sec_temp,   redata + 25, 2);
-		t.sec = atoi(sec_temp);
-		printf(" sync time: %d-%d-%d:%d:%d:%d\n", t.year, t.month, t.day, t.hour, t.min, t.sec);
-		set_sys_time(&t);
+		get_and_set_time();
 	}
 
-	//--------------------------------------------------------------------
 
 	wdt_clear();
 	GSM_DELAY(50);
 	retry = 0;
 	//while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9999,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
 	//while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
-	while(gsm_cmd("AT+MIPODM=1,,\"record.miclink.net\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
+	//while(gsm_cmd("AT+MIPODM=1,,\"record.miclink.net\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
+	while(gsm_cmd("AT+MIPODM=1,,\"luyin.heteen.com\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
 	{
 		printf("\r\n AT+MIPODM= not replay AT OK, retry %d\r\n", retry);
 
@@ -900,12 +897,12 @@ int clsoe_tcp_link(void)
 uint8_t gsm_sync_time_from_net(void)
 {
 	u8 retry;
-	char *redata;
-	uint8_t len;
-	int ret;
+	int ret = GSM_FALSE;
 	uint8_t error_code;
 	u8 sync_time = 0;
+	u8 sync_ok = 0;
 
+#if 1
 	ret = syscfg_read(CFG_USER_SYNC_TIME, &sync_time, 1);
 	if (ret <= 0)
 		printf("syscfg_read failed\n");
@@ -924,7 +921,7 @@ uint8_t gsm_sync_time_from_net(void)
 			return 1;
 		}
 	}
-
+#endif
 	module_power_on();
 
 	GSM_CLEAN_RX();                 //清空了接收缓冲区数据
@@ -1017,7 +1014,6 @@ uint8_t gsm_sync_time_from_net(void)
 		}
 	}
 
-
 	wdt_clear();
 	GSM_DELAY(50);
 	retry = 0;
@@ -1031,7 +1027,7 @@ uint8_t gsm_sync_time_from_net(void)
 	while(gsm_cmd("AT+MIPCALL=1,\"TGNET\"\r","+MIPCALL", 1000 * 150) != GSM_TRUE)// 链接TCP
 #endif
 #endif
-	while(gsm_cmd("AT+MIPCALL=1,\"CTNET\"\r","+MIPCALL", 1000 * 150) != GSM_TRUE)// 链接TCP
+	while(gsm_cmd("AT+MIPCALL=1,\"CTNET\"\r","+MIPCALL", 1000 * 90) != GSM_TRUE)// 链接TCP
 
 	{
 		printf("\r\n AT+MIPCALL= not replay AT OK, retry %d\r\n", retry);
@@ -1044,10 +1040,59 @@ uint8_t gsm_sync_time_from_net(void)
 		}
 	}
 
+
 	wdt_clear();
 	GSM_DELAY(50);
 	retry = 0;
-	while(gsm_cmd("AT+MIPNTP=\"cn.ntp.org.cn\",123\r","+MIPNTP: 1", 1000 * 60) != GSM_TRUE)// 同步时间
+#if 0
+	while(gsm_cmd("AT+MIPOPEN=1,,\"47.113.105.118\",9899,0\r","+MIPOPEN", 1000 * 60) != GSM_TRUE)// 链接TCP
+	{
+		printf("\r\n AT+MIPOPEN not replay AT OK, retry %d\r\n", retry);
+
+		if(++retry > 3) {
+			printf("\r\n模块响应测试不正常！！\r\n");
+
+			goto sms_failure;
+		}
+	}
+
+	wdt_clear();
+	GSM_DELAY(50);
+	retry = 0;
+
+	while(gsm_cmd("AT+MIPSEND=1,17\r",">", 1000 * 60) != GSM_TRUE)// 链接TCP
+	{
+		printf("\r\n AT+MIPOPEN not replay AT OK, retry %d\r\n", retry);
+
+		if(++retry > 3) {
+			printf("\r\n模块响应测试不正常！！\r\n");
+
+			goto sms_failure;
+		}
+	}
+
+	wdt_clear();
+	if(gsm_cmd("====AT+CCLK?====\r","+MIPRTCP", 1000 * 60) == GSM_TRUE) {
+
+		get_and_set_time_form_our_server();
+		ret = GSM_TRUE;
+		sync_ok = 1;
+	}
+#endif
+	wdt_clear();
+	GSM_DELAY(50);
+	retry = 0;
+	/*
+	最常见、熟知的就是，www.pool.ntp.org/zone/cn
+	cn.ntp.org.cn #中国
+	edu.ntp.org.cn #中国教育网
+	ntp1.aliyun.com #阿里云
+	ntp2.aliyun.com #阿里云
+	cn.pool.ntp.org #最常用的国内NTP服务器
+	*/
+#if 0
+	//while(gsm_cmd("AT+MIPNTP=\"cn.ntp.org.cn\",123\r","+MIPNTP: 1", 1000 * 60) != GSM_TRUE)// 同步时间
+	while(gsm_cmd("AT+MIPNTP=\"cn.pool.ntp.org\",123\r","+MIPNTP: 1", 1000 * 60) != GSM_TRUE)// 同步时间
 	{
 		printf("\r\n AT+MIPNTP not replay AT OK, retry %d\r\n", retry);
 
@@ -1057,53 +1102,38 @@ uint8_t gsm_sync_time_from_net(void)
 			goto sms_failure;
 		}
 	}
+#endif
+
+	if (ret != GSM_TRUE)
+		ret = gsm_cmd("AT+MIPNTP=\"cn.pool.ntp.org\",123\r","+MIPNTP: 1", 1000 * 60);
+
+	if (ret != GSM_TRUE)
+		ret = gsm_cmd("AT+MIPNTP=\"cn.ntp.org.cn\",123\r","+MIPNTP: 1", 1000 * 60);
+
+	if (ret != GSM_TRUE)
+		ret = gsm_cmd("AT+MIPNTP=\"edu.ntp.org.cn\",123\r","+MIPNTP: 1", 1000 * 60);
+
+	if (ret != GSM_TRUE)
+		ret = gsm_cmd("AT+MIPNTP=\"ntp1.aliyun.com\",123\r","+MIPNTP: 1", 1000 * 60);
+
+	if (ret != GSM_TRUE)
+		ret = gsm_cmd("AT+MIPNTP=\"ntp2.aliyun.com\",123\r","+MIPNTP: 1", 1000 * 60);
+
+	if (ret != GSM_TRUE) {
+		error_code = NET_ERROR;
+		goto sms_failure;
+	}
 
 	wdt_clear();
-	GSM_DELAY(50);
-	retry = 0;
-//--------------------------------------------------------------------
-	struct sys_time t;
 
-	char year_temp[3];
-	char month_temp[3];
-	char day_temp[3];
-	char hour_temp[3];
-	char min_temp[3];
-	char sec_temp[3];
+	if ((ret == GSM_TRUE) && (sync_ok == 0)) {
 
-//--------------------------------------------------------------------
-	//+CCLK: "21/11/18,16:04:54+00"
-	if(gsm_cmd("AT+CCLK?\r","OK", 1000 * 60) == GSM_TRUE) {
+		//+CCLK: "21/11/18,16:04:54+00"
+		if(gsm_cmd("AT+CCLK?\r","OK", 1000 * 60) == GSM_TRUE) {
 
-		redata = GSM_RX(len);   //接收数据
-		printf("sync time: %s\n", redata);
+			get_and_set_time();
+		}
 
-		memcpy(year_temp,  redata + 10, 2);
-		t.year = 2000 + atoi(year_temp);
-		memcpy(month_temp, redata + 13, 2);
-		t.month = atoi(month_temp);
-		memcpy(day_temp,   redata + 16, 2);
-		t.day = atoi(day_temp);
-		memcpy(hour_temp,  redata + 19, 2);
-		t.hour = (atoi(hour_temp) + 8) % 24;//add 8 hours
-		memcpy(min_temp,   redata + 22, 2);
-		t.min = atoi(min_temp);
-		memcpy(sec_temp,   redata + 25, 2);
-		t.sec = atoi(sec_temp);
-
-		printf("time: %d-%d-%d:%d:%d:%d\n", t.year, t.month, t.day, t.hour, t.min, t.sec);
-		set_sys_time(&t);
-
-		sync_time = HAD_SYNC;
-		ret = syscfg_write(CFG_USER_SYNC_TIME, &sync_time, 1);
-		if (ret <= 0)
-			printf("syscfg_write failed");
-
-		ret = GSM_TRUE;
-
-	} else {
-
-		ret = GSM_FALSE;
 	}
 
 
@@ -1160,13 +1190,116 @@ void check_moudule_whether_is_power_on(void)
 
 		if(++retry > 2) {
 			printf("\r\n AT not response！！\r\n");
+			led_power_on_show_end();
 			return;
 		}
 	}
 
+	led_power_on_show_end();
+
 	printf("module is power on state\n");
 	module_power_off();
-
+	wdt_clear();
+	GSM_DELAY(5000);
+	wdt_clear();
 }
 
+
+uint8_t get_and_set_time(void)
+{
+	struct sys_time t;
+	char *redata;
+	uint8_t len;
+	int ret;
+	u8 sync_time = 0;
+
+	char year_temp[3];
+	char month_temp[3];
+	char day_temp[3];
+	char hour_temp[3];
+	char min_temp[3];
+	char sec_temp[3];
+
+	redata = GSM_RX(len);   //接收数据
+	printf("sync time: %s\n", redata);
+
+	memcpy(year_temp,  redata + 10, 2);
+	t.year = 2000 + atoi(year_temp);
+	memcpy(month_temp, redata + 13, 2);
+	t.month = atoi(month_temp);
+	memcpy(day_temp,   redata + 16, 2);
+	t.day = atoi(day_temp);
+	memcpy(hour_temp,  redata + 19, 2);
+	t.hour = (atoi(hour_temp) + 8) % 24;//add 8 hours
+	memcpy(min_temp,   redata + 22, 2);
+	t.min = atoi(min_temp);
+	memcpy(sec_temp,   redata + 25, 2);
+	t.sec = atoi(sec_temp);
+
+	printf("time: %d-%d-%d:%d:%d:%d\n", t.year, t.month, t.day, t.hour, t.min, t.sec);
+	set_sys_time(&t);
+
+	sync_time = HAD_SYNC;
+	ret = syscfg_write(CFG_USER_SYNC_TIME, &sync_time, 1);
+	if (ret <= 0) {
+		printf("syscfg_write failed");
+		ret = GSM_FALSE;
+	} else
+		ret = GSM_TRUE;
+
+	return ret;
+}
+
+
+
+uint8_t get_and_set_time_form_our_server(void)
+{
+	struct sys_time t;
+	char *redata;
+	uint8_t len;
+	int ret;
+	int offset;
+	u8 sync_time = 0;
+
+	char year_temp[3];
+	char month_temp[3];
+	char day_temp[3];
+	char hour_temp[3];
+	char min_temp[3];
+	char sec_temp[3];
+	//====+CCLK:21/11/25,14:39:50+00====
+	//====+CCLK:21/11/18,16:04:54+00"
+	printf("get_and_set_time_form_our_server\n");
+
+	redata = GSM_RX(len);   //接收数据
+	printf("sync time: %s\n", redata);
+
+	offset = 67;
+
+	memcpy(year_temp,  redata + offset, 2);
+	t.year = 2000 + atoi(year_temp);
+	memcpy(month_temp, redata + offset + 3, 2);
+	t.month = atoi(month_temp);
+	memcpy(day_temp,   redata + offset + 6, 2);
+	t.day = atoi(day_temp);
+	memcpy(hour_temp,  redata + offset + 9, 2);
+	t.hour = atoi(hour_temp);
+	memcpy(min_temp,   redata + offset + 12, 2);
+	t.min = atoi(min_temp);
+	memcpy(sec_temp,   redata + offset + 15, 2);
+	t.sec = atoi(sec_temp);
+
+	printf("time: %d-%d-%d:%d:%d:%d\n", t.year, t.month, t.day, t.hour, t.min, t.sec);
+	set_sys_time(&t);
+
+	sync_time = HAD_SYNC;
+	ret = syscfg_write(CFG_USER_SYNC_TIME, &sync_time, 1);
+	if (ret <= 0) {
+		printf("syscfg_write failed");
+		ret = GSM_TRUE;
+	} else
+		ret = GSM_FALSE;
+
+	return ret;
+}
 
