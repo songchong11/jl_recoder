@@ -573,6 +573,7 @@ uint8_t gsm_init_to_access_mode(void)
 	uint8_t len;
 	uint8_t ret;
 	uint8_t error_code;
+	u8 sync_ok = 0;
 
 	GSM_DEBUG_FUNC();
 
@@ -597,6 +598,19 @@ uint8_t gsm_init_to_access_mode(void)
 		printf("\r\n ATE0 not replay AT OK, retry %d\r\n", retry);
 		if(++retry > 50) {
 			printf("\r\n模块响应测试不正常！！\r\n");
+			goto sms_failure;
+		}
+	}
+
+	wdt_clear();
+	GSM_DELAY(50);
+	retry = 0;
+	while(gsm_cmd("AT+GTSET=\"IPRFMT\",2\r","OK", 200) != GSM_TRUE)//确认PS数据业务可用
+	{
+		printf("\r\n AT+GTSET? not OK, retry %d\r\n", retry);
+		if(++retry > 90) {
+			printf("\r\n AT+GTSET? ERROR \r\n");
+			error_code = NET_ERROR;
 			goto sms_failure;
 		}
 	}
@@ -769,6 +783,45 @@ uint8_t gsm_init_to_access_mode(void)
 	wdt_clear();
 	GSM_DELAY(50);
 	retry = 0;
+
+#if 1
+		while(gsm_cmd("AT+MIPOPEN=1,,\"47.113.105.118\",9899,0\r","+MIPOPEN", 1000 * 60) != GSM_TRUE)// 链接TCP
+		{
+			printf("\r\n AT+MIPOPEN not replay AT OK, retry %d\r\n", retry);
+	
+			if(++retry > 3) {
+				printf("\r\n模块响应测试不正常！！\r\n");
+	
+				goto sms_failure;
+			}
+		}
+	
+		wdt_clear();
+		GSM_DELAY(50);
+		retry = 0;
+	
+		while(gsm_cmd("AT+MIPSEND=1,17\r",">", 1000 * 60) != GSM_TRUE)// 链接TCP
+		{
+			printf("\r\n AT+MIPOPEN not replay AT OK, retry %d\r\n", retry);
+	
+			if(++retry > 3) {
+				printf("\r\n模块响应测试不正常！！\r\n");
+	
+				goto sms_failure;
+			}
+		}
+	
+		wdt_clear();// sync time from ourself server
+		if(gsm_cmd("====AT+CCLK?====\r","+MIPRTCP", 1000 * 60) == GSM_TRUE) {
+	
+			get_and_set_time_form_our_server();
+			ret = GSM_TRUE;
+			sync_ok = 1;
+		}
+#endif
+
+
+	
 	#if 0
 	while(gsm_cmd("AT+MIPNTP=\"cn.ntp.org.cn\",123\r","+MIPNTP: 1", 1000 * 60) != GSM_TRUE)// 同步时间
 	{
@@ -799,9 +852,17 @@ uint8_t gsm_init_to_access_mode(void)
 		error_code = NET_ERROR;
 		goto sms_failure;
 
-	} else {
+	}
 
-		get_and_set_time();
+	wdt_clear();
+
+	if ((ret == GSM_TRUE) && (sync_ok == 0)) {
+
+		if(gsm_cmd("AT+CCLK?\r","OK", 1000 * 60) == GSM_TRUE) {
+
+			get_and_set_time();
+		}
+
 	}
 
 
@@ -907,7 +968,7 @@ uint8_t gsm_sync_time_from_net(void)
 	u8 sync_time = 0;
 	u8 sync_ok = 0;
 
-#if 0
+#if 1
 	ret = syscfg_read(CFG_USER_SYNC_TIME, &sync_time, 1);
 	if (ret <= 0)
 		printf("syscfg_read failed\n");
