@@ -101,6 +101,10 @@ SYS_EVENT_HANDLER(SYS_DEVICE_EVENT, uart_event_handler, 0);
 extern lwrb_t receive_buff;
 u32 rx_total = 0;
 u8 led_cnt;
+
+extern FILE *test_file;
+extern bool recoder_state;
+
 static void uart_u_task_handle(void *arg)
 {
 		const uart_bus_t *uart_bus = arg;
@@ -126,18 +130,20 @@ static void uart_u_task_handle(void *arg)
 				if ((rx_total % 10) == 0)// bilnk green led when recoder
 					led_green_toggle();
 
-#if 0
-				for (int i = 0; i < uart_rxcnt; i++) {
-					my_put_u8hex(uart_rxbuf[i]);
-					if (i % 16 == 15) {
-						putchar('\n');
-					}
+#if 1
+				if(test_file && recoder_state) {
+
+							ret = fwrite(test_file, &uart_rxbuf[4], uart_rxcnt - 4);
+							if (ret != (uart_rxcnt - 4)) {
+								printf(" file write buf err %d\n", ret);
+								fclose(test_file);
+								test_file = NULL;
+							}
 				}
-				if (uart_rxcnt % 16) {
-					putchar('\n');
-				}
+
 #endif
 
+#if 0
 				/*push receive data to fifo*/
 				ret = lwrb_is_ready(&receive_buff);
 
@@ -148,6 +154,7 @@ static void uart_u_task_handle(void *arg)
 				} else {
 					os_taskq_post_msg("file_write", 1, APP_USER_MSG_BUFFER_HAVE_DATA);
 				}
+	#endif
 #if (!UART_DEV_FLOW_CTRL)
 				//uart_bus->write(uart_rxbuf, uart_rxcnt);
 #endif
