@@ -9,7 +9,7 @@
 #include "stdlib.h"
 #include "syscfg_id.h"
 
-#define DEBUG_FILE_SYS	1
+#define DEBUG_FILE_SYS	0
 
 #define MODULE_PWR_GPIO		IO_PORTB_03
 #define SIM_CARD_TYPE	CTNET//CMNET
@@ -962,9 +962,9 @@ int clsoe_tcp_link(void)
 #define HAD_SYNC	0xA5
 uint8_t gsm_sync_time_from_net(void)
 {
-	u8 retry;
+	u8 retry = 0;
 	int ret = GSM_FALSE;
-	uint8_t error_code;
+	uint8_t error_code = 0;
 	u8 sync_time = 0;
 	u8 sync_ok = 0;
 
