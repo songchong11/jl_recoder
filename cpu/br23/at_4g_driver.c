@@ -466,7 +466,7 @@ uint8_t gsm_cmd(char *cmd, char *reply, uint32_t waittime)
 			GSM_DELAY(1000);				 //延时
 			wdt_clear();
 			ret = gsm_cmd_check(reply);
-			if (ret == GSM_TRUE)
+			if (ret == GSM_TRUE || ret == GSM_CMD_ERROR)
 				 return ret;
 		}
 
@@ -489,6 +489,7 @@ uint8_t gsm_cmd_check(char *reply)
     uint8_t n;
     uint8_t off;
     u8 *redata;
+	u8 error_code[] = "ERROR";
 
     redata = GSM_RX(len);   //接收数据
 
@@ -503,13 +504,14 @@ uint8_t gsm_cmd_check(char *reply)
 	 *(redata+len) = '\0';
 	 GSM_DEBUG("Reply:%s",redata);
 
+#if 0
 	 if (!memcmp("+GSN",  redata + 2, 4)) {//OD OA
 
 	 	memcpy(gsn_str, redata + 9, 15);
 		gsn_str[15] = '\0';
 		printf("get GSN : %s\n", gsn_str);
 	 }
-
+#endif
     n = 0;
     off = 0;
     while((n + off)<len)
@@ -536,37 +538,30 @@ uint8_t gsm_cmd_check(char *reply)
         return GSM_TRUE;
     }
 
+    n = 0;
+    off = 0;
+    while((n + off)<len) // check weather is ERROR
+    {
+
+        if(redata[ n + off]== error_code[n])
+        {
+            n++;                //移动到下一个接收数据
+        }
+        else
+        {
+            off++;              //进行下一轮匹配
+            n=0;                //重来
+        }
+        //n++;
+    }
+
+    if(error_code[n]==0)   //刚好匹配完毕
+    {
+        return GSM_CMD_ERROR;
+    }
+
     return GSM_FALSE;       //跳出循环表示比较完毕后都没有相同的数据，因此跳出
 }
-
-char * gsm_waitask(uint8_t waitask_hook(void))      //等待有数据应答
-{
-    uint8_t len=0;
-    char *redata;
-
-	GSM_DEBUG_FUNC();
-
-    do{
-        redata = GSM_RX(len);   //接收数据
-
-        if(waitask_hook!=0)
-        {
-            if(waitask_hook()==GSM_TRUE)           //返回 GSM_TRUE 表示检测到事件，需要退出
-            {
-                redata = 0;
-                return redata;
-            }
-        }
-    }while(len==0);                 //接收数据为0时一直等待
-
-	GSM_DEBUG_ARRAY((uint8_t *)redata,len);
-
-
-    GSM_DELAY(20);              //延时，确保能接收到全部数据（115200波特率下，每ms能接收11.52个字节）
-    return redata;
-}
-
-
 
 
 //初始化并检测模块,自动注册网络
@@ -644,6 +639,16 @@ uint8_t gsm_init_to_access_mode(void)
 
 			goto sms_failure;
 		}
+	}
+
+	redata = GSM_RX(len);   //接收数据
+	printf("GSN %s\n", redata);
+
+	if (!memcmp("+GSN",  redata + 2, 4)) {//OD OA
+	
+	   memcpy(gsn_str, redata + 9, 15);
+	   gsn_str[15] = '\0';
+	   printf("get GSN : %s\n", gsn_str);
 	}
 
 	wdt_clear();
@@ -953,7 +958,7 @@ uint8_t gsm_sync_time_from_net(void)
 	GSM_DELAY(50);
 
 	retry = 0;
-	while(gsm_cmd("AT+CPIN?\r","+CPIN: READY", 200) != GSM_TRUE)//查询SIM卡
+	while(gsm_cmd("AT+CPIN?\r","+CPIN: READY", 2000) != GSM_TRUE)//查询SIM卡
 	{
 		printf("\r\n CPIN replay AT OK, retry %d\r\n", retry);
 		if(++retry > 10) {

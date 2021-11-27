@@ -13,6 +13,7 @@ enum{
 typedef enum{
     GSM_TRUE,
     GSM_FALSE,
+    GSM_CMD_ERROR,
     
 }gsm_res_e;
 
@@ -70,7 +71,6 @@ uint8_t  IsInsertCard(void);
 
 /***************************  短信功能  ****************************/
 uint8_t     gsm_sms             (char *num,char *smstext);          //发送短信（支持中英文,中文为GBK码）
-char *      gsm_waitask         	(uint8_t waitask_hook(void));       //等待有数据应答，返回接收缓冲区地址
 void        gsm_gbk2ucs2   		     (char * ucs2,char * gbk);           
 
 uint8_t 	IsReceiveMS				(void);
