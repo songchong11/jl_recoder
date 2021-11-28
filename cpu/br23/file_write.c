@@ -24,13 +24,17 @@ enum {
 
 #if 1
 
+#if 0
 /* Declare rb instance & raw data */
 lwrb_t receive_buff;
-uint8_t buff_data[320 * 20];
-uint8_t write_buffer[1024];
+uint8_t buff_data[320 * 40];
+uint8_t write_buffer[340];
+#endif
 extern bool recoder_state;
 
-static FILE *test_file = NULL;
+//static FILE *test_file = NULL;
+FILE *test_file = NULL;
+
 
 struct sys_time g_time;
 
@@ -61,8 +65,8 @@ static void file_write_task_handle(void *arg)
             //printf("use os_taskq_post_msg");
 	        switch (msg[1]) {
 	            case APP_USER_MSG_BUFFER_HAVE_DATA:
-	                //printf("APP_USER_MSG_BUFFER_HAVE_DATA");
-					if(test_file && recoder_state) {
+				#if 0
+				if(test_file && recoder_state) {
 							int n_bytes_in_queue = lwrb_get_full(&receive_buff);
 							if (n_bytes_in_queue > 0) {
 								int n_read = lwrb_read(&receive_buff, write_buffer, n_bytes_in_queue);
@@ -75,12 +79,14 @@ static void file_write_task_handle(void *arg)
 								}
 						}
 					}
+					#endif
 	                break;
 
 				case APP_USER_MSG_START_RECODER:
 					printf("APP_USER_MSG_START_RECODER");
 #if 1
 
+					#if 0
 					/*lwrb init*/
 				    ret = lwrb_init(&receive_buff, buff_data, sizeof(buff_data));
 					if(!ret) {
@@ -92,20 +98,9 @@ static void file_write_task_handle(void *arg)
 						printf("lwrb ready fail!!! \n");
 						return;
 					}
+					#endif
 					get_sys_time(&g_time);
 					printf("now_time : %d-%d-%d,%d:%d:%d\n", g_time.year, g_time.month, g_time.day, g_time.hour, g_time.min, g_time.sec);
-					#if 0
-
-					sprintf(time_str, "%d-%d-%d:%d:%d:%d" ,  g_time.year, g_time.month, g_time.day, g_time.hour, g_time.min, g_time.sec);
-					printf("time_str:%s\n", time_str);
-
-					strcat(file_path, root_path);
-
-					strcat(file_path, time_str);
-					strcat(file_path, ".txt");
-
-					printf("path:%s\n", file_path);
-					#endif
 
 					sprintf(year_month_day, "%d%02d%02d", g_time.year, g_time.month, g_time.day);
 					printf("year_month_day:%s\n", year_month_day);
