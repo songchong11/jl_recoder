@@ -13,6 +13,7 @@
 #include "ui/ui_style.h"
 #include "ui_manage.h"
 #include "common/app_common.h"
+#include "public.h"
 /*************************************************************
    此文件函数主要是rtc模式按键处理和事件处理
 
@@ -535,13 +536,6 @@ static void rtc_task_close()
     }
 }
 
-extern bool recoder_state;
-extern bool send_pcm_state;
-
-extern void uart_dev_receive_init();
-extern void uart_receive_task_del(void);
-extern void file_write_task_del(void);
-extern void file_write_thread_init(void);
 
 //*----------------------------------------------------------------------------*/
 /**@brief    rtc 按键消息入口
@@ -590,16 +584,16 @@ static int rtc_key_event_opr(struct sys_event *event)
             set_rtc_pos();
             break;
 		case KEY_START_STOP_RECODER:
-			if(recoder_state == false) {
+			if(recoder.recoder_state == false) {
 				printf("start recoder task............\n");
 				/*start recoder task*/
 				get_sys_time(&time);
 				printf("now_time : %d-%d-%d,%d:%d:%d\n", time.year, time.month, time.day, time.hour, time.min, time.sec);
-				recoder_state = true;
+				recoder.recoder_state = true;
 				os_taskq_post_msg("file_write", 1, APP_USER_MSG_START_RECODER);
 			} else {
 				printf("stop recoder task............\n");
-				recoder_state = false;
+				recoder.recoder_state = false;
 				os_taskq_post_msg("file_write", 1, APP_USER_MSG_STOP_RECODER);
 			}
 
@@ -607,14 +601,14 @@ static int rtc_key_event_opr(struct sys_event *event)
 		case KEY_AT_SEND_PCM:
 			//get_sys_time(&time);
 			//printf("now_time : %d-%d-%d,%d:%d:%d\n", time.year, time.month, time.day, time.hour, time.min, time.sec);
-			if (send_pcm_state == false) {
-				send_pcm_state = true;
+			if (recoder.send_pcm_state == false) {
+				recoder.send_pcm_state = true;
 				printf("start send pcm to module............\n");
 				os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_START_SEND_FILE_TO_AT);
 
 			} else {
 				printf("stop send pcm to module............\n");
-				send_pcm_state = false;
+				recoder.send_pcm_state = false;
 				os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_STOP_SEND_FILE_TO_AT);
 			}
 			break;

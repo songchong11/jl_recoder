@@ -37,6 +37,7 @@
 #include "ui_manage.h"
 #include "soundbox.h"
 #include "bt_emitter.h"
+#include "public.h"
 
 #define LOG_TAG_CONST       APP_ACTION
 #define LOG_TAG             "[APP_ACTION]"
@@ -299,20 +300,7 @@ int app_common_key_msg_deal(struct sys_event *event)
         break;
 
 	case KEY_START_STOP_RECODER:
-#if 0
-		if(recoder_state == false) {
-			printf("start recoder task............\n");
-			/*start recoder task*/
-			//uart_dev_receive_init();
-			//file_write_thread_init();
-			recoder_state = true;
-		} else {
-			printf("stop recoder task............\n");
-			//uart_receive_task_del();
-			//file_write_task_del();
-			recoder_state = false;
-		}
-#endif
+
 		break;
 
 	case KEY_AT_SEND_PCM:
@@ -422,7 +410,8 @@ static void app_common_device_event_handler(struct sys_event *event)
             if (event->u.dev.event == DEVICE_EVENT_IN) {
                 ///设备上线， 非解码模式切换到解码模式播放
 
-				printf("switch to music task\r\n");
+				printf("sd card insert.\r\n");
+				recoder.sd_state = true;
                 if (app_get_curr_task() != APP_MUSIC_TASK) {
                    // app = APP_MUSIC_TASK;
                 }

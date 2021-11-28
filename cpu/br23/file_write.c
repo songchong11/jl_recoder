@@ -3,9 +3,8 @@
 #include "system/event.h"
 #include "common/app_common.h"
 #include "lwrb.h"
-#include "led_driver.h"
-#include "misc_driver.h"
 #include "file_bs_deal.h"
+#include "public.h"
 
 enum {
     KEY_USER_DEAL_POST = 0,
@@ -30,7 +29,6 @@ lwrb_t receive_buff;
 uint8_t buff_data[320 * 40];
 uint8_t write_buffer[340];
 #endif
-extern bool recoder_state;
 
 //static FILE *test_file = NULL;
 FILE *test_file = NULL;
@@ -66,7 +64,7 @@ static void file_write_task_handle(void *arg)
 	        switch (msg[1]) {
 	            case APP_USER_MSG_BUFFER_HAVE_DATA:
 				#if 0
-				if(test_file && recoder_state) {
+				if(test_file && recoder.recoder_state) {
 							int n_bytes_in_queue = lwrb_get_full(&receive_buff);
 							if (n_bytes_in_queue > 0) {
 								int n_read = lwrb_read(&receive_buff, write_buffer, n_bytes_in_queue);

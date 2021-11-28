@@ -3,9 +3,8 @@
 #include "asm/uart_dev.h"
 #include "system/event.h"
 #include "common/app_common.h"
-#include "lwrb.h"
 #include "at_4g_driver.h"
-#include "led_driver.h"
+#include "public.h"
 #include "stdlib.h"
 #include "syscfg_id.h"
 
@@ -90,7 +89,6 @@ void module_power_off(void)
 
 u8 tmp_dir_name[10];
 u8 tmp_file_name[10];
-extern bool send_pcm_state;
 u8 gsn_str[30];
 
 extern bool scan_sd_card_before_get_path(void);
@@ -193,7 +191,7 @@ static void at_4g_task_handle(void *arg)
 					send_end_packet();
 
 					release_all_fs_source();
-					send_pcm_state = false;
+					recoder.send_pcm_state = false;
 
 					memset(tmp_dir_name, 0x00, sizeof(tmp_dir_name));
 					memset(tmp_file_name, 0x00, sizeof(tmp_file_name));
@@ -697,7 +695,6 @@ uint8_t gsm_init_to_access_mode(void)
 		if(++retry > 90) {
 			printf("\r\n CSQ ERROR \r\n");
 
-			led_blink_time(100, 5000);//5s
 			//module_power_off();
 			goto sms_failure;
 		}

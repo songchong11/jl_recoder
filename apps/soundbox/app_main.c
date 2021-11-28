@@ -15,7 +15,7 @@
 #include "audio.h"
 #include "vm.h"
 #include "syscfg_id.h"
-
+#include "public.h"
 
 #define LOG_TAG_CONST       APP
 #define LOG_TAG             "[APP]"
@@ -30,13 +30,22 @@
 
 APP_VAR app_var;
 
+RECODER	recoder;
+
 
 void app_entry_idle()
 {
     app_task_switch_to(APP_IDLE_TASK);
 }
 
+void user_init(void)
+{
+	recoder.recoder_state = false;
+	recoder.send_pcm_state = false;
+	recoder.sd_state = false;
+	recoder.sim_state = true;// TODO:check
 
+}
 
 void app_task_loop()
 {
@@ -147,6 +156,8 @@ void app_main()
 #if TCFG_CHARGE_BOX_ENABLE
     app_curr_task = APP_IDLE_TASK;
 #endif
+
+	user_init();
 	uart_dev_receive_init();//uart 0 receive data from bes
 	uart_dev_4g_at_init(); //uart 1 for AT
 	file_write_thread_init();//file write

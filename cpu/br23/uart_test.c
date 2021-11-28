@@ -2,10 +2,8 @@
 #include "asm/uart_dev.h"
 #include "system/event.h"
 #include "common/app_common.h"
-#include "lwrb.h"
-#include "led_driver.h"
+#include "public.h"
 
-extern bool recoder_state;
 extern lwrb_t receive_buff;
 
 #if 1
@@ -103,7 +101,6 @@ u32 rx_total = 0;
 u8 led_cnt;
 
 extern FILE *test_file;
-extern bool recoder_state;
 
 static void uart_u_task_handle(void *arg)
 {
@@ -119,7 +116,7 @@ static void uart_u_task_handle(void *arg)
 			
 			//printf("%d, %x %x", uart_rxcnt, uart_rxbuf[0], uart_rxbuf[1]);
 
-			if (uart_rxcnt && recoder_state && \
+			if (uart_rxcnt && recoder.recoder_state && \
 					uart_rxbuf[0] == 0xcd && uart_rxbuf[1] == 0xab &&\ 
 					uart_rxbuf[2] == 0x40 && uart_rxbuf[3] == 0x01) {
 
@@ -132,7 +129,7 @@ static void uart_u_task_handle(void *arg)
 				rx_total++;
 
 #if 1
-				if(test_file && recoder_state) {
+				if(test_file && recoder.recoder_state) {
 
 							ret = fwrite(test_file, &uart_rxbuf[4], uart_rxcnt - 4);
 							if (ret != (uart_rxcnt - 4)) {

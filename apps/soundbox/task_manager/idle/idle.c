@@ -29,8 +29,9 @@
 #include "ui/ui_api.h"
 #include "key_event_deal.h"
 #include "common/app_common.h"
-#include "led_driver.h"
+#include "public.h"
 #include "at_4g_driver.h"
+#include "dev_manager.h"
 
 #define LOG_TAG_CONST       APP_IDLE
 #define LOG_TAG             "[APP_IDLE]"
@@ -285,8 +286,7 @@ static void poweron_task_switch_to_bt(void *priv) //超时还没有设备挂载�
 }
 #endif
 
-bool recoder_state = false;
-bool send_pcm_state = false;
+
 extern void get_sys_time(struct sys_time *time);
 
 //*----------------------------------------------------------------------------*/
@@ -315,40 +315,49 @@ static int idle_key_event_opr(struct sys_event *event)
 
 	case KEY_START_STOP_RECODER:
 		//before start recoder , check the sd card
-		if(recoder_state == false) {
+		if(recoder.recoder_state == false && recoder.sd_state == true) {
 			printf("start recoder task............\n");
 
 			get_sys_time(&time);
 			printf("now_time : %d-%d-%d,%d:%d:%d\n", time.year, time.month, time.day, time.hour, time.min, time.sec);
 
-			recoder_state = true;
-			printf("recoder_state = %x\n", recoder_state);
+			recoder.recoder_state = true;
+			printf("recoder_state = %x\n", recoder.recoder_state);
 			os_taskq_post_msg("file_write", 1, APP_USER_MSG_START_RECODER);
 		} else {
 			printf("stop recoder task............\n");
 
-			recoder_state = false;
+			recoder.recoder_state = false;
 			os_taskq_post_msg("file_write", 1, APP_USER_MSG_STOP_RECODER);
 		}
+
+		if(recoder.sd_state == false) {
+			led_blink_time(100, 10 * 1000, LED_RED);
+		}
+
 		ret = true;
 
 		break;
 	case KEY_AT_SEND_PCM:
 		get_sys_time(&time);
 		printf("now_time : %d-%d-%d,%d:%d:%d\n", time.year, time.month, time.day, time.hour, time.min, time.sec);
-		if (send_pcm_state == false) {
-			send_pcm_state = true;
+		if (recoder.send_pcm_state == false && recoder.sd_state == true) {
+			recoder.send_pcm_state = true;
 			printf("start send pcm to module............\n");
 			os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_START_SEND_FILE_TO_AT);
 
 		} else {
 			printf("stop send pcm to module............\n");
-			send_pcm_state = false;
+			recoder.send_pcm_state = false;
 			os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_STOP_SEND_FILE_TO_AT);
 		}
+
+		if(recoder.sd_state == false) {
+			led_blink_time(100, 10 * 1000, LED_RED);
+		}
+
 		ret = true;
 		break;
-
 	}
     return ret;
 }
@@ -530,6 +539,25 @@ static void idle_app_start()
 }
 
 bool is_from_pc_task = false;
+int sd_check_timer = 0;
+void sd_check_fun(void *priv)
+{
+
+	struct __dev *dev = dev_manager_check_by_logo("sd0");
+
+	if (dev){
+		printf("SD card ready\n");
+		recoder.sd_state = true;
+	} else {
+		printf("SD card not insert\n");
+		//blink 10s
+		led_blink_time(100, 10 * 1000, LED_RED);
+		recoder.sd_state = false;
+	}
+
+	sys_timeout_del(sd_check_timer);
+	sd_check_timer = 0;
+}
 
 //*----------------------------------------------------------------------------*/
 /**@brief    idle 主任务
@@ -551,6 +579,9 @@ void app_idle_task()
 		check_moudule_whether_is_power_on();
 		//os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SYNC_TIME);
 		// add a timer to check sd card
+		if (sd_check_timer == 0) {
+			sd_check_timer = sys_timeout_add(NULL, sd_check_fun, 2000);
+		}
 	}
 
 
@@ -566,6 +597,9 @@ void app_idle_task()
                 app_default_event_deal((struct sys_event *)(&msg[1]));    //由common统一处理
             }
             break;
+		case APP_MSG_USER:
+			break;
+
         default:
             break;
         }
