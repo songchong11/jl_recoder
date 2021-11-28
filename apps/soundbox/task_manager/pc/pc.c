@@ -47,7 +47,7 @@
 #include "bt_tws.h"
 #include "clock_cfg.h"
 #include "user_api/app_status_api.h"
-
+#include "led_driver.h"
 
 #if TCFG_APP_PC_EN
 
@@ -70,7 +70,13 @@ static struct pc_opr pc_hdl = {0};
 #define __this 	(&pc_hdl)
 static u8 pc_idle_flag = 1;
 
+static int pc_led_timer = 0; 
 
+
+void pc_timer_toogle_led(void *priv)
+{
+	led_blue_toggle();
+}
 
 static void pc_start()
 {
@@ -80,16 +86,23 @@ static void pc_start()
     }
     __this->onoff = 1;
     log_info("App Start - PC");
-	log_info("enter into usb_start ---------------------------0");
 
     app_status_handler(APP_STATUS_PC);
-	
+
 #if TCFG_PC_ENABLE
 	log_info("enter into usb_start ---------------------------1");
+
+	//start a timer to toogle led
+	if (pc_led_timer == 0) {
+		led_blue_on();
+		pc_led_timer = sys_timer_add(NULL, pc_timer_toogle_led, 1000);
+	}
 
     usb_start();
 #endif
 }
+
+extern bool is_from_pc_task;
 
 static void pc_stop()
 {
@@ -101,6 +114,13 @@ static void pc_stop()
 
     log_info("App Stop - PC");
 #if TCFG_PC_ENABLE
+
+	led_blue_off();
+	sys_timer_del(pc_led_timer);
+	pc_led_timer = 0;
+
+	is_from_pc_task = true;
+
     usb_stop();
 #endif
 }

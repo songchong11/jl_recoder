@@ -529,6 +529,7 @@ static void idle_app_start()
 #endif
 }
 
+bool is_from_pc_task = false;
 
 //*----------------------------------------------------------------------------*/
 /**@brief    idle 主任务
@@ -543,13 +544,19 @@ void app_idle_task()
     int msg[32];
 
 	printf("idle task\n");
-	led_power_on_show();
-	check_moudule_whether_is_power_on();
+
+	if (!is_from_pc_task) {
+
+		led_power_on_show();
+		check_moudule_whether_is_power_on();
+		//os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SYNC_TIME);
+		// add a timer to check sd card
+	}
+
 
     idle_app_start();
 
-	os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SYNC_TIME);
-	// add a timer to check sd card
+
     while (1) {
         app_task_get_msg(msg, ARRAY_SIZE(msg), 1);
 

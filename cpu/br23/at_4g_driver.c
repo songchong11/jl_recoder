@@ -208,7 +208,7 @@ static void at_4g_task_handle(void *arg)
 					break;
 
 				case APP_USER_MSG_SYNC_TIME:
-					gsm_sync_time_from_net();
+						gsm_sync_time_from_net();
 					break;
 
 				case APP_USER_MSG_GSM_ERROR:
@@ -1260,15 +1260,16 @@ void check_moudule_whether_is_power_on(void)
 	{
 		printf("\r\n +++ not replay AT OK, retry %d\r\n", retry);
 
-		if(++retry > 2) {
+		if(++retry > 1) {
 			break;
 		}
 	}
 
-	while(gsm_cmd("AT\r","OK", 2000) != GSM_TRUE)// AT
+	retry = 0;
+	while(gsm_cmd("AT\r","OK", 1000) != GSM_TRUE)// AT
 	{
 
-		if(++retry > 2) {
+		if(++retry > 1) {
 			printf("\r\n AT not response！！\r\n");
 			led_power_on_show_end();
 			return;

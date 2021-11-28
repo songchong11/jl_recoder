@@ -98,7 +98,7 @@ static void uart_event_handler(struct sys_event *e)
 }
 SYS_EVENT_HANDLER(SYS_DEVICE_EVENT, uart_event_handler, 0);
 
-extern lwrb_t receive_buff;
+//extern lwrb_t receive_buff;
 u32 rx_total = 0;
 u8 led_cnt;
 
@@ -125,10 +125,11 @@ static void uart_u_task_handle(void *arg)
 
 				printf("%d", rx_total);
 
-				rx_total++;
 
-				if ((rx_total % 10) == 0)// bilnk green led when recoder
+				if ((rx_total % 100) == 0)// bilnk green led when recoder
 					led_green_toggle();
+
+				rx_total++;
 
 #if 1
 				if(test_file && recoder_state) {

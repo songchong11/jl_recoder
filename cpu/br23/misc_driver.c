@@ -92,6 +92,7 @@ void bes_power_off(void)// TODO:check
 extern u32 rx_total;
 void bes_start_recoder(void)
 {
+	led_green_on();
 	bes_power_on();
 	delay_2ms(30);
 	printf("bes_start_recoder\r\n");
