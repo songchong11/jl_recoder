@@ -577,10 +577,9 @@ void app_idle_task()
 
 		led_power_on_show();
 		check_moudule_whether_is_power_on();
-		//os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SYNC_TIME);
-		// add a timer to check sd card
+		os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SYNC_TIME);
 		if (sd_check_timer == 0) {
-			sd_check_timer = sys_timeout_add(NULL, sd_check_fun, 2000);
+			sd_check_timer = sys_timeout_add(NULL, sd_check_fun, 1000);
 		}
 	}
 

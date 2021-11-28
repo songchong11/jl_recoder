@@ -8,7 +8,7 @@
 #include "stdlib.h"
 #include "syscfg_id.h"
 
-#define DEBUG_FILE_SYS	0
+#define DEBUG_FILE_SYS	1
 
 #define MODULE_PWR_GPIO		IO_PORTB_03
 #define SIM_CARD_TYPE	CTNET//CMNET
@@ -83,6 +83,8 @@ void module_power_off(void)
 		gpio_set_output_value(MODULE_PWR_GPIO, 0);
 
 		module_status = POWER_OFF;
+
+		led_blue_off();
 	//}
 
 }
@@ -118,7 +120,7 @@ static void at_4g_task_handle(void *arg)
 
 					#if DEBUG_FILE_SYS
 						module_power_on();
-						while(gsm_init_to_access_mode() == GSM_FALSE) {
+						while(gsm_init_to_access_mode() != GSM_TRUE) {
 							retry++;
 							module_power_off();
 							wdt_clear();
@@ -202,7 +204,6 @@ static void at_4g_task_handle(void *arg)
 					clsoe_tcp_link();
 					module_power_off();
 #endif
-					led_blue_off();
 					break;
 
 				case APP_USER_MSG_SYNC_TIME:
@@ -566,12 +567,14 @@ uint8_t gsm_cmd_check(char *reply)
 //0表示成功，1表示失败
 uint8_t gsm_init_to_access_mode(void)
 {
-	u8 retry;
+	u8 retry =  0;
 	char *redata;
 	uint8_t len;
 	uint8_t ret;
 	uint8_t error_code;
 	u8 sync_ok = 0;
+
+	led_blue_on();
 
 	GSM_DEBUG_FUNC();
 
@@ -603,7 +606,7 @@ uint8_t gsm_init_to_access_mode(void)
 	wdt_clear();
 	GSM_DELAY(50);
 	retry = 0;
-	while(gsm_cmd("AT+GTSET=\"IPRFMT\",2\r","OK", 200) != GSM_TRUE)//确认PS数据业务可用
+	while(gsm_cmd("AT+GTSET=\"IPRFMT\",2\r","OK", 1000) != GSM_TRUE)//确认PS数据业务可用
 	{
 		printf("\r\n AT+GTSET? not OK, retry %d\r\n", retry);
 		if(++retry > 90) {
@@ -616,7 +619,7 @@ uint8_t gsm_init_to_access_mode(void)
 	wdt_clear();
 	GSM_DELAY(50);
 	retry = 0;
-	while(gsm_cmd("AT+CFUN=1\r","OK", 200) != GSM_TRUE)// 设置工作模式是正常工作模式
+	while(gsm_cmd("AT+CFUN=1\r","OK", 1000) != GSM_TRUE)// 设置工作模式是正常工作模式
 	{
 		printf("\r\n AT+CFUN=1 not ok retry %d\r\n", retry);
 		if(++retry > 50) {
@@ -630,20 +633,24 @@ uint8_t gsm_init_to_access_mode(void)
 	GSM_DELAY(50);
 
 	retry = 0;
-	while(gsm_cmd("AT+CPIN?\r","+CPIN: READY", 1000) != GSM_TRUE)//查询SIM卡
+	while(gsm_cmd("AT+CPIN?\r","READY", 1000) != GSM_TRUE)//查询SIM卡
 	{
 		printf("\r\n replay AT OK, retry %d\r\n", retry);
-		if(++retry > 50) {
+		if(++retry > 4) {
 			printf("\r\n未检测到SIM卡\r\n");
 
+			recoder.sim_state = false;
+			led_blink_time(100, 10 * 1000, LED_RED_BLUE);
 			goto sms_failure;
 		}
 	}
 
+	recoder.sim_state = true;
+
 	wdt_clear();
 	GSM_DELAY(1000);
 	retry = 0;
-	while(gsm_cmd("AT+GSN?\r","+GSN", 200) != GSM_TRUE)//查询SN
+	while(gsm_cmd("AT+GSN?\r","+GSN", 2000) != GSM_TRUE)//查询SN
 	{
 		printf("\r\n AT+GSN not replay OK, retry %d\r\n", retry);
 		if(++retry > 50) {
@@ -682,6 +689,8 @@ uint8_t gsm_init_to_access_mode(void)
 
 		if(++retry > 2) {
 			printf("\r\n模块响应测试不正常！！\r\n");
+			recoder.creg_state = false;
+			led_blink_time(100, 10 * 1000, LED_RED_GREEN);
 			goto sms_failure;
 		}
 	}
@@ -692,10 +701,12 @@ uint8_t gsm_init_to_access_mode(void)
 	while(gsm_cmd("AT+CSQ?\r","OK", 1000) != GSM_TRUE)//查询信号值
 	{
 		printf("\r\n replay AT OK, retry %d\r\n", retry);
-		if(++retry > 90) {
+		if(++retry > 30) {
 			printf("\r\n CSQ ERROR \r\n");
 
-			//module_power_off();
+			recoder.creg_state = false;
+			led_blink_time(100, 10 * 1000, LED_RED_GREEN);
+
 			goto sms_failure;
 		}
 	}
@@ -706,7 +717,7 @@ uint8_t gsm_init_to_access_mode(void)
 	while(gsm_cmd("AT+COPS?\r","OK", 2000) != GSM_TRUE)//查询注册状态
 	{
 		printf("\r\n replay AT OK, retry %d\r\n", retry);
-		if(++retry > 90) {
+		if(++retry > 30) {
 			printf("\r\n AT+COPS? ERROR \r\n");
 
 			goto sms_failure;
@@ -719,8 +730,11 @@ uint8_t gsm_init_to_access_mode(void)
 	while(gsm_cmd("AT+CGREG?\r","OK", 3000) != GSM_TRUE)//确认PS数据业务可用
 	{
 		printf("\r\n AT+CGREG? not OK, retry %d\r\n", retry);
-		if(++retry > 90) {
+		if(++retry > 30) {
 			printf("\r\n AT+CGREG? ERROR \r\n");
+
+			recoder.creg_state = false;
+			led_blink_time(100, 10 * 1000, LED_RED_GREEN);
 
 			goto sms_failure;
 		}
@@ -731,9 +745,12 @@ uint8_t gsm_init_to_access_mode(void)
 	retry = 0;
 	while(gsm_cmd("AT+CEREG?\r","OK", 3000) != GSM_TRUE)//查询4G状态业务是否可用
 	{
-		printf("\r\n replay AT OK, retry %d\r\n", retry);
+		printf("\r\n CEREG not OK, retry %d\r\n", retry);
 		if(++retry > 50) {
 			printf("\r\n AT+CEREG? ERROR \r\n");
+
+			recoder.creg_state = false;
+			led_blink_time(100, 10 * 1000, LED_RED_GREEN);
 
 			goto sms_failure;
 		}
@@ -772,6 +789,8 @@ uint8_t gsm_init_to_access_mode(void)
 
 		if(++retry > 2) {
 			printf("\r\n模块响应测试不正常！！\r\n");
+			recoder.creg_state = false;
+			led_blink_time(100, 10 * 1000, LED_RED_GREEN);
 
 			goto sms_failure;
 		}
@@ -788,11 +807,14 @@ uint8_t gsm_init_to_access_mode(void)
 	
 			if(++retry > 3) {
 				printf("\r\n模块响应测试不正常！！\r\n");
-	
+				recoder.creg_state = false;
+				led_blink_time(100, 10 * 1000, LED_RED_GREEN);
 				goto sms_failure;
 			}
 		}
-	
+
+		recoder.creg_state = true;
+
 		wdt_clear();
 		GSM_DELAY(50);
 		retry = 0;
@@ -875,12 +897,15 @@ uint8_t gsm_init_to_access_mode(void)
 
 		if(++retry > 3) {
 			printf("\r\n模块响应测试不正常！！\r\n");
+			recoder.creg_state = false;
+			led_blink_time(100, 10 * 1000, LED_RED_GREEN);
 
 			goto sms_failure;
 		}
 	}
 
 	printf("\r\n enter into access mode!！\r\n");
+	recoder.creg_state = true;
 
 
 	return GSM_TRUE;
@@ -1021,12 +1046,15 @@ uint8_t gsm_sync_time_from_net(void)
 		printf("\r\n CPIN replay AT OK, retry %d\r\n", retry);
 		if(++retry > 10) {
 			printf("\r\n未检测到SIM卡\r\n");
+			recoder.sim_state = false;
+			led_blink_time(100, 10 * 1000, LED_RED_BLUE);
 
 			error_code = NO_SIM_CARD;
 			goto sms_failure;
 		}
 	}
 
+	recoder.sim_state = true;
 
 	wdt_clear();
 	GSM_DELAY(50);
@@ -1049,6 +1077,8 @@ uint8_t gsm_sync_time_from_net(void)
 		if(++retry > 90) {
 			printf("\r\n AT+CGREG? ERROR \r\n");
 			error_code = NET_ERROR;
+			recoder.creg_state = false;
+			led_blink_time(100, 10 * 1000, LED_RED_GREEN);
 			goto sms_failure;
 		}
 	}
@@ -1086,6 +1116,8 @@ uint8_t gsm_sync_time_from_net(void)
 		if(++retry > 2) {
 			printf("\r\n模块响应测试不正常！！\r\n");
 			error_code = NET_ERROR;
+			recoder.creg_state = false;
+			led_blink_time(100, 10 * 1000, LED_RED_GREEN);
 			goto sms_failure;
 		}
 	}
@@ -1111,6 +1143,8 @@ uint8_t gsm_sync_time_from_net(void)
 		if(++retry > 2) {
 			error_code = NET_ERROR;
 			printf("\r\n模块响应测试不正常！！\r\n");
+			recoder.creg_state = false;
+			led_blink_time(100, 10 * 1000, LED_RED_GREEN);
 
 			goto sms_failure;
 		}
@@ -1127,10 +1161,13 @@ uint8_t gsm_sync_time_from_net(void)
 
 		if(++retry > 3) {
 			printf("\r\n模块响应测试不正常！！\r\n");
+			recoder.creg_state = false;
+			led_blink_time(100, 10 * 1000, LED_RED_GREEN);
 
 			goto sms_failure;
 		}
 	}
+	recoder.creg_state = true;
 
 	wdt_clear();
 	GSM_DELAY(50);
@@ -1167,19 +1204,6 @@ uint8_t gsm_sync_time_from_net(void)
 	ntp2.aliyun.com #阿里云
 	cn.pool.ntp.org #最常用的国内NTP服务器
 	*/
-#if 0
-	//while(gsm_cmd("AT+MIPNTP=\"cn.ntp.org.cn\",123\r","+MIPNTP: 1", 1000 * 60) != GSM_TRUE)// 同步时间
-	while(gsm_cmd("AT+MIPNTP=\"cn.pool.ntp.org\",123\r","+MIPNTP: 1", 1000 * 60) != GSM_TRUE)// 同步时间
-	{
-		printf("\r\n AT+MIPNTP not replay AT OK, retry %d\r\n", retry);
-
-		if(++retry > 3) {
-			printf("\r\n模块响应测试不正常！！\r\n");
-			error_code = NET_ERROR;
-			goto sms_failure;
-		}
-	}
-#endif
 
 	if (ret != GSM_TRUE)
 		ret = gsm_cmd("AT+MIPNTP=\"cn.pool.ntp.org\",123\r","+MIPNTP: 1", 1000 * 60);

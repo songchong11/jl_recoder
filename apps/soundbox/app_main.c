@@ -44,6 +44,7 @@ void user_init(void)
 	recoder.send_pcm_state = false;
 	recoder.sd_state = false;
 	recoder.sim_state = true;// TODO:check
+	recoder.creg_state = false;
 
 }
 

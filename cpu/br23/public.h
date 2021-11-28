@@ -12,7 +12,8 @@ typedef struct re_state {
 	bool send_pcm_state;
 	bool sd_state;
 	bool sim_state;
-	
+	bool creg_state;
+
 }RECODER;
 
 

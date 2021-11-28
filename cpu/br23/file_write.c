@@ -2,7 +2,6 @@
 #include "asm/uart_dev.h"
 #include "system/event.h"
 #include "common/app_common.h"
-#include "lwrb.h"
 #include "file_bs_deal.h"
 #include "public.h"
 
