@@ -101,6 +101,7 @@ u32 rx_total = 0;
 u8 led_cnt;
 
 extern FILE *test_file;
+unsigned char micEncodebuf[80];
 
 static void uart_u_task_handle(void *arg)
 {
@@ -128,17 +129,28 @@ static void uart_u_task_handle(void *arg)
 
 				rx_total++;
 
-#if 1
-				if(test_file && recoder.recoder_state) {
+#if ENCODER_ENABLE
+		if(test_file && recoder.recoder_state) {
 
-							ret = fwrite(test_file, &uart_rxbuf[4], uart_rxcnt - 4);
-							if (ret != (uart_rxcnt - 4)) {
-								printf(" file write buf err %d\n", ret);
-								fclose(test_file);
-								test_file = NULL;
-							}
-				}
+			/*320byte input, 320 / 4 = 80 byte*/
+			encode(&mg, (s16 *)&uart_rxbuf[4], 160, micEncodebuf);
+			ret = fwrite(test_file, micEncodebuf, sizeof(micEncodebuf));
+			if (ret != sizeof(micEncodebuf)) {
+				printf(" file write buf err %d\n", ret);
+				fclose(test_file);
+				test_file = NULL;
+			}
+		}
+#else
+		if(test_file && recoder.recoder_state) {
 
+			ret = fwrite(test_file, &uart_rxbuf[4], uart_rxcnt - 4);
+			if (ret != (uart_rxcnt - 4)) {
+				printf(" file write buf err %d\n", ret);
+				fclose(test_file);
+				test_file = NULL;
+			}
+		}
 #endif
 
 #if 0
@@ -221,6 +233,8 @@ void uart_dev_receive_init()
 #endif
 
 	rx_total = 0;
+	adpcm_init();
+
 
     uart_bus = uart_dev_open(&u_arg);
     if (uart_bus != NULL) {

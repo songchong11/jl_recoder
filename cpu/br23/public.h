@@ -5,8 +5,11 @@
 #include "misc_driver.h"
 #include "led_driver.h"
 #include "lwrb.h"
+#include "ima_enc.h"
 
 #define TARGET_BAUD		1000000
+
+#define ENCODER_ENABLE	1
 
 typedef struct re_state {
 

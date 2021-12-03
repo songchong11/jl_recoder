@@ -366,7 +366,7 @@ bool file_read_from_sd_card(u8 *dir, u8 *file_name)
 
 	if (file_send_timer == 0) {
 		packet_num = 0;
-		file_send_timer = sys_timer_add(fp, file_read_and_send, 4);
+		file_send_timer = sys_timer_add(fp, file_read_and_send, 1);
 	}
 
 	fp = NULL;
@@ -896,7 +896,10 @@ uint8_t gsm_init_to_access_mode(void)
 	//while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9999,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
 	//while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
 	//while(gsm_cmd("AT+MIPODM=1,,\"record.miclink.net\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
-	while(gsm_cmd("AT+MIPODM=1,,\"luyin.heteen.com\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
+	//while(gsm_cmd("AT+MIPODM=1,,\"luyin.heteen.com\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
+
+	while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9898,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
+
 	{
 		printf("\r\n AT+MIPODM= not replay AT OK, retry %d\r\n", retry);
 
