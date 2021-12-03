@@ -33,8 +33,8 @@ enum {
 
 int file_send_timer;
 extern void gsm_send_buffer(u8 *buf, int len);
-uint8_t read_buffer[320];
-#define READ_LEN	320
+#define READ_LEN	(125 * 10)
+uint8_t read_buffer[READ_LEN];
 
 static u8 module_status ;
 #if 1
@@ -53,6 +53,7 @@ void module_4g_gpio_init(void)
 void module_power_on(void)
 {
 	if (module_status == POWER_OFF) {
+		led_blue_on();
 
 		printf("4g module power on\r\n");
 
@@ -252,6 +253,7 @@ static u32 packet_num = 0;
 void file_read_and_send(void *priv)
 {
 	FILE *read_p = (FILE*)priv;
+	int ret;
 
 	if(!read_p) {
 		printf("file open error!!!\r\n");
@@ -261,9 +263,9 @@ void file_read_and_send(void *priv)
 	if((packet_num % 5) == 0)
 		led_blue_toggle();
 
-	int ret = fread(read_p, read_buffer, READ_LEN);
+	int len = fread(read_p, read_buffer, READ_LEN);
 
-	if(ret == READ_LEN) {
+	if(len == READ_LEN) {
 		packet_num++;
 		printf("s%d", packet_num);
 		gsm_send_buffer(read_buffer, READ_LEN);
@@ -273,7 +275,7 @@ void file_read_and_send(void *priv)
 		sys_timer_del(file_send_timer);
 		file_send_timer = 0;
 
-		gsm_send_buffer(read_buffer, ret);//send last packet
+		gsm_send_buffer(read_buffer, len);//send last packet
 
 		printf("send over, close file!!!\r\n");
 
@@ -364,7 +366,7 @@ bool file_read_from_sd_card(u8 *dir, u8 *file_name)
 
 	if (file_send_timer == 0) {
 		packet_num = 0;
-		file_send_timer = sys_timer_add(fp, file_read_and_send, 30);
+		file_send_timer = sys_timer_add(fp, file_read_and_send, 4);
 	}
 
 	fp = NULL;
@@ -574,7 +576,6 @@ uint8_t gsm_init_to_access_mode(void)
 	uint8_t error_code;
 	u8 sync_ok = 0;
 
-	led_blue_on();
 
 	GSM_DEBUG_FUNC();
 
@@ -602,6 +603,9 @@ uint8_t gsm_init_to_access_mode(void)
 			goto sms_failure;
 		}
 	}
+
+	if(set_baud_and_reinit_at_port() != GSM_TRUE)
+		goto sms_failure;
 
 	wdt_clear();
 	GSM_DELAY(50);
@@ -725,7 +729,7 @@ uint8_t gsm_init_to_access_mode(void)
 	}
 
 	wdt_clear();
-	GSM_DELAY(500);
+	GSM_DELAY(50);
 	retry = 0;
 	while(gsm_cmd("AT+CGREG?\r","OK", 3000) != GSM_TRUE)//确认PS数据业务可用
 	{
@@ -741,7 +745,7 @@ uint8_t gsm_init_to_access_mode(void)
 	}
 
 	wdt_clear();
-	GSM_DELAY(500);
+	GSM_DELAY(50);
 	retry = 0;
 	while(gsm_cmd("AT+CEREG?\r","OK", 3000) != GSM_TRUE)//查询4G状态业务是否可用
 	{
@@ -770,7 +774,7 @@ uint8_t gsm_init_to_access_mode(void)
 	#endif
 
 	wdt_clear();
-	GSM_DELAY(500);
+	GSM_DELAY(50);
 	retry = 0;
 #if 0
 #if (SIM_CARD_TYPE == CTNET)
@@ -853,7 +857,8 @@ uint8_t gsm_init_to_access_mode(void)
 		}
 	}
 #endif
-	ret = gsm_cmd("AT+MIPNTP=\"cn.pool.ntp.org\",123\r","+MIPNTP: 1", 1000 * 60);
+	if (ret != GSM_TRUE)
+		ret = gsm_cmd("AT+MIPNTP=\"cn.pool.ntp.org\",123\r","+MIPNTP: 1", 1000 * 60);
 
 	if (ret != GSM_TRUE)
 		ret = gsm_cmd("AT+MIPNTP=\"cn.ntp.org.cn\",123\r","+MIPNTP: 1", 1000 * 60);
@@ -981,7 +986,6 @@ int clsoe_tcp_link(void)
 /*---------------------------------------------------------------------*/
 
 /**同步时间接口***/
-#define HAD_SYNC	0xA5
 uint8_t gsm_sync_time_from_net(void)
 {
 	u8 retry = 0;
@@ -993,7 +997,7 @@ uint8_t gsm_sync_time_from_net(void)
 #if 1
 	ret = syscfg_read(CFG_USER_SYNC_TIME, &sync_time, 1);
 	if (ret <= 0)
-		printf("syscfg_read failed\n");
+		printf("syscfg_read failed sync time first\n");
 
 	else {
 		printf("syscfg_read tmp = %x\n", sync_time);
@@ -1005,24 +1009,46 @@ uint8_t gsm_sync_time_from_net(void)
 		} else {
 
 			printf("had sync time\n");
-
-			return 1;
 		}
 	}
+
+	if (recoder.baud == TARGET_BAUD && (sync_time == HAD_SYNC)) {
+		led_power_on_show_end();
+		return 1;
+	}
 #endif
+
 	module_power_on();
 
 	GSM_CLEAN_RX();                 //清空了接收缓冲区数据
 
-	while(gsm_cmd("AT\r","OK", 200) != GSM_TRUE)// AT
+	while(gsm_cmd("AT\r","OK", 500) != GSM_TRUE)// AT
 	{
 		printf("\r\n module not replay AT OK, retry %d\r\n", retry);
+		retry++;
 
-		if(++retry > 50) {
+		if ((retry % 10) == 0) {
+			if(recoder.baud == TARGET_BAUD) {
+				recoder.baud = 115200;
+			} else {
+				recoder.baud = TARGET_BAUD;
+			}
+			uart_1_dev_reinit(recoder.baud);
+			GSM_CLEAN_RX();
+		}
+		GSM_DELAY(50);
+
+		if(retry > 25) {
 			printf("\r\n AT not response！！\r\n");
 			goto sms_failure;
 		}
 	}
+
+
+	printf("\r\n 4G bound is %d\r\n", recoder.baud);
+
+	if(set_baud_and_reinit_at_port() != GSM_TRUE)
+		goto sms_failure;
 
 	wdt_clear();
 	GSM_DELAY(50);
@@ -1037,9 +1063,9 @@ uint8_t gsm_sync_time_from_net(void)
 		}
 	}
 
+
 	wdt_clear();
 	GSM_DELAY(50);
-
 	retry = 0;
 	while(gsm_cmd("AT+CPIN?\r","+CPIN: READY", 2000) != GSM_TRUE)//查询SIM卡
 	{
@@ -1254,6 +1280,7 @@ uint8_t gsm_sync_time_from_net(void)
 	}
 
 	module_power_off();
+	led_power_on_show_end();
 
 	return GSM_TRUE;
 
@@ -1292,12 +1319,9 @@ void check_moudule_whether_is_power_on(void)
 
 		if(++retry > 1) {
 			printf("\r\n AT not response！！\r\n");
-			led_power_on_show_end();
 			return;
 		}
 	}
-
-	led_power_on_show_end();
 
 	printf("module is power on state\n");
 	module_power_off();
@@ -1451,4 +1475,55 @@ void UTCToBeijing(struct sys_time* time)
 	}
 }
 
+int set_baud_and_reinit_at_port(void)
+{
+	u8 retry = 0;
+	int ret = GSM_TRUE;;
+
+	wdt_clear();
+	GSM_DELAY(10);
+
+	if(recoder.baud == TARGET_BAUD && recoder.baud_status == false) {//4G is 1M, but vm flag cleared
+		recoder.baud = TARGET_BAUD;
+		ret = syscfg_write(CFG_USER_AT_BAUD, &recoder.baud, 4);// TODO:check
+		if (ret <= 0) {
+			printf("baud syscfg_write failed\n");
+			ret = GSM_FALSE;
+		}
+		else {
+			printf("baud syscfg_write succeed\n");
+			ret = GSM_TRUE;
+		}
+	}
+
+	if (recoder.baud == 115200) {
+
+		while(gsm_cmd("AT+IPR=1000000\r","OK", 1000) != GSM_TRUE)//SET BAUD
+		{
+			printf("\r\n IPR replay not OK, retry %d\r\n", retry);
+			if(++retry > 10) {
+				printf("\r\n set baud error\r\n");
+				led_blink_time(100, 10 * 1000, LED_RED_BLUE);
+
+				return GSM_FALSE;
+			}
+		}
+
+		ret = GSM_TRUE;
+		GSM_DELAY(50);
+		recoder.baud = TARGET_BAUD;
+		uart_1_dev_reinit(recoder.baud);
+		wdt_clear();
+
+		ret = syscfg_write(CFG_USER_AT_BAUD, &recoder.baud, 4);
+		if (ret <= 0)
+			printf("baud syscfg_write failed\n");
+		else
+			printf("baud syscfg_write succeed\n");
+		ret = GSM_TRUE;
+		wdt_clear();
+	}
+
+	return ret;
+}
 

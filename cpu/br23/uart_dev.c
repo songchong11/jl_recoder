@@ -896,6 +896,23 @@ u32 uart_dev_close(uart_bus_t *ut)
     return 0;
 }
 
+u32 myuart_dev_close(uart_bus_t *ut)
+{
+    UT_OSSemClose(&ut->sem_rx);
+    UT_OSSemClose(&ut->sem_tx);
+    if (&uart0 == ut) {
+        UT0_close();
+       // return gpio_close_uart0();
+    } else if (&uart1 == ut) {
+        UT1_close();
+       // return gpio_close_uart1();
+    } else {
+        UT2_close();
+      //  return gpio_close_uart2();
+    }
+    return 0;
+}
+
 void flow_ctl_hw_init(void)
 {
     JL_UART1->CON1 |= BIT(0);

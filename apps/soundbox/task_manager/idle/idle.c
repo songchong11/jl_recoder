@@ -50,7 +50,6 @@ static u8 goto_poweron_flag = 0;
 
 extern u8 get_power_on_status(void);
 extern void uart_dev_receive_init();
-extern void uart_dev_4g_at_init();
 extern void file_write_thread_init(void);
 extern void at_4g_thread_init(void);
 extern void file_write_task_del(void);
@@ -608,5 +607,24 @@ void app_idle_task()
             return;
         }
     }
+}
+
+
+void check_at_baud_ret(void)
+{
+	int ret = 0;
+
+	ret = syscfg_read(CFG_USER_AT_BAUD, &recoder.baud, 4);
+	if (ret <= 0) {
+		printf("baud syscfg_read failed, buad reat default 115200\n");
+		recoder.baud = 115200;
+		recoder.baud_status = false;
+	}
+	else {
+		printf("read baud, %d \n", recoder.baud);
+		recoder.baud_status = true;
+	}
+
+	uart_dev_4g_at_init(recoder.baud); //uart 1 for AT
 }
 

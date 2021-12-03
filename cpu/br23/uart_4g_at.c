@@ -2,19 +2,25 @@
 #include "asm/uart_dev.h"
 #include "system/event.h"
 #include <stdarg.h>
+#include "public.h"
 
 #if 1
 //中断缓存串口数据
 #define UART_BUFF_SIZE      512
 
+#define RECEIVE_DEBUG		0
 
+u32 uart_rxcnt = 0;
+static u32 received_len = 0;
+static u8 received_buffer[320];
+uint8_t need_len = 4;
 
 /*
     [[  注意!!!  ]]
     * 如果当系统任务较少时使用本demo，需要将低功耗关闭（#define TCFG_LOWPOWER_LOWPOWER_SEL    0//SLEEP_EN ），否则任务被串口接收函数调用信号量pend时会导致cpu休眠，串口中断和DMA接收将遗漏数据或数据不正确
 */
 
-#define UART_DEV_USAGE_TEST_SEL         2       //uart_dev.c api接口使用方法选择
+#define UART_DEV_USAGE_TEST_SEL         1       //uart_dev.c api接口使用方法选择
 //  选择1  串口中断回调函数推送事件，由事件响应函数接收串口数据
 //  选择2  由task接收串口数据
 
@@ -52,58 +58,37 @@ static void uart_event_4g_at_handler(struct sys_event *e)
 
     if ((u32)e->arg == DEVICE_EVENT_FROM_UART_RX_OVERFLOW) {
         if (e->u.dev.event == DEVICE_EVENT_CHANGE) {
-            /* printf("uart event: DEVICE_EVENT_FROM_UART_RX_OVERFLOW\n"); */
             uart_bus = (const uart_bus_t *)e->u.dev.value;
             uart_rxcnt = uart_bus->read(uart_rxbuf, sizeof(uart_rxbuf), 0);
-            if (uart_rxcnt) {
-                printf("get_buffer-------:\n");
-                for (int i = 0; i < uart_rxcnt; i++) {
-                    my_put_u8hex(uart_rxbuf[i]);
-                    if (i % 16 == 15) {
-                        putchar('\n');
-                    }
-                }
-                if (uart_rxcnt % 16) {
-                    putchar('\n');
-                }
-#if (!UART_DEV_FLOW_CTRL)
-                uart_bus->write(uart_rxbuf, uart_rxcnt);
-#endif
-            }
-            printf("uart out\n");
+			if (uart_rxcnt >= need_len) { //some time , it maybe received 1 byte data, it no use
+				received_len = uart_rxcnt;
+				memcpy(received_buffer, uart_rxbuf, received_len);
+			
+				for (int i = 0; i < uart_rxcnt; i++)
+					printf("%c", uart_rxbuf[i]);
+			}
+
         }
     }
     if ((u32)e->arg == DEVICE_EVENT_FROM_UART_RX_OUTTIME) {
+
         if (e->u.dev.event == DEVICE_EVENT_CHANGE) {
-            /* printf("uart event:DEVICE_EVENT_FROM_UART_RX_OUTTIME\n"); */
             uart_bus = (const uart_bus_t *)e->u.dev.value;
             uart_rxcnt = uart_bus->read(uart_rxbuf, sizeof(uart_rxbuf), 0);
-            if (uart_rxcnt) {
-                printf("get_buffer:\n");
-                for (int i = 0; i < uart_rxcnt; i++) {
-                    my_put_u8hex(uart_rxbuf[i]);
-                    if (i % 16 == 15) {
-                        putchar('\n');
-                    }
-                }
-                if (uart_rxcnt % 16) {
-                    putchar('\n');
-                }
-#if (!UART_DEV_FLOW_CTRL)
-                uart_bus->write(uart_rxbuf, uart_rxcnt);
-#endif
-            }
-            printf("uart out\n");
+			if (uart_rxcnt) {
+				received_len = uart_rxcnt;
+				memcpy(received_buffer, uart_rxbuf, received_len);
+			
+				for (int i = 0; i < uart_rxcnt; i++)
+					printf("%c", uart_rxbuf[i]);
+			}
+
         }
     }
 }
 SYS_EVENT_HANDLER(SYS_DEVICE_EVENT, uart_event_4g_at_handler, 0);
 
-static FILE *test_file = NULL;
-u32 uart_rxcnt = 0;
-static u32 received_len = 0;
-static u8 received_buffer[320];
-uint8_t need_len = 4;
+
 
 static void uart_at_task_handle(void *arg)
 {
@@ -119,9 +104,11 @@ static void uart_at_task_handle(void *arg)
 
 			received_len = uart_rxcnt;
 			memcpy(received_buffer, uart_rxbuf, received_len);
+#if RECEIVE_DEBUG
 
             for (int i = 0; i < uart_rxcnt; i++)
 				printf("%c", uart_rxbuf[i]);
+#endif
         }
 
     }
@@ -134,7 +121,8 @@ static void uart_isr_hook(void *arg, u32 status)
 
     //当CONFIG_UARTx_ENABLE_TX_DMA（x = 0, 1）为1时，不要在中断里面调用ubus->write()，因为中断不能pend信号量
     if (status == UT_RX) {
-       // printf("uart_rx_isr--------\n");
+#if 0
+       printf("uart_rx_isr--------\n");
 #if (UART_DEV_USAGE_TEST_SEL == 1)
         e.type = SYS_DEVICE_EVENT;
         e.arg = (void *)DEVICE_EVENT_FROM_UART_RX_OVERFLOW;
@@ -142,9 +130,25 @@ static void uart_isr_hook(void *arg, u32 status)
         e.u.dev.value = (int)ubus;
         sys_event_notify(&e);
 #endif
+#endif
+#if (UART_DEV_USAGE_TEST_SEL == 1)
+
+		uart_rxcnt = ubus->read(uart_rxbuf, sizeof(uart_rxbuf), 0);
+		if (uart_rxcnt >= need_len) { //some time , it maybe received 1 byte data, it no use
+		
+			received_len = uart_rxcnt;
+			memcpy(received_buffer, uart_rxbuf, received_len);
+		#if RECEIVE_DEBUG
+			for (int i = 0; i < uart_rxcnt; i++)
+				printf("%c", uart_rxbuf[i]);
+		#endif
+		}
+#endif
+
     }
     if (status == UT_RX_OT) {
-       // printf("uart_rx_ot_isr++++\n");
+#if 0
+       printf("uart_rx_ot_isr++++\n");
 #if (UART_DEV_USAGE_TEST_SEL == 1)
         e.type = SYS_DEVICE_EVENT;
         e.arg = (void *)DEVICE_EVENT_FROM_UART_RX_OUTTIME;
@@ -152,7 +156,22 @@ static void uart_isr_hook(void *arg, u32 status)
         e.u.dev.value = (int)ubus;
         sys_event_notify(&e);
 #endif
+#endif
+#if (UART_DEV_USAGE_TEST_SEL == 1)
+
+		uart_rxcnt = ubus->read(uart_rxbuf, sizeof(uart_rxbuf), 0);
+		if (uart_rxcnt >= need_len) { //some time , it maybe received 1 byte data, it no use
+		
+			received_len = uart_rxcnt;
+			memcpy(received_buffer, uart_rxbuf, received_len);
+			#if RECEIVE_DEBUG
+			for (int i = 0; i < uart_rxcnt; i++)
+				printf("%c", uart_rxbuf[i]);
+			#endif
+		}
+
     }
+#endif
 }
 
 static void uart_flow_ctrl_task(void *arg)
@@ -166,7 +185,7 @@ static void uart_flow_ctrl_task(void *arg)
 
 static const uart_bus_t *uart_bus;
 
-void uart_dev_4g_at_init()
+void uart_dev_4g_at_init(u32 baud)
 {
     struct uart_platform_data_t u_arg = {0};
     u_arg.tx_pin = IO_PORTA_00;
@@ -176,7 +195,8 @@ void uart_dev_4g_at_init()
     u_arg.frame_length = 256;
     u_arg.rx_timeout = 200;
     u_arg.isr_cbfun = uart_isr_hook;
-    u_arg.baud = 115200;
+    u_arg.baud = baud;
+	printf("u_arg.baud %d\n", u_arg.baud);
     u_arg.is_9bit = 0;
 #if UART_DEV_FLOW_CTRL
     u_arg.tx_pin = IO_PORTA_00;
@@ -196,6 +216,45 @@ void uart_dev_4g_at_init()
 #endif
     }
 }
+
+void uart_1_dev_reinit(u32 baud)
+{
+		struct uart_platform_data_t u_arg = {0};
+		u_arg.tx_pin = IO_PORTA_00;
+		u_arg.rx_pin = IO_PORTA_01;
+		u_arg.rx_cbuf = uart_cbuf;
+		u_arg.rx_cbuf_size = 512;
+		u_arg.frame_length = 256;
+		u_arg.rx_timeout = 200;
+		u_arg.isr_cbfun = uart_isr_hook;
+		u_arg.baud = baud;
+		printf("u_arg.baud %d\n", u_arg.baud);
+		u_arg.is_9bit = 0;
+
+		myuart_dev_close(uart_bus);
+		uart_bus = NULL;
+
+		uart_bus = uart_dev_open(&u_arg);
+
+		if (uart_bus)
+			printf("uart reinit ok\n");
+		else
+			printf("uart reinit fail\n");
+}
+
+
+void uart_dev_4g_at_task_del(void)
+{
+	printf("uart_dev_4g_at_task_del\n");
+
+	os_task_del("uart_at_task");
+	if (uart_bus != NULL) {
+		uart_dev_close(uart_bus);
+		printf("uart_dev_close\n");
+	}
+	uart_bus = NULL;
+}
+
 
 #if UART_DEV_FLOW_CTRL
 void uart_change_rts_state(void)

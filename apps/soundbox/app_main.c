@@ -45,7 +45,8 @@ void user_init(void)
 	recoder.sd_state = false;
 	recoder.sim_state = true;// TODO:check
 	recoder.creg_state = false;
-
+	recoder.baud = 115200;
+	recoder.baud_status = false;
 }
 
 void app_task_loop()
@@ -112,7 +113,6 @@ void app_task_loop()
 }
 
 extern void uart_dev_receive_init();
-extern void uart_dev_4g_at_init();
 extern void file_write_thread_init(void);
 extern void at_4g_thread_init(void);
 extern void set_sys_time(struct sys_time *time);
@@ -160,14 +160,11 @@ void app_main()
 
 	user_init();
 	uart_dev_receive_init();//uart 0 receive data from bes
-	uart_dev_4g_at_init(); //uart 1 for AT
 	file_write_thread_init();//file write
+	check_at_baud_ret();
 	at_4g_thread_init(); // 4g driver
-
-
     app_task_loop();
 
 }
-
 
 

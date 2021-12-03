@@ -69,6 +69,7 @@ u8 *syscfg_ptr_read(u16 item_id, u16 *len);
 //=================================================================================//
 #define 	CFG_USER_DEFINE_BEGIN		1
 #define 	CFG_USER_SYNC_TIME			2
+#define 	CFG_USER_AT_BAUD			3
 
 #define 	CFG_USER_DEFINE_END			49
 
