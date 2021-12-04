@@ -114,8 +114,9 @@ static void uart_u_task_handle(void *arg)
 
 			//uart_bus->read()在尚未收到串口数据时会pend信号量，挂起task，直到UART_RX_PND或UART_RX_OT_PND中断发生，post信号量，唤醒task
 			uart_rxcnt = uart_bus->read(uart_rxbuf, sizeof(uart_rxbuf), 0);
-			
-			//printf("%d, %x %x", uart_rxcnt, uart_rxbuf[0], uart_rxbuf[1]);
+
+			if (uart_rxcnt != 324)
+				printf("bes erro r------ %d, %x %x", uart_rxcnt, uart_rxbuf[0], uart_rxbuf[1]);
 
 			if (uart_rxcnt && recoder.recoder_state && \
 					uart_rxbuf[0] == 0xcd && uart_rxbuf[1] == 0xab &&\ 

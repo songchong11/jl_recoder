@@ -21,9 +21,9 @@ typedef struct
 
 extern CodecState mg;
 
-void encode(CodecState* state, s16* input, int numSamples, u8* output);
+extern void encode(CodecState* state, s16* input, int numSamples, u8* output);
 void decode(CodecState* state, u8* input, int numSamples, s16* output);
-void adpcm_init();
+extern void adpcm_init();
 
 #endif //_IMA_ADPCM_H_
 
