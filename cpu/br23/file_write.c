@@ -5,29 +5,10 @@
 #include "file_bs_deal.h"
 #include "public.h"
 
-enum {
-    KEY_USER_DEAL_POST = 0,
-    KEY_USER_DEAL_POST_MSG,
-    KEY_USER_DEAL_POST_EVENT,
-    KEY_USER_DEAL_POST_2,
-};
-
-#include "system/includes.h"
-#include "system/event.h"
-
-///自定义事件推送的线程
-
-#define Q_USER_DEAL   0xAABBCC ///自定义队列类型
-#define Q_USER_DATA_SIZE  10///理论Queue受任务声明struct task_info.qsize限制,但不宜过大,建议<=6
-
-#if 1
 
 #if 0
-/* Declare rb instance & raw data */
-lwrb_t receive_buff;
-uint8_t buff_data[320 * 40];
-uint8_t write_buffer[340];
-#endif
+
+
 
 //static FILE *test_file = NULL;
 FILE *test_file = NULL;
@@ -40,7 +21,6 @@ char file_path[80] = {0};
 char year_month_day[20] = {0};
 char hour_min_sec[20] = {0};
 
-extern void get_sys_time(struct sys_time *time);//获取时间
 extern void test_browser();
 extern int file_browse_enter_onchane(void);
 void check_config_file(void);
@@ -62,7 +42,7 @@ static void file_write_task_handle(void *arg)
             //printf("use os_taskq_post_msg");
 	        switch (msg[1]) {
 	            case APP_USER_MSG_BUFFER_HAVE_DATA:
-				#if 0
+				#if USE_LWRB
 				if(test_file && recoder.recoder_state) {
 							int n_bytes_in_queue = lwrb_get_full(&receive_buff);
 							if (n_bytes_in_queue > 0) {
@@ -83,7 +63,7 @@ static void file_write_task_handle(void *arg)
 					printf("APP_USER_MSG_START_RECODER");
 #if 1
 
-					#if 0
+					#if USE_LWRB
 					/*lwrb init*/
 				    ret = lwrb_init(&receive_buff, buff_data, sizeof(buff_data));
 					if(!ret) {
@@ -113,7 +93,6 @@ static void file_write_task_handle(void *arg)
 					printf("file_path:%s\n", file_path);
 					if (!test_file) {
 						test_file = fopen(file_path, "w+");
-						//test_file = fopen("storage/sd0/C/MLtest01.pcm", "w+");
 						if (!test_file) {
 							printf("fopen file faild!\n");
 						} else {

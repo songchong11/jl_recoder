@@ -322,12 +322,12 @@ static int idle_key_event_opr(struct sys_event *event)
 
 			recoder.recoder_state = true;
 			printf("recoder_state = %x\n", recoder.recoder_state);
-			os_taskq_post_msg("file_write", 1, APP_USER_MSG_START_RECODER);
+			os_taskq_post_msg("uart_u_task", 1, APP_USER_MSG_START_RECODER);
 		} else {
 			printf("stop recoder task............\n");
 
 			recoder.recoder_state = false;
-			os_taskq_post_msg("file_write", 1, APP_USER_MSG_STOP_RECODER);
+			os_taskq_post_msg("uart_u_task", 1, APP_USER_MSG_STOP_RECODER);
 		}
 
 		if(recoder.sd_state == false) {
@@ -575,8 +575,8 @@ void app_idle_task()
 	if (!is_from_pc_task) {
 
 		led_power_on_show();
-		check_moudule_whether_is_power_on();
-		os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SYNC_TIME);
+		//check_moudule_whether_is_power_on();
+		//os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SYNC_TIME);
 		if (sd_check_timer == 0) {
 			sd_check_timer = sys_timeout_add(NULL, sd_check_fun, 1000);
 		}

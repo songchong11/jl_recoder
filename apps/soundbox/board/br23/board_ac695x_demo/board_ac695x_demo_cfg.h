@@ -479,7 +479,7 @@ DAC硬件上的连接方式,可选的配置：
 //                                  时钟配置                                       //
 //*********************************************************************************//
 #define TCFG_CLOCK_SYS_SRC					SYS_CLOCK_INPUT_PLL_BT_OSC   //系统时钟源选择
-#define TCFG_CLOCK_SYS_HZ					24000000                     //系统时钟设置
+#define TCFG_CLOCK_SYS_HZ					48000000//24000000                     //系统时钟设置
 #define TCFG_CLOCK_OSC_HZ					24000000                     //外界晶振频率设置
 #define TCFG_CLOCK_MODE                     CLOCK_MODE_ADAPTIVE
 

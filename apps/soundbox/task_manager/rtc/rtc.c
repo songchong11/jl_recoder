@@ -590,11 +590,11 @@ static int rtc_key_event_opr(struct sys_event *event)
 				get_sys_time(&time);
 				printf("now_time : %d-%d-%d,%d:%d:%d\n", time.year, time.month, time.day, time.hour, time.min, time.sec);
 				recoder.recoder_state = true;
-				os_taskq_post_msg("file_write", 1, APP_USER_MSG_START_RECODER);
+				os_taskq_post_msg("uart_u_task", 1, APP_USER_MSG_START_RECODER);
 			} else {
 				printf("stop recoder task............\n");
 				recoder.recoder_state = false;
-				os_taskq_post_msg("file_write", 1, APP_USER_MSG_STOP_RECODER);
+				os_taskq_post_msg("uart_u_task", 1, APP_USER_MSG_STOP_RECODER);
 			}
 
 			break;

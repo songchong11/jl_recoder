@@ -8,25 +8,11 @@
 #include "stdlib.h"
 #include "syscfg_id.h"
 
-#define DEBUG_FILE_SYS	1
+#define DEBUG_FILE_SYS	0
 
 #define MODULE_PWR_GPIO		IO_PORTB_03
 #define SIM_CARD_TYPE	CTNET//CMNET
 
-enum {
-    KEY_USER_DEAL_POST = 0,
-    KEY_USER_DEAL_POST_MSG,
-    KEY_USER_DEAL_POST_EVENT,
-    KEY_USER_DEAL_POST_2,
-};
-
-#include "system/includes.h"
-#include "system/event.h"
-
-///自定义事件推送的线程
-
-#define Q_USER_DEAL   0xAABBCC ///自定义队列类型
-#define Q_USER_DATA_SIZE  10///理论Queue受任务声明struct task_info.qsize限制,但不宜过大,建议<=6
 
 #define POWER_ON	1
 #define POWER_OFF	2
@@ -283,7 +269,7 @@ void file_read_and_send(void *priv)
 
 		printf("send a msg to get next file\r\n");
 
-		delay_2ms(200);
+		delay_2ms(10);
 		ret = rename_file_when_send_over(read_p, tmp_file_name);
 		if (ret) {
 			fclose(read_p);
@@ -668,7 +654,7 @@ uint8_t gsm_init_to_access_mode(void)
 	printf("GSN %s\n", redata);
 
 	if (!memcmp("+GSN",  redata + 2, 4)) {//OD OA
-	
+
 	   memcpy(gsn_str, redata + 9, 15);
 	   gsn_str[15] = '\0';
 	   printf("get GSN : %s\n", gsn_str);
@@ -808,7 +794,7 @@ uint8_t gsm_init_to_access_mode(void)
 		while(gsm_cmd("AT+MIPOPEN=1,,\"47.113.105.118\",9899,0\r","+MIPOPEN", 1000 * 60) != GSM_TRUE)// 链接TCP
 		{
 			printf("\r\n AT+MIPOPEN not replay AT OK, retry %d\r\n", retry);
-	
+
 			if(++retry > 3) {
 				printf("\r\n模块响应测试不正常！！\r\n");
 				recoder.creg_state = false;
@@ -822,21 +808,21 @@ uint8_t gsm_init_to_access_mode(void)
 		wdt_clear();
 		GSM_DELAY(50);
 		retry = 0;
-	
+
 		while(gsm_cmd("AT+MIPSEND=1,17\r",">", 1000 * 60) != GSM_TRUE)// 链接TCP
 		{
 			printf("\r\n AT+MIPOPEN not replay AT OK, retry %d\r\n", retry);
-	
+
 			if(++retry > 3) {
 				printf("\r\n模块响应测试不正常！！\r\n");
-	
+
 				goto sms_failure;
 			}
 		}
-	
+
 		wdt_clear();// sync time from ourself server
 		if(gsm_cmd("====AT+CCLK?====\r","+MIPRTCP", 1000 * 60) == GSM_TRUE) {
-	
+
 			get_and_set_time_form_our_server();
 			ret = GSM_TRUE;
 			sync_ok = 1;
@@ -844,7 +830,7 @@ uint8_t gsm_init_to_access_mode(void)
 #endif
 
 
-	
+
 	#if 0
 	while(gsm_cmd("AT+MIPNTP=\"cn.ntp.org.cn\",123\r","+MIPNTP: 1", 1000 * 60) != GSM_TRUE)// 同步时间
 	{

@@ -82,8 +82,8 @@ const struct task_info task_info_table[] = {
 //#if (TUYA_DEMO_EN)
     {"user_deal",           7,     512,   512   },//定义线程 tuya任务调度
 //#endif
-	{"file_write",     7,     512,   512   },//定义线程user任务调度
-   //{"uart_u_task",     7,     512,   128   },//定义线程user任务调度
+//	{"file_write",     7,     512,   512   },//定义线程user任务调度
+   {"uart_u_task",     1,     768,   32   },//定义线程user任务调度
 
     {0, 0},
 };
