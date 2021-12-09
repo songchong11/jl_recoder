@@ -11,6 +11,7 @@
 
 #define ENCODER_ENABLE	0
 #define	USE_LWRB		1
+#define DEBUG_FILE_SYS	1
 
 typedef struct re_state {
 
