@@ -32,6 +32,7 @@
 #include "led_driver.h"
 #include "at_4g_driver.h"
 #include "misc_driver.h"
+#include "public.h"
 
 #define LOG_TAG_CONST       BOARD
 #define LOG_TAG             "[BOARD]"
@@ -1031,6 +1032,12 @@ void board_set_soft_poweroff(void)
     u32 porta_value = 0xffff;
     u32 portb_value = 0xffff;
     u32 portc_value = 0xffff;
+
+	//recoder.module_status
+	//soft power off
+	
+	if (recoder.module_status == POWER_ON)
+		module_power_off();
 
     extern u32 spi_get_port(void);
     if (spi_get_port() != 0) {

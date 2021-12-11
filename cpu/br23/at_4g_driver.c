@@ -10,11 +10,7 @@
 
 
 #define MODULE_PWR_GPIO		IO_PORTB_03
-#define SIM_CARD_TYPE	CTNET//CMNET
 
-
-#define POWER_ON	1
-#define POWER_OFF	2
 
 int file_send_timer;
 extern void gsm_send_buffer(u8 *buf, int len);
@@ -22,7 +18,6 @@ extern void gsm_send_buffer(u8 *buf, int len);
 uint8_t read_buffer[READ_LEN];
 unsigned char micEncodebuf[READ_LEN / 4];//1280 / 4 == 320
 
-static u8 module_status ;
 #if 1
 
 void module_4g_gpio_init(void)
@@ -33,12 +28,12 @@ void module_4g_gpio_init(void)
 	gpio_set_die(MODULE_PWR_GPIO, 0);
 	gpio_set_direction(MODULE_PWR_GPIO, 0);
 	gpio_set_output_value(MODULE_PWR_GPIO, 0);
-	module_status = POWER_OFF;
+	recoder.module_status = POWER_OFF;
 }
 
 void module_power_on(void)
 {
-	if (module_status == POWER_OFF) {
+	if (recoder.module_status == POWER_OFF) {
 		led_blue_on();
 
 		printf("4g module power on\r\n");
@@ -52,7 +47,7 @@ void module_power_on(void)
 		delay_2ms(1500);//delay 3s
 		wdt_clear();
 
-		module_status = POWER_ON;
+		recoder.module_status = POWER_ON;
 	}
 }
 
@@ -69,7 +64,7 @@ void module_power_off(void)
 		wdt_clear();
 		gpio_set_output_value(MODULE_PWR_GPIO, 0);
 
-		module_status = POWER_OFF;
+		recoder.module_status = POWER_OFF;
 
 		led_blue_off();
 	//}
@@ -103,7 +98,7 @@ static void at_4g_task_handle(void *arg)
 	            case APP_USER_MSG_START_SEND_FILE_TO_AT:
 	                printf("APP_USER_MSG_START_SEND_FILE_TO_AT");
 					/*power on 4g module and send file to at*/
-					if (module_status == POWER_OFF) {
+					if (recoder.module_status == POWER_OFF) {
 
 					#if DEBUG_FILE_SYS
 						module_power_on();

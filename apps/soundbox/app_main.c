@@ -47,6 +47,7 @@ void user_init(void)
 	recoder.creg_state = false;
 	recoder.baud = 115200;
 	recoder.baud_status = false;
+	recoder.module_status = POWER_OFF;
 }
 
 void app_task_loop()

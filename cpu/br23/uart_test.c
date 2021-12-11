@@ -301,7 +301,6 @@ static void uart_isr_hook(void *arg, u32 status)
 					uart_rxbuf[0] == 0xcd && uart_rxbuf[1] == 0xab &&\
 					uart_rxbuf[2] == 0x40 && uart_rxbuf[3] == 0x01) {
 
-
 				if ((rx_total % 100) == 0)// bilnk green led when recoder
 					led_green_toggle();
 

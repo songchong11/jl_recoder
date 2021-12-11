@@ -11,7 +11,13 @@
 
 #define ENCODER_ENABLE	1
 #define	USE_LWRB		1
-#define DEBUG_FILE_SYS	1
+#define DEBUG_FILE_SYS	0
+
+#define SIM_CARD_TYPE	CTNET//CMNET
+
+
+#define POWER_ON	1
+#define POWER_OFF	2
 
 typedef struct re_state {
 
@@ -22,6 +28,7 @@ typedef struct re_state {
 	bool creg_state;
 	u32 baud;
 	u32 baud_status;
+	u8  module_status;
 
 }RECODER;
 
