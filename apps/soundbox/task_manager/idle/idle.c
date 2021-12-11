@@ -327,6 +327,7 @@ static int idle_key_event_opr(struct sys_event *event)
 			printf("stop recoder task............\n");
 
 			recoder.recoder_state = false;
+			led_green_off();
 			os_taskq_post_msg("uart_u_task", 1, APP_USER_MSG_STOP_RECODER);
 		}
 
