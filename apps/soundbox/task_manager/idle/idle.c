@@ -584,6 +584,7 @@ void app_idle_task()
 
 
     idle_app_start();
+	bes_power_on();
 
 
     while (1) {

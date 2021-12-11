@@ -72,7 +72,6 @@ u32 rx_total = 0;
 u8 led_cnt;
 
 extern FILE *test_file;
-unsigned char micEncodebuf[80];
 
 #if 0
 static void uart_u_task_handle(void *arg)

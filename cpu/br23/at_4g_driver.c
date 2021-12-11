@@ -8,7 +8,6 @@
 #include "stdlib.h"
 #include "syscfg_id.h"
 
-#define DEBUG_FILE_SYS	0
 
 #define MODULE_PWR_GPIO		IO_PORTB_03
 #define SIM_CARD_TYPE	CTNET//CMNET
@@ -19,8 +18,9 @@
 
 int file_send_timer;
 extern void gsm_send_buffer(u8 *buf, int len);
-#define READ_LEN	(125 * 10)
+#define READ_LEN	(1280)
 uint8_t read_buffer[READ_LEN];
+unsigned char micEncodebuf[READ_LEN / 4];//1280 / 4 == 320
 
 static u8 module_status ;
 #if 1
@@ -254,14 +254,25 @@ void file_read_and_send(void *priv)
 	if(len == READ_LEN) {
 		packet_num++;
 		printf("s%d", packet_num);
+#if ENCODER_ENABLE
+		/*320byte input, 320 / 4 = 80 byte*/
+		encode(&mg, (s16 *)read_buffer, READ_LEN / 2, micEncodebuf);
+		gsm_send_buffer(micEncodebuf, READ_LEN / 4);
+#else
 		gsm_send_buffer(read_buffer, READ_LEN);
-
+#endif
 	} else {
 
 		sys_timer_del(file_send_timer);
 		file_send_timer = 0;
 
-		gsm_send_buffer(read_buffer, len);//send last packet
+#if ENCODER_ENABLE
+				encode(&mg, (s16 *)read_buffer, len / 2, micEncodebuf);
+				gsm_send_buffer(micEncodebuf, len / 4);
+#else
+				gsm_send_buffer(read_buffer, len);//send last packet
+#endif
+
 
 		printf("send over, close file!!!\r\n");
 
@@ -881,10 +892,10 @@ uint8_t gsm_init_to_access_mode(void)
 	retry = 0;
 	//while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9999,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
 	//while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
-	//while(gsm_cmd("AT+MIPODM=1,,\"record.miclink.net\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
+	while(gsm_cmd("AT+MIPODM=1,,\"record.miclink.net\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
 	//while(gsm_cmd("AT+MIPODM=1,,\"luyin.heteen.com\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
 
-	while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9898,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
+	//while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9898,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
 
 	{
 		printf("\r\n AT+MIPODM= not replay AT OK, retry %d\r\n", retry);

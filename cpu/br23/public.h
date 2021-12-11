@@ -9,7 +9,7 @@
 
 #define TARGET_BAUD		1000000
 
-#define ENCODER_ENABLE	0
+#define ENCODER_ENABLE	1
 #define	USE_LWRB		1
 #define DEBUG_FILE_SYS	1
 

@@ -95,7 +95,7 @@ void bes_start_recoder(void)
 {
 	printf("bes_start_recoder\r\n");
 	led_green_on();
-	bes_power_on();
+	//bes_power_on();
 	clear_rx_buffer();
 	gpio_set_output_value(BES_RECODER_GPIO, 0);
 }
