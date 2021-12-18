@@ -1,4 +1,6 @@
+#include "includes.h"
 #include "system/includes.h"
+#include "generic/typedef.h"
 #include "asm/uart_dev.h"
 #include "system/event.h"
 #include "common/app_common.h"
@@ -67,15 +69,17 @@ typedef struct WAVE_DATA{
  * @param sample_rate   Sample rate of PCM file.
  * @param wavepath      Output WAVE file.
  */
+#if 0
 int transform_pcm_to_wave(FILE *fp)
 {
 
 		WAVE_HEADER pcmHEADER;
 		WAVE_FMT	pcmFMT;
 		WAVE_DATA	pcmDATA;
-	
-		short int m_pcmData;
-		FILE *fpout;
+
+		u8 tmp_data[320] = {0};
+
+		FILE *fpout, *tfp;
 
 		if(fp==NULL)
 		{
@@ -90,7 +94,7 @@ int transform_pcm_to_wave(FILE *fp)
 			printf("Create wav file error.\n");
 			return -1;
 		}
-	
+
 		/* WAVE_HEADER */
 		memcpy(pcmHEADER.fccID, "RIFF", 4);
 		memcpy(pcmHEADER.fccType, "WAVE", 4);
@@ -107,39 +111,121 @@ int transform_pcm_to_wave(FILE *fp)
 		/* ==wChannels*uiBitsPerSample/8 */
 		pcmFMT.wBlockAlign = pcmFMT.wChannels*pcmFMT.uiBitsPerSample/8;
 
-		pcmDATA.dwSize = flen(fp);//get pcm file len
-		pcmHEADER.dwSize = 36 + pcmDATA.dwSize;
-
 
 		printf("pcm file len %d.\n", pcmDATA.dwSize);
 		/* WAVE_DATA */
 		memcpy(pcmDATA.fccID, "data", 4);
 		//fseek(fpout, sizeof(WAVE_DATA), 1);
 
+
+
+		printf("wav heard write ok.\n");
+
+		fseek(fp, 0, SEEK_SET);
+
+		fclose(fp);
+
+		tfp = fopen(file_path, "rb+");
+		if (!tfp) {
+			printf("reopen fail error\n");
+			return -1;
+		}
+
+		pcmDATA.dwSize = flen(tfp);//get pcm file len
+		pcmHEADER.dwSize = 36 + pcmDATA.dwSize;
+
 		fwrite(fpout, &pcmHEADER, sizeof(WAVE_HEADER));
 		fwrite(fpout, &pcmFMT, sizeof(WAVE_FMT));
 		fwrite(fpout, &pcmDATA, sizeof(WAVE_DATA));
 
-		printf("wav heard write ok.\n");
-
+#if 0
 		while(1)
 		{
-			int ret = fread(fp, &m_pcmData, sizeof(short int));
-			fwrite(fpout, &m_pcmData, ret);
-			if (ret < sizeof(short int))
+			int r_ret = fread(fp, tmp_data, sizeof(tmp_data));
+			if (r_ret < sizeof(tmp_data)) {
+				printf("last packet\n");
+			}
+			wdt_clear();
+			int w_ret = fwrite(fpout, tmp_data, r_ret);
+			wdt_clear();
+			delay_2ms(1);
+			if (r_ret != w_ret)
+				printf("wav write error\n");
+
+			if (r_ret < sizeof(tmp_data))
 				break;
 		}
+#endif
+
+
+		wdt_clear();
 
 		printf("wav file write over.\n");
 
 		fclose(fp);
 		fclose(fpout);
-	
+		wdt_clear();
+
 		return 0;
 
 }
 
+#endif
+int transform_pcm_to_wave(FILE *fp)
+{
 
+		u8 tmp_data[320] = "this is a test filep------------------------------------------------------\n";
+		char file_path_head_tsts[80] = {0};
+
+		FILE *fpout, *tfp, *fpout_1, *fpout_2;
+
+		if(fp==NULL)
+		{
+			printf("fp error.\n");
+			return -1;
+		}
+
+		wdt_clear();
+		memcpy(file_path_head_tsts, file_path_head, sizeof(file_path_head));
+
+		strcat(file_path_head, ".txt");
+		fpout = fopen(file_path_head, "wt+");
+		if(fpout==NULL)
+		{
+			printf("Create wav file error.\n");
+			return -1;
+		}
+		fwrite(fpout, tmp_data, 60);
+		fclose(fpout);
+
+		wdt_clear();
+
+		strcat(file_path_head_tsts, "_1.bin");
+		fpout_1 = fopen(file_path_head_tsts, "wb+");
+		if(fpout_1==NULL)
+		{
+			printf("--Create wav file error.\n");
+			return -1;
+		}
+		fwrite(fpout_1, tmp_data, 50);
+		fclose(fpout_1);
+
+		fpout_1 = NULL;
+		fpout_1 = fopen(file_path_head_tsts, "rb+");
+		fseek(fpout_1, 8, SEEK_SET);
+		fwrite(fpout_1, "a5a5a5", 3);
+
+		wdt_clear();
+
+		printf("test file write over.\n");
+
+		fclose(fpout_1);
+		wdt_clear();
+		fpout_2 = NULL;
+
+		return 0;
+
+}
 
 
 /*****************************************************************************/
@@ -318,7 +404,7 @@ static void uart_u_task_handle(void *arg)
 
 									/* Now skip sent bytes from buffer = move read pointer */
 									lwrb_skip(&receive_buff, ret);
-								
+
 								}
 								os_mutex_post(&m_r);
 					}
