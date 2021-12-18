@@ -34,7 +34,7 @@ void module_4g_gpio_init(void)
 void module_power_on(void)
 {
 	if (recoder.module_status == POWER_OFF) {
-		led_blue_on();
+		led_green_on();
 
 		printf("4g module power on\r\n");
 
@@ -66,7 +66,7 @@ void module_power_off(void)
 
 		recoder.module_status = POWER_OFF;
 
-		led_blue_off();
+		led_green_off();
 	//}
 
 }
@@ -242,7 +242,7 @@ void file_read_and_send(void *priv)
 	}
 
 	if((packet_num % 5) == 0)
-		led_blue_toggle();
+		led_green_toggle();
 
 	int len = fread(read_p, read_buffer, READ_LEN);
 
@@ -887,8 +887,8 @@ uint8_t gsm_init_to_access_mode(void)
 	retry = 0;
 	//while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9999,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
 	//while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
-	while(gsm_cmd("AT+MIPODM=1,,\"record.miclink.net\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
-	//while(gsm_cmd("AT+MIPODM=1,,\"luyin.heteen.com\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
+	//while(gsm_cmd("AT+MIPODM=1,,\"record.miclink.net\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
+	while(gsm_cmd("AT+MIPODM=1,,\"luyin.heteen.com\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
 
 	//while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9898,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
 

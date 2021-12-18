@@ -11,7 +11,8 @@
 
 #define ENCODER_ENABLE	1
 #define	USE_LWRB		1
-#define DEBUG_FILE_SYS	0
+#define DEBUG_FILE_SYS	1
+#define WAV_FORMAT		0
 
 #define SIM_CARD_TYPE	CTNET//CMNET
 

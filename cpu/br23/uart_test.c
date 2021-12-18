@@ -26,8 +26,124 @@ struct sys_time g_time;
 
 const char root_path[] = "storage/sd0/C/";
 char file_path[80] = {0};
+char file_path_head[80] = {0};
 char year_month_day[20] = {0};
 char hour_min_sec[20] = {0};
+
+#if WAV_FORMAT
+/**********************************WAV*******************************************/
+/*****************************************************************/
+// WAV format
+/*****************************************************************/
+
+typedef struct WAVE_HEADER{
+	char	fccID[4];		//内容为"RIFF"
+	unsigned int dwSize;   //最后填写，WAVE格式音频的大小
+	char	fccType[4]; 	//内容为"WAVE"
+}WAVE_HEADER;
+
+typedef struct WAVE_FMT{
+	char	fccID[4];		   //内容为"fmt "
+	unsigned int  dwSize;	  //内容为WAVE_FMT占的字节数，为16
+	short int wFormatTag; //如果为PCM，改值为 1
+	short int wChannels;  //通道数，单通道=1，双通道=2
+	unsigned int  dwSamplesPerSec;//采样频率
+	unsigned int  dwAvgBytesPerSec;/* ==dwSamplesPerSec*wChannels*uiBitsPerSample/8 */
+	short int wBlockAlign;//==wChannels*uiBitsPerSample/8
+	short int uiBitsPerSample;//每个采样点的bit数，8bits=8, 16bits=16
+}WAVE_FMT;
+
+typedef struct WAVE_DATA{
+	char	fccID[4];		//内容为"data"
+	unsigned int dwSize;   //==NumSamples*wChannels*uiBitsPerSample/8
+}WAVE_DATA;
+
+
+
+/**
+ * Convert PCM raw data to WAVE format
+ * @param pcmpath       Input PCM file.
+ * @param channels      Channel number of PCM file.
+ * @param sample_rate   Sample rate of PCM file.
+ * @param wavepath      Output WAVE file.
+ */
+int transform_pcm_to_wave(FILE *fp)
+{
+
+		WAVE_HEADER pcmHEADER;
+		WAVE_FMT	pcmFMT;
+		WAVE_DATA	pcmDATA;
+	
+		short int m_pcmData;
+		FILE *fpout;
+
+		if(fp==NULL)
+		{
+			printf("fp error.\n");
+			return -1;
+		}
+
+		strcat(file_path_head, ".wav");
+		fpout = fopen(file_path_head, "wb+");
+		if(fpout==NULL)
+		{
+			printf("Create wav file error.\n");
+			return -1;
+		}
+	
+		/* WAVE_HEADER */
+		memcpy(pcmHEADER.fccID, "RIFF", 4);
+		memcpy(pcmHEADER.fccType, "WAVE", 4);
+		fseek(fpout, sizeof(WAVE_HEADER), 1);	//1=SEEK_CUR
+		/* WAVE_FMT */
+		memcpy(pcmFMT.fccID, "fmt ", 4);
+		pcmFMT.dwSize = 16;
+		pcmFMT.wFormatTag = 0x0001;
+		pcmFMT.wChannels = 1;
+		pcmFMT.dwSamplesPerSec = 16000;
+		pcmFMT.uiBitsPerSample = 16;
+		/* ==dwSamplesPerSec*wChannels*uiBitsPerSample/8 */
+		pcmFMT.dwAvgBytesPerSec = pcmFMT.dwSamplesPerSec*pcmFMT.wChannels*pcmFMT.uiBitsPerSample/8;
+		/* ==wChannels*uiBitsPerSample/8 */
+		pcmFMT.wBlockAlign = pcmFMT.wChannels*pcmFMT.uiBitsPerSample/8;
+
+		pcmDATA.dwSize = flen(fp);//get pcm file len
+		pcmHEADER.dwSize = 36 + pcmDATA.dwSize;
+
+
+		printf("pcm file len %d.\n", pcmDATA.dwSize);
+		/* WAVE_DATA */
+		memcpy(pcmDATA.fccID, "data", 4);
+		//fseek(fpout, sizeof(WAVE_DATA), 1);
+
+		fwrite(fpout, &pcmHEADER, sizeof(WAVE_HEADER));
+		fwrite(fpout, &pcmFMT, sizeof(WAVE_FMT));
+		fwrite(fpout, &pcmDATA, sizeof(WAVE_DATA));
+
+		printf("wav heard write ok.\n");
+
+		while(1)
+		{
+			int ret = fread(fp, &m_pcmData, sizeof(short int));
+			fwrite(fpout, &m_pcmData, ret);
+			if (ret < sizeof(short int))
+				break;
+		}
+
+		printf("wav file write over.\n");
+
+		fclose(fp);
+		fclose(fpout);
+	
+		return 0;
+
+}
+
+
+
+
+/*****************************************************************************/
+#endif
 
 
 #if 1
@@ -151,7 +267,6 @@ static void uart_u_task_handle(void *arg)
 /////下面函数调用的使用函数都必须放在ram
 ___interrupt
 AT_VOLATILE_RAM_CODE
-static u32 pos = 0;
 
 static void uart_u_task_handle(void *arg)
 {
@@ -240,6 +355,10 @@ static void uart_u_task_handle(void *arg)
 						strcat(file_path, year_month_day);
 						strcat(file_path, "/");
 						strcat(file_path, hour_min_sec);
+
+						memset(file_path_head, 0x00, sizeof(file_path_head));
+						memcpy(file_path_head, file_path, sizeof(file_path));
+
 						strcat(file_path, ".pcm");
 						printf("file_path:%s\n", file_path);
 						if (!test_file) {
@@ -250,7 +369,6 @@ static void uart_u_task_handle(void *arg)
 								printf("open file succed\r\n");
 							}
 						}
-						pos = 0;
 						memset(file_path, 0, sizeof(file_path));
 						fseek(test_file, 0, SEEK_SET);
 
@@ -262,12 +380,16 @@ static void uart_u_task_handle(void *arg)
 							printf("file write end....\n");
 
 							if (test_file) {
+#if WAV_FORMAT
+								transform_pcm_to_wave(test_file);
+
+#endif
 								fclose(test_file);
 								test_file = NULL;
 							}
+
 							lwrb_free(&receive_buff);
 							bes_stop_recoder();
-							pos = 0;
 						break;
 					default:
 						break;
@@ -302,7 +424,7 @@ static void uart_isr_hook(void *arg, u32 status)
 					uart_rxbuf[2] == 0x40 && uart_rxbuf[3] == 0x01) {
 
 				if ((rx_total % 100) == 0)// bilnk green led when recoder
-					led_green_toggle();
+					led_blue_toggle();
 
 				rx_total++;
 
@@ -338,7 +460,7 @@ static void uart_isr_hook(void *arg, u32 status)
 
 
 			if ((rx_total % 100) == 0)// bilnk green led when recoder
-				led_green_toggle();
+				led_blue_toggle();
 
 			rx_total++;
 
