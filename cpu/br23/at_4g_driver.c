@@ -348,6 +348,9 @@ bool file_read_from_sd_card(u8 *dir, u8 *file_name)
 		u32 file_len =	flen(fp);
 		printf("this file len = %x\n", file_len);
 
+#if WAV_FORMAT
+		fseek(fp, 44, SEEK_SET);
+#endif
 		send_the_start_packet(file_name, dir, file_len);
 	}
 
@@ -887,8 +890,8 @@ uint8_t gsm_init_to_access_mode(void)
 	retry = 0;
 	//while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9999,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
 	//while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
-	//while(gsm_cmd("AT+MIPODM=1,,\"record.miclink.net\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
-	while(gsm_cmd("AT+MIPODM=1,,\"luyin.heteen.com\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
+	while(gsm_cmd("AT+MIPODM=1,,\"record.miclink.net\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
+	//while(gsm_cmd("AT+MIPODM=1,,\"luyin.heteen.com\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
 
 	//while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9898,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
 

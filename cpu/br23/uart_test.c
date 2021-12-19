@@ -1,6 +1,4 @@
-#include "includes.h"
 #include "system/includes.h"
-#include "generic/typedef.h"
 #include "asm/uart_dev.h"
 #include "system/event.h"
 #include "common/app_common.h"
@@ -69,23 +67,54 @@ typedef struct WAVE_DATA{
  * @param sample_rate   Sample rate of PCM file.
  * @param wavepath      Output WAVE file.
  */
-#if 0
-int transform_pcm_to_wave(FILE *fp)
+#if 1
+u16 transform_pcm_timer = 0;
+FILE *fpout;
+void pcm_2_wav(void *priv)
+{
+	u8 pcm_data[1024];
+
+	int r_ret = fread(test_file, pcm_data, sizeof(pcm_data));
+
+	wdt_clear();
+	int w_ret = fwrite(fpout, pcm_data, r_ret);
+	if (r_ret != w_ret)
+		printf("wav write error\n");
+	wdt_clear();
+
+	led_blue_toggle();
+
+	if (r_ret < sizeof(pcm_data)) {
+		printf("last packet\n");// TODO:check
+
+		fdelete(test_file);
+
+		//fclose(test_file);
+		test_file = NULL;
+		fclose(fpout);
+		fpout = NULL;
+
+		led_blue_off();
+
+		sys_timer_del(transform_pcm_timer);
+		transform_pcm_timer = 0;
+	}
+
+}
+
+int transform_pcm_to_wave(void)
 {
 
 		WAVE_HEADER pcmHEADER;
 		WAVE_FMT	pcmFMT;
 		WAVE_DATA	pcmDATA;
 
-		u8 tmp_data[320] = {0};
 
-		FILE *fpout, *tfp;
-
-		if(fp==NULL)
-		{
-			printf("fp error.\n");
-			return -1;
+		test_file = fopen(file_path, "r");
+		if (!test_file) {
+			printf("fopen file faild!\n");
 		}
+		memset(file_path, 0, sizeof(file_path));
 
 		strcat(file_path_head, ".wav");
 		fpout = fopen(file_path_head, "wb+");
@@ -98,7 +127,8 @@ int transform_pcm_to_wave(FILE *fp)
 		/* WAVE_HEADER */
 		memcpy(pcmHEADER.fccID, "RIFF", 4);
 		memcpy(pcmHEADER.fccType, "WAVE", 4);
-		fseek(fpout, sizeof(WAVE_HEADER), 1);	//1=SEEK_CUR
+
+		//fseek(fpout, sizeof(WAVE_HEADER), 1);	//1=SEEK_CUR
 		/* WAVE_FMT */
 		memcpy(pcmFMT.fccID, "fmt ", 4);
 		pcmFMT.dwSize = 16;
@@ -111,121 +141,26 @@ int transform_pcm_to_wave(FILE *fp)
 		/* ==wChannels*uiBitsPerSample/8 */
 		pcmFMT.wBlockAlign = pcmFMT.wChannels*pcmFMT.uiBitsPerSample/8;
 
-
-		printf("pcm file len %d.\n", pcmDATA.dwSize);
 		/* WAVE_DATA */
 		memcpy(pcmDATA.fccID, "data", 4);
-		//fseek(fpout, sizeof(WAVE_DATA), 1);
 
-
-
-		printf("wav heard write ok.\n");
-
-		fseek(fp, 0, SEEK_SET);
-
-		fclose(fp);
-
-		tfp = fopen(file_path, "rb+");
-		if (!tfp) {
-			printf("reopen fail error\n");
-			return -1;
-		}
-
-		pcmDATA.dwSize = flen(tfp);//get pcm file len
+		pcmDATA.dwSize = flen(test_file);//get pcm file len
 		pcmHEADER.dwSize = 36 + pcmDATA.dwSize;
+		printf("pcm file len %d.\n", pcmDATA.dwSize);
 
 		fwrite(fpout, &pcmHEADER, sizeof(WAVE_HEADER));
 		fwrite(fpout, &pcmFMT, sizeof(WAVE_FMT));
 		fwrite(fpout, &pcmDATA, sizeof(WAVE_DATA));
 
-#if 0
-		while(1)
-		{
-			int r_ret = fread(fp, tmp_data, sizeof(tmp_data));
-			if (r_ret < sizeof(tmp_data)) {
-				printf("last packet\n");
-			}
-			wdt_clear();
-			int w_ret = fwrite(fpout, tmp_data, r_ret);
-			wdt_clear();
-			delay_2ms(1);
-			if (r_ret != w_ret)
-				printf("wav write error\n");
+		transform_pcm_timer = sys_timer_add(NULL, pcm_2_wav, 1);
 
-			if (r_ret < sizeof(tmp_data))
-				break;
-		}
-#endif
-
-
-		wdt_clear();
-
-		printf("wav file write over.\n");
-
-		fclose(fp);
-		fclose(fpout);
 		wdt_clear();
 
 		return 0;
-
 }
 
 #endif
-int transform_pcm_to_wave(FILE *fp)
-{
 
-		u8 tmp_data[320] = "this is a test filep------------------------------------------------------\n";
-		char file_path_head_tsts[80] = {0};
-
-		FILE *fpout, *tfp, *fpout_1, *fpout_2;
-
-		if(fp==NULL)
-		{
-			printf("fp error.\n");
-			return -1;
-		}
-
-		wdt_clear();
-		memcpy(file_path_head_tsts, file_path_head, sizeof(file_path_head));
-
-		strcat(file_path_head, ".txt");
-		fpout = fopen(file_path_head, "wt+");
-		if(fpout==NULL)
-		{
-			printf("Create wav file error.\n");
-			return -1;
-		}
-		fwrite(fpout, tmp_data, 60);
-		fclose(fpout);
-
-		wdt_clear();
-
-		strcat(file_path_head_tsts, "_1.bin");
-		fpout_1 = fopen(file_path_head_tsts, "wb+");
-		if(fpout_1==NULL)
-		{
-			printf("--Create wav file error.\n");
-			return -1;
-		}
-		fwrite(fpout_1, tmp_data, 50);
-		fclose(fpout_1);
-
-		fpout_1 = NULL;
-		fpout_1 = fopen(file_path_head_tsts, "rb+");
-		fseek(fpout_1, 8, SEEK_SET);
-		fwrite(fpout_1, "a5a5a5", 3);
-
-		wdt_clear();
-
-		printf("test file write over.\n");
-
-		fclose(fpout_1);
-		wdt_clear();
-		fpout_2 = NULL;
-
-		return 0;
-
-}
 
 
 /*****************************************************************************/
@@ -273,7 +208,6 @@ static void my_put_u8hex(u8 dat)
 u32 rx_total = 0;
 u8 led_cnt;
 
-extern FILE *test_file;
 
 #if 0
 static void uart_u_task_handle(void *arg)
@@ -441,21 +375,26 @@ static void uart_u_task_handle(void *arg)
 						strcat(file_path, year_month_day);
 						strcat(file_path, "/");
 						strcat(file_path, hour_min_sec);
-
+#if WAV_FORMAT
 						memset(file_path_head, 0x00, sizeof(file_path_head));
 						memcpy(file_path_head, file_path, sizeof(file_path));
-
+#endif
 						strcat(file_path, ".pcm");
 						printf("file_path:%s\n", file_path);
 						if (!test_file) {
 							test_file = fopen(file_path, "w+");
+							
+#if WAV_FORMAT
+
+#else
+							memset(file_path, 0, sizeof(file_path));
+#endif
 							if (!test_file) {
 								printf("fopen file faild!\n");
 							} else {
 								printf("open file succed\r\n");
 							}
 						}
-						memset(file_path, 0, sizeof(file_path));
 						fseek(test_file, 0, SEEK_SET);
 
 						bes_start_recoder();
@@ -463,15 +402,17 @@ static void uart_u_task_handle(void *arg)
 						break;
 					case APP_USER_MSG_STOP_RECODER:
 							printf("APP_USER_MSG_STOP_RECODER");
-							printf("file write end....\n");
 
 							if (test_file) {
 #if WAV_FORMAT
-								transform_pcm_to_wave(test_file);
-
-#endif
 								fclose(test_file);
 								test_file = NULL;
+								transform_pcm_to_wave();
+#else
+								fclose(test_file);
+								test_file = NULL;
+#endif
+
 							}
 
 							lwrb_free(&receive_buff);

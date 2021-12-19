@@ -416,12 +416,12 @@ static u32 TEXT_FNAME_ID[10] = {
 
 
 static const u8 MUSIC_SCAN_PARAM[] = "-t"
-                                     "PCM"
+                                     "WAVPCM"
                                      " -sn -d"
                                      ;
 
 static const u8 RECODER_SCAN_PARAM[] = "-t"
-                                     "PCM"
+                                     "WAVPCM"
                                      " -sn -d"
                                      ;
 

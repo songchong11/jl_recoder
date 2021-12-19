@@ -9,10 +9,10 @@
 
 #define TARGET_BAUD		1000000
 
-#define ENCODER_ENABLE	1
+#define ENCODER_ENABLE	0
 #define	USE_LWRB		1
 #define DEBUG_FILE_SYS	1
-#define WAV_FORMAT		0
+#define WAV_FORMAT		1
 
 #define SIM_CARD_TYPE	CTNET//CMNET
 
