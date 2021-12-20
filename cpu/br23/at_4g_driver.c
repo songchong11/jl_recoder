@@ -148,7 +148,9 @@ static void at_4g_task_handle(void *arg)
 
 							printf("find a file to send %s/%s", tmp_dir_name, tmp_file_name);
 
-							file_read_from_sd_card(tmp_dir_name, tmp_file_name);
+							ret = file_read_from_sd_card(tmp_dir_name, tmp_file_name);
+							if (!ret)
+								os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SEND_FILE_OVER);
 
 						} else {
 							printf("no file to send \n");
