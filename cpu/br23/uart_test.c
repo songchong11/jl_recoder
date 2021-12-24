@@ -291,12 +291,14 @@ AT_VOLATILE_RAM_CODE
 static void uart_u_task_handle(void *arg)
 {
 		int ret;
-		int msg[Q_USER_DATA_SIZE + 1] = {0, 0, 0, 0, 0, 0, 0, 0, 00, 0};
+		//int msg[Q_USER_DATA_SIZE + 1] = {0, 0, 0, 0, 0, 0, 0, 0, 00, 0};
+		int msg[200 + 1] = {0, 0, 0, 0, 0, 0, 0, 0, 00, 0};
 		int n_read;
 		uint8_t* data;
 
 		while (1) {
 			ret = os_task_pend("taskq", msg, ARRAY_SIZE(msg));
+			//app_task_get_msg(int * msg, int msg_size, int block)
 			if (ret != OS_TASKQ) {
 				continue;
 			}
@@ -383,7 +385,7 @@ static void uart_u_task_handle(void *arg)
 						printf("file_path:%s\n", file_path);
 						if (!test_file) {
 							test_file = fopen(file_path, "w+");
-							
+
 #if WAV_FORMAT
 
 #else
@@ -416,7 +418,6 @@ static void uart_u_task_handle(void *arg)
 							}
 
 							lwrb_free(&receive_buff);
-							bes_stop_recoder();
 						break;
 					default:
 						break;

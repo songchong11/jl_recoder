@@ -530,10 +530,12 @@ int file_list_flush(int from_index)
     char *name_buf = NULL;
 	int dir_num = __this->cur_total;
 
+	#if 0
     for (i = 0; i < sizeof(TEXT_FNAME_ID) / sizeof(TEXT_FNAME_ID[0]); i++) {
         memset(__this->text_list[i].fname, 0, TEXT_NAME_LEN);
         __this->text_list[i].len = 0;
     }
+	#endif
 	printf("file_list_flush  -------------\r\n");
 
 	name_buf = malloc(TEXT_NAME_LEN);
@@ -543,7 +545,8 @@ int file_list_flush(int from_index)
 
 	    if (dir) {
 
-			__this->text_list[from_index].len = fget_name(dir, name_buf, TEXT_NAME_LEN);
+			//__this->text_list[from_index].len = fget_name(dir, name_buf, TEXT_NAME_LEN);
+			int tmp_len = fget_name(dir, name_buf, TEXT_NAME_LEN);
 
 			printf("dir[%d]=%s\n", from_index, name_buf);
 
@@ -915,7 +918,7 @@ bool check_file_is_sended(u8 *file_name)
 	if ((file_name[0] == 's' /*&& file_name[1] == 's'*/)
 		||(file_name[0] == 'S' /*&& file_name[1] == 'S'*/)) {
 		ret = true;
-		printf("this file sended, skip it\n");
+		//printf("this file sended, skip it\n");
 	} else {
 		ret = false;
 		printf("this file is not sended\n");
@@ -1005,7 +1008,7 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 					__this->fs = fscan_enterdir(__this->fs, tmp_dir_name);
 					__this->cur_total = __this->fs->file_number + 1;
 
-					printf("%s have %d	files\n", tmp_dir_name, __this->cur_total);
+					//printf("%s have %d	files\n", tmp_dir_name, __this->cur_total);
 
 					for (int n = 1; n < __this->cur_total; n++) {
 						file = fselect(__this->fs, FSEL_BY_NUMBER, n);
@@ -1014,7 +1017,6 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 						fclose(file);
 						file = NULL;
 
-						printf("len = %d  file[%d]: %s\n", len, n, temp_file_name);
 						ret = check_file_is_sended(temp_file_name);
 
 						if(!ret) { // file not sended
@@ -1025,7 +1027,7 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 
 							break;
 						} else { //sended
-							printf("file %s is sended , continue\n", temp_file_name);
+							//printf("file %s is sended , continue\n", temp_file_name);
 							//check all file is sended in the dir, if all sended,need rename the dir name
 							if (n == (__this->cur_total) - 1) {
 								printf("all file sended , rename dir\n");
@@ -1044,7 +1046,7 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 
 
 			} else { //dir send over
-				printf("dir is sended , continue\n");
+				//printf("dir is sended , continue\n");
 			}
 
 			 if (need_rename_dir) {
@@ -1058,9 +1060,9 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 					printf("rename dir fail\n");
 				}
 
+			} else {
+					fclose(dir); // TODO:check ,when rename ,does need close file
 			}
-
-			fclose(dir);
 
 		}
 
@@ -1212,6 +1214,7 @@ void release_all_fs_source(void)
 		free(__this);
 		__this = NULL;
 	}
+	printf("release_all_fs_source over\n");
 
 }
 

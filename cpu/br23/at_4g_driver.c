@@ -85,10 +85,11 @@ static void at_4g_task_handle(void *arg)
 	u8 retry;
 
 
-    int msg[Q_USER_DATA_SIZE + 1] = {0, 0, 0, 0, 0, 0, 0, 0, 00, 0};
+	int msg[Q_USER_DATA_SIZE + 1] = {0, 0, 0, 0, 0, 0, 0, 0, 00, 0};
 
     while (1) {
         ret = os_task_pend("taskq", msg, ARRAY_SIZE(msg));
+		 printf("----get msg----");
         if (ret != OS_TASKQ) {
             continue;
         }
@@ -123,7 +124,6 @@ static void at_4g_task_handle(void *arg)
 
 						printf("gsm enter into access mode success\n");
 						os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GET_NEXT_FILE);
-
 					} else {
 
 						printf("gsm init faild\n");
@@ -159,8 +159,6 @@ static void at_4g_task_handle(void *arg)
 
 					} else
 						os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SEND_FILE_OVER);
-
-
 
 					break;
 
@@ -212,12 +210,11 @@ static void at_4g_task_handle(void *arg)
    }
 }
 
-
 void at_4g_thread_init(void)
 {
     printf("at_4g_thread_init\n");
 
-	os_task_create(at_4g_task_handle, NULL, 7, 512, 512, "at_4g_task");
+	os_task_create(at_4g_task_handle, NULL, 1, 1024, 512, "at_4g_task");
 }
 
 
@@ -251,6 +248,7 @@ void file_read_and_send(void *priv)
 	if(len == READ_LEN) {
 		packet_num++;
 		printf("s%d", packet_num);
+#if DEBUG_FILE_SYS
 #if ENCODER_ENABLE
 		/*320byte input, 320 / 4 = 80 byte*/
 		encode(&mg, (s16 *)read_buffer, READ_LEN / 2, micEncodebuf);
@@ -258,33 +256,29 @@ void file_read_and_send(void *priv)
 #else
 		gsm_send_buffer(read_buffer, READ_LEN);
 #endif
+#endif
 	} else {
 
 		sys_timer_del(file_send_timer);
 		file_send_timer = 0;
 
+#if DEBUG_FILE_SYS
 #if ENCODER_ENABLE
 				encode(&mg, (s16 *)read_buffer, len / 2, micEncodebuf);
 				gsm_send_buffer(micEncodebuf, len / 4);
 #else
 				gsm_send_buffer(read_buffer, len);//send last packet
 #endif
-
+#endif
 
 		printf("send over, close file!!!\r\n");
 
 		send_end_packet();
-
-		printf("send a msg to get next file\r\n");
-
-		delay_2ms(10);
 		ret = rename_file_when_send_over(read_p, tmp_file_name);
 		if (ret) {
-			fclose(read_p);
 			release_all_fs_source();
 			os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GET_NEXT_FILE);
 		} else {
-			fclose(read_p);
 			release_all_fs_source();
 			printf("rename fail, stop send\n");
 			os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SEND_FILE_OVER);
@@ -319,7 +313,7 @@ int rename_file_when_send_over(FILE* fs, char *file_name)
 			printf("rename ok\n");
 			ret = true;
 		}
-
+		fclose(fs); // TODO:check
 	} else {
 		printf("open file error\r\n");
 		ret = false;
@@ -345,10 +339,10 @@ bool file_read_from_sd_card(u8 *dir, u8 *file_name)
 
 	if (fp) {
 
-		printf("open file successd, send the start packet\n");
+		//printf("open file successd, send the start packet\n");
 
 		u32 file_len =	flen(fp);
-		printf("this file len = %x\n", file_len);
+		printf("file len = %x\n", file_len);
 
 #if WAV_FORMAT
 		fseek(fp, 44, SEEK_SET);
