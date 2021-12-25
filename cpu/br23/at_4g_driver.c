@@ -78,6 +78,113 @@ u8 gsn_str[30];
 extern bool scan_sd_card_before_get_path(void);
 extern void release_all_fs_source(void);
 int rename_file_when_send_over(FILE* fs, char *file_name);
+
+
+void prepare_start_send_pcm(void)
+{
+	u8 retry;
+	int ret;
+
+	printf("APP_USER_MSG_START_SEND_FILE_TO_AT");
+	/*power on 4g module and send file to at*/
+	if (recoder.module_status == POWER_OFF) {
+
+	#if DEBUG_FILE_SYS
+		module_power_on();
+		while(gsm_init_to_access_mode() != GSM_TRUE) {
+			retry++;
+			module_power_off();
+			wdt_clear();
+			delay_2ms(2000);
+			wdt_clear();
+			module_power_on();
+			if(retry > 3) {
+				ret = false;
+				break;
+			}
+		}
+		ret = true;
+	#else
+		ret = true;
+	#endif
+	}
+
+	if (ret) {
+
+		printf("gsm enter into access mode success\n");
+		int t = scan_sd_card_before_get_path();
+		if (t) {
+			//os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GET_NEXT_FILE);
+			 app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_GET_NEXT_FILE);
+		} else {
+			printf("scan error\n");
+			//os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SEND_FILE_OVER);
+			app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_SEND_FILE_OVER);
+		}
+	} else {
+
+		printf("gsm init faild\n");
+		//os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GSM_FAIL);
+		app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_GSM_FAIL);
+	}
+
+}
+
+
+void stop_send_pcm_to_at(void)
+{
+	sys_timer_del(file_send_timer);
+	file_send_timer = 0;
+
+	gsm_send_buffer(read_buffer, READ_LEN);//send last packet
+
+	printf("user active stop send!!!\r\n");
+
+	send_end_packet();
+
+	release_all_fs_source();
+	recoder.send_pcm_state = false;
+
+	memset(tmp_dir_name, 0x00, sizeof(tmp_dir_name));
+	memset(tmp_file_name, 0x00, sizeof(tmp_file_name));
+
+	printf("send file over, close 4G module\n");
+
+#if DEBUG_FILE_SYS
+	/*power off 4g module */
+	clsoe_tcp_link();
+	module_power_off();
+#endif
+}
+
+
+void get_next_file(void)
+{
+	int ret;
+
+	printf("APP_USER_MSG_GET_NEXT_FILE");
+	
+	memset(tmp_dir_name, 0x00, sizeof(tmp_dir_name));
+	memset(tmp_file_name, 0x00, sizeof(tmp_file_name));
+	
+	ret = get_recoder_file_path(tmp_dir_name, tmp_file_name);
+	
+	if (ret) {
+	
+		printf("find a file to send %s/%s", tmp_dir_name, tmp_file_name);
+	
+		ret = file_read_from_sd_card(tmp_dir_name, tmp_file_name);
+		if (!ret)
+			 app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_SEND_FILE_OVER);
+	
+	} else {
+		printf("no file to send \n");
+		app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_SEND_FILE_OVER);
+	}
+
+}
+
+#if 0
 static void at_4g_task_handle(void *arg)
 {
     int ret;
@@ -161,46 +268,6 @@ static void at_4g_task_handle(void *arg)
 
 					break;
 
-				case APP_USER_MSG_STOP_SEND_FILE_TO_AT:
-				case APP_USER_MSG_SEND_FILE_OVER:
-
-					sys_timer_del(file_send_timer);
-					file_send_timer = 0;
-
-					gsm_send_buffer(read_buffer, ret);//send last packet
-
-					printf("user active stop send!!!\r\n");
-
-					send_end_packet();
-
-					release_all_fs_source();
-					recoder.send_pcm_state = false;
-
-					memset(tmp_dir_name, 0x00, sizeof(tmp_dir_name));
-					memset(tmp_file_name, 0x00, sizeof(tmp_file_name));
-
-					printf("send file over, close 4G module\n");
-#if DEBUG_FILE_SYS
-					/*power off 4g module */
-					clsoe_tcp_link();
-					module_power_off();
-#endif
-					break;
-
-				case APP_USER_MSG_SYNC_TIME:
-						gsm_sync_time_from_net();
-					break;
-
-				case APP_USER_MSG_GSM_ERROR:
-					 if(msg[2] == NO_SIM_CARD) {
-						printf("NO sim card\n");
-					 } else if(msg[2] == NET_ERROR) {
-						printf("gsm internet is error\n");
-					 } else if (msg[2] == NO_SD_CARD){
-						 printf("NO sd card\n");
-
-					 }
-					break;
 
 	            default:
 	                break;
@@ -208,21 +275,8 @@ static void at_4g_task_handle(void *arg)
         }
    }
 }
+#endif
 
-void at_4g_thread_init(void)
-{
-    printf("at_4g_thread_init\n");
-
-	os_task_create(at_4g_task_handle, NULL, 1, 4096+4096, 1024, "at_4g_task");
-}
-
-
-void at_4g_task_del(void)
-{
-    printf("at_4g_task_del\n");
-
-    os_task_del("at_4g_task");
-}
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -276,11 +330,11 @@ void file_read_and_send(void *priv)
 		ret = rename_file_when_send_over(read_p, tmp_file_name);
 		if (ret) {
 			//release_all_fs_source();
-			os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GET_NEXT_FILE);
+			app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_GET_NEXT_FILE);
 		} else {
 			//release_all_fs_source();
 			printf("rename fail, stop send\n");
-			os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SEND_FILE_OVER);
+			app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_SEND_FILE_OVER);
 		}
 
 
@@ -1281,6 +1335,7 @@ uint8_t gsm_sync_time_from_net(void)
 
 	sms_failure:
 		printf("\r\n sync time fail... \r\n");
+		//os_taskq_post_msg("at_4g_task", 2, APP_USER_MSG_GSM_ERROR, error_code);
 		os_taskq_post_msg("at_4g_task", 2, APP_USER_MSG_GSM_ERROR, error_code);
 		module_power_off();
 		return GSM_FALSE;

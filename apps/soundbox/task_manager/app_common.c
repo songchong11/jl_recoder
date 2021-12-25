@@ -299,14 +299,6 @@ int app_common_key_msg_deal(struct sys_event *event)
 #endif/*RECORDER_MIX_EN*/
         break;
 
-	case KEY_START_STOP_RECODER:
-
-		break;
-
-	case KEY_AT_SEND_PCM:
-		printf("start or stop send pcm by at port-------------------\n");
-
-		break;
     default:
         ui_key_msg_post(key_event);
         ui_simple_key_msg_post(key_event, key_value);

@@ -6,6 +6,7 @@
 #include "led_driver.h"
 #include "lwrb.h"
 #include "ima_enc.h"
+#include "app_task.h"
 
 #define TARGET_BAUD		1000000
 
@@ -66,5 +67,8 @@ extern void check_at_baud_ret(void);
 extern void uart_1_dev_reinit(u32 baud);
 extern u32 myuart_dev_close(uart_bus_t *ut);
 extern void clear_rx_buffer(void);
+extern void prepare_start_send_pcm(void);
+extern void stop_send_pcm_to_at(void);
+extern void get_next_file(void);
 
 #endif

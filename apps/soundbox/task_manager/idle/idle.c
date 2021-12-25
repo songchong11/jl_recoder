@@ -347,12 +347,14 @@ static int idle_key_event_opr(struct sys_event *event)
 		if (recoder.send_pcm_state == false && recoder.sd_state == true) {
 			recoder.send_pcm_state = true;
 			printf("start send pcm to module............\n");
-			os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_START_SEND_FILE_TO_AT);
+			//os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_START_SEND_FILE_TO_AT);
+			prepare_start_send_pcm();
 
 		} else {
 			printf("stop send pcm to module............\n");
 			recoder.send_pcm_state = false;
-			os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_STOP_SEND_FILE_TO_AT);
+			//os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_STOP_SEND_FILE_TO_AT);
+			stop_send_pcm_to_at();
 		}
 
 		if(recoder.sd_state == false) {
@@ -360,6 +362,9 @@ static int idle_key_event_opr(struct sys_event *event)
 		}
 
 		ret = true;
+		break;
+
+	default:
 		break;
 	}
     return ret;
@@ -581,7 +586,7 @@ void app_idle_task()
 		led_power_on_show();
 #if DEBUG_FILE_SYS
 		check_moudule_whether_is_power_on();
-		os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SYNC_TIME);
+		gsm_sync_time_from_net();// TODO:check
 #endif
 		if (sd_check_timer == 0) {
 			sd_check_timer = sys_timeout_add(NULL, sd_check_fun, 1000);
@@ -591,7 +596,6 @@ void app_idle_task()
 
     idle_app_start();
 	bes_power_on();
-
 
     while (1) {
         app_task_get_msg(msg, ARRAY_SIZE(msg), 1);
@@ -603,6 +607,31 @@ void app_idle_task()
             }
             break;
 		case APP_MSG_USER:
+#if 1
+			switch (msg[1]) {
+				case APP_USER_MSG_GET_NEXT_FILE:
+						get_next_file();
+					break;
+
+				case APP_USER_MSG_SEND_FILE_OVER:
+						recoder.send_pcm_state = false;
+						stop_send_pcm_to_at();
+					break;
+
+				case APP_USER_MSG_GSM_ERROR:
+					 if(msg[2] == NO_SIM_CARD) {
+						printf("NO sim card\n");
+					 } else if(msg[2] == NET_ERROR) {
+						printf("gsm internet is error\n");
+					 } else if (msg[2] == NO_SD_CARD){
+						 printf("NO sd card\n");
+					}
+				break;
+
+				default:
+					break;
+			}
+#endif
 			break;
 
         default:
