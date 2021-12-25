@@ -347,13 +347,11 @@ static int idle_key_event_opr(struct sys_event *event)
 		if (recoder.send_pcm_state == false && recoder.sd_state == true) {
 			recoder.send_pcm_state = true;
 			printf("start send pcm to module............\n");
-			//os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_START_SEND_FILE_TO_AT);
 			prepare_start_send_pcm();
 
 		} else {
 			printf("stop send pcm to module............\n");
 			recoder.send_pcm_state = false;
-			//os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_STOP_SEND_FILE_TO_AT);
 			stop_send_pcm_to_at();
 		}
 

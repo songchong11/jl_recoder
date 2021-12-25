@@ -54,8 +54,6 @@ void module_power_on(void)
 void module_power_off(void)
 {
 
-	//if (module_status == POWER_ON) {
-
 		printf("4g module power off\r\n");
 		gpio_set_output_value(MODULE_PWR_GPIO, 1);
 
@@ -67,8 +65,6 @@ void module_power_off(void)
 		recoder.module_status = POWER_OFF;
 
 		led_green_off();
-	//}
-
 }
 
 u8 tmp_dir_name[10];
@@ -114,17 +110,14 @@ void prepare_start_send_pcm(void)
 		printf("gsm enter into access mode success\n");
 		int t = scan_sd_card_before_get_path();
 		if (t) {
-			//os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GET_NEXT_FILE);
 			 app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_GET_NEXT_FILE);
 		} else {
 			printf("scan error\n");
-			//os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SEND_FILE_OVER);
 			app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_SEND_FILE_OVER);
 		}
 	} else {
 
 		printf("gsm init faild\n");
-		//os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GSM_FAIL);
 		app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_GSM_FAIL);
 	}
 
@@ -184,98 +177,7 @@ void get_next_file(void)
 
 }
 
-#if 0
-static void at_4g_task_handle(void *arg)
-{
-    int ret;
-    int result;
-	u8 retry;
 
-
-	int msg[Q_USER_DATA_SIZE + 1] = {0, 0, 0, 0, 0, 0, 0, 0, 00, 0};
-
-    while (1) {
-        ret = os_task_pend("taskq", msg, ARRAY_SIZE(msg));
-		 printf("----get msg----");
-        if (ret != OS_TASKQ) {
-            continue;
-        }
-        //put_buf(msg, (Q_USER_DATA_SIZE + 1) * 4);
-        if (msg[0] == Q_MSG) {
-	        switch (msg[1]) {
-	            case APP_USER_MSG_START_SEND_FILE_TO_AT:
-	                printf("APP_USER_MSG_START_SEND_FILE_TO_AT");
-					/*power on 4g module and send file to at*/
-					if (recoder.module_status == POWER_OFF) {
-
-					#if DEBUG_FILE_SYS
-						module_power_on();
-						while(gsm_init_to_access_mode() != GSM_TRUE) {
-							retry++;
-							module_power_off();
-							wdt_clear();
-							delay_2ms(2000);
-							wdt_clear();
-							module_power_on();
-							if(retry > 3) {
-								ret = false;
-								break;
-							}
-						}
-
-						ret = true;
-					#endif
-					}
-
-					if (ret) {
-
-						printf("gsm enter into access mode success\n");
-						int t = scan_sd_card_before_get_path();
-						if (t) {
-							os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GET_NEXT_FILE);
-						} else {
-							printf("scan error\n");
-							os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SEND_FILE_OVER);
-						}
-					} else {
-
-						printf("gsm init faild\n");
-						os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GSM_FAIL);
-					}
-
-	                break;
-
-				case APP_USER_MSG_GET_NEXT_FILE:
-					printf("APP_USER_MSG_GET_NEXT_FILE");
-
-					memset(tmp_dir_name, 0x00, sizeof(tmp_dir_name));
-					memset(tmp_file_name, 0x00, sizeof(tmp_file_name));
-
-					ret = get_recoder_file_path(tmp_dir_name, tmp_file_name);
-
-					if (ret) {
-
-						printf("find a file to send %s/%s", tmp_dir_name, tmp_file_name);
-
-						ret = file_read_from_sd_card(tmp_dir_name, tmp_file_name);
-						if (!ret)
-							os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SEND_FILE_OVER);
-
-					} else {
-						printf("no file to send \n");
-						os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SEND_FILE_OVER);
-					}
-
-					break;
-
-
-	            default:
-	                break;
-	       }
-        }
-   }
-}
-#endif
 
 #endif
 
