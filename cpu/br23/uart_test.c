@@ -11,9 +11,9 @@ extern lwrb_t receive_buff;
 #ifdef USE_LWRB
 /* Declare rb instance & raw data */
 lwrb_t receive_buff;
-uint8_t buff_data[320 * 200];
+//uint8_t buff_data[320 * 200];
+uint8_t buff_data[320 * 1];//debug only
 
-//uint8_t write_buffer[320];
 #endif
 
 FILE *test_file = NULL;

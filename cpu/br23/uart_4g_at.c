@@ -457,8 +457,10 @@ void GSM_USART_printf(char *Data,...)
 
 void gsm_send_buffer(u8 *buf, int len)
 {
+#if DEBUG_FILE_SYS
 	if(uart_bus != NULL)
 		uart_bus->write(buf, len);
+#endif
 }
 
 #endif

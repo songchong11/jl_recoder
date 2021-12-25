@@ -11,7 +11,7 @@
 
 #define ENCODER_ENABLE	0
 #define	USE_LWRB		1
-#define DEBUG_FILE_SYS	1
+#define DEBUG_FILE_SYS	0
 #define WAV_FORMAT		1
 
 #define SIM_CARD_TYPE	CTNET//CMNET
@@ -54,7 +54,7 @@ enum {
 ///自定义事件推送的线程
 
 #define Q_USER_DEAL   0xAABBCC ///自定义队列类型
-#define Q_USER_DATA_SIZE  10///理论Queue受任务声明struct task_info.qsize限制,但不宜过大,建议<=6
+#define Q_USER_DATA_SIZE  6///理论Queue受任务声明struct task_info.qsize限制,但不宜过大,建议<=6
 
 
 extern void get_sys_time(struct sys_time *time);//获取时间

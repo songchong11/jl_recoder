@@ -123,7 +123,13 @@ static void at_4g_task_handle(void *arg)
 					if (ret) {
 
 						printf("gsm enter into access mode success\n");
-						os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GET_NEXT_FILE);
+						int t = scan_sd_card_before_get_path();
+						if (t) {
+							os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GET_NEXT_FILE);
+						} else {
+							printf("scan error\n");
+							os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SEND_FILE_OVER);
+						}
 					} else {
 
 						printf("gsm init faild\n");
@@ -138,27 +144,20 @@ static void at_4g_task_handle(void *arg)
 					memset(tmp_dir_name, 0x00, sizeof(tmp_dir_name));
 					memset(tmp_file_name, 0x00, sizeof(tmp_file_name));
 
-					ret = scan_sd_card_before_get_path();
+					ret = get_recoder_file_path(tmp_dir_name, tmp_file_name);
 
 					if (ret) {
 
-						ret = get_recoder_file_path(tmp_dir_name, tmp_file_name);
+						printf("find a file to send %s/%s", tmp_dir_name, tmp_file_name);
 
-						if (ret) {
-
-							printf("find a file to send %s/%s", tmp_dir_name, tmp_file_name);
-
-							ret = file_read_from_sd_card(tmp_dir_name, tmp_file_name);
-							if (!ret)
-								os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SEND_FILE_OVER);
-
-						} else {
-							printf("no file to send \n");
+						ret = file_read_from_sd_card(tmp_dir_name, tmp_file_name);
+						if (!ret)
 							os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SEND_FILE_OVER);
-						}
 
-					} else
+					} else {
+						printf("no file to send \n");
 						os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SEND_FILE_OVER);
+					}
 
 					break;
 
@@ -214,7 +213,7 @@ void at_4g_thread_init(void)
 {
     printf("at_4g_thread_init\n");
 
-	os_task_create(at_4g_task_handle, NULL, 1, 1024, 512, "at_4g_task");
+	os_task_create(at_4g_task_handle, NULL, 1, 4096+4096, 1024, "at_4g_task");
 }
 
 
@@ -247,7 +246,7 @@ void file_read_and_send(void *priv)
 
 	if(len == READ_LEN) {
 		packet_num++;
-		printf("s%d", packet_num);
+		//printf("s%d", packet_num);
 #if DEBUG_FILE_SYS
 #if ENCODER_ENABLE
 		/*320byte input, 320 / 4 = 80 byte*/
@@ -276,10 +275,10 @@ void file_read_and_send(void *priv)
 		send_end_packet();
 		ret = rename_file_when_send_over(read_p, tmp_file_name);
 		if (ret) {
-			release_all_fs_source();
+			//release_all_fs_source();
 			os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_GET_NEXT_FILE);
 		} else {
-			release_all_fs_source();
+			//release_all_fs_source();
 			printf("rename fail, stop send\n");
 			os_taskq_post_msg("at_4g_task", 1, APP_USER_MSG_SEND_FILE_OVER);
 		}
@@ -313,7 +312,7 @@ int rename_file_when_send_over(FILE* fs, char *file_name)
 			printf("rename ok\n");
 			ret = true;
 		}
-		fclose(fs); // TODO:check
+		fclose(fs);
 	} else {
 		printf("open file error\r\n");
 		ret = false;
@@ -336,10 +335,12 @@ bool file_read_from_sd_card(u8 *dir, u8 *file_name)
 
 	//fp = fopen("storage/sd0/C/20211130/231521.MP3","rb");
 	fp = fopen(tmp_path,"rb");
+	printf("---------------1-----------------\n");
 
 	if (fp) {
 
 		//printf("open file successd, send the start packet\n");
+		printf("-open ok-\n");
 
 		u32 file_len =	flen(fp);
 		printf("file len = %x\n", file_len);

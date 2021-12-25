@@ -527,7 +527,7 @@ int file_list_flush(int from_index)
     FILE *file = NULL;
 
     int i = 0;
-    char *name_buf = NULL;
+    unsigned char name_buf[128] = {0};
 	int dir_num = __this->cur_total;
 
 	#if 0
@@ -538,7 +538,7 @@ int file_list_flush(int from_index)
 	#endif
 	printf("file_list_flush  -------------\r\n");
 
-	name_buf = malloc(TEXT_NAME_LEN);
+	///name_buf = malloc(TEXT_NAME_LEN);
 
 	for (from_index = 0; from_index <  dir_num; from_index++) {
         dir = fselect(__this->fs, FSEL_BY_NUMBER, from_index);
@@ -634,8 +634,8 @@ int file_list_flush(int from_index)
 	    }
     }
 
-	free(name_buf);
-	name_buf = NULL;
+	//free(name_buf);
+	//name_buf = NULL;
 
     return 0;
 }
@@ -894,6 +894,7 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 
 }
 #endif
+void release_all_fs_source(void);
 
 bool check_dir_is_sended(u8 *dir_name)
 {
@@ -976,8 +977,8 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
     FILE *file = NULL;
 	int from_index = 0;
     int i = 0;
-    char temp_file_name[20] = {0};
-	char tmp_dir_name[20];
+    char temp_file_name[128] = {0};
+	char tmp_dir_name[128];
 	bool ret = false;
 	int len;
 	int rt;
@@ -986,19 +987,21 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 
 	int dir_num = __this->cur_total;
 
+#if 0
     for (i = 0; i < sizeof(TEXT_FNAME_ID) / sizeof(TEXT_FNAME_ID[0]); i++) {
         memset(__this->text_list[i].fname, 0, TEXT_NAME_LEN);
         __this->text_list[i].len = 0;
     }
+#endif
 	printf("file_list_flush  -------------\r\n");
 
 
 	for (from_index = 0; from_index <  dir_num; from_index++) {
         dir = fselect(__this->fs, FSEL_BY_NUMBER, from_index);
-
 	    if (dir) {
 
-			__this->text_list[from_index].len = fget_name(dir, tmp_dir_name, TEXT_NAME_LEN);
+			//__this->text_list[from_index].len = fget_name(dir, tmp_dir_name, TEXT_NAME_LEN);
+			int n_len = fget_name(dir, tmp_dir_name, TEXT_NAME_LEN);
 
 			printf("dir[%d]= %s\n", from_index, tmp_dir_name);
 
@@ -1060,10 +1063,8 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 					printf("rename dir fail\n");
 				}
 
-			} else {
-					fclose(dir); // TODO:check ,when rename ,does need close file
 			}
-
+			fclose(dir);
 		}
 
     }
