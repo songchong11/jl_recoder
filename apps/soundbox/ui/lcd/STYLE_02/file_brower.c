@@ -1159,13 +1159,13 @@ int get_recoder_file_path(u8 *tmp_dir, u8 *tmp_file)
 
 		ret = file_get_next_file(tmp_dir, tmp_file);
 
-		if (ret) {
-			printf("find next file ok %s/%s\n", tmp_dir,tmp_file);
-			ret = true;
-		} else {
-			printf("not find next file\n");
-			ret = false;
-		}
+		//if (ret) {
+		//	printf("find next file ok %s/%s\n", tmp_dir,tmp_file);
+		//	ret = true;
+	//	} else {
+		//	printf("not find next file\n");
+		ret = false;
+		//}
 	} else {
 		printf("have no dir\n");
 		ret = false;

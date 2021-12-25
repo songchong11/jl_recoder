@@ -81,7 +81,7 @@ void prepare_start_send_pcm(void)
 	u8 retry;
 	int ret;
 
-	printf("APP_USER_MSG_START_SEND_FILE_TO_AT");
+	printf("prepare_start_send_pcm");
 	/*power on 4g module and send file to at*/
 	if (recoder.module_status == POWER_OFF) {
 
@@ -159,7 +159,7 @@ void get_next_file(void)
 {
 	int ret;
 
-	printf("APP_USER_MSG_GET_NEXT_FILE");
+	printf("get_next_file\n");
 
 #if 1//debug
 	int t = scan_sd_card_before_get_path();
@@ -177,18 +177,19 @@ void get_next_file(void)
 
 	ret = get_recoder_file_path(tmp_dir_name, tmp_file_name);
 	
-	if (ret) {
+	//if (ret) {
 	
-		printf("find a file to send %s/%s", tmp_dir_name, tmp_file_name);
+		//printf("find a file to send %s/%s", tmp_dir_name, tmp_file_name);
 	#if 0
 		ret = file_read_from_sd_card(tmp_dir_name, tmp_file_name);
 		if (!ret)
 			 app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_SEND_FILE_OVER);
 	#endif
-	} else {
-		printf("no file to send \n");
-		app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_SEND_FILE_OVER);
-	}
+	//} else {
+		printf("file send over \n");
+		//app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_SEND_FILE_OVER);
+	//}
+		stop_send_pcm_to_at();
 
 }
 
