@@ -70,5 +70,6 @@ extern void clear_rx_buffer(void);
 extern void prepare_start_send_pcm(void);
 extern void stop_send_pcm_to_at(void);
 extern void get_next_file(void);
+extern int rename_file_when_send_over(FILE* fs, char *file_name);
 
 #endif

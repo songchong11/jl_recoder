@@ -180,16 +180,15 @@ void get_next_file(void)
 	if (ret) {
 	
 		printf("find a file to send %s/%s", tmp_dir_name, tmp_file_name);
-	
+	#if 0
 		ret = file_read_from_sd_card(tmp_dir_name, tmp_file_name);
 		if (!ret)
 			 app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_SEND_FILE_OVER);
-	
+	#endif
 	} else {
 		printf("no file to send \n");
 		app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_SEND_FILE_OVER);
 	}
-	release_all_fs_source();
 
 }
 
@@ -213,7 +212,7 @@ void file_read_and_send(void *priv)
 
 	if((packet_num % 5) == 0)
 		led_green_toggle();
-
+#if 0
 	int len = fread(read_p, read_buffer, READ_LEN);
 
 	if(len == READ_LEN) {
@@ -245,18 +244,24 @@ void file_read_and_send(void *priv)
 		printf("send over, close file!!!\r\n");
 
 		send_end_packet();
+#endif
+		//-------------------------------------------------------------debug
+
+		sys_timer_del(file_send_timer);
+		file_send_timer = 0;
+//-------------------------------------------------------------
 		ret = rename_file_when_send_over(read_p, tmp_file_name);
 		if (ret) {
-			//release_all_fs_source();
+			release_all_fs_source();
 			app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_GET_NEXT_FILE);
 		} else {
-			//release_all_fs_source();
+			release_all_fs_source();
 			printf("rename fail, stop send\n");
 			app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_SEND_FILE_OVER);
 		}
 
 
-	}
+	//}
 
 }
 
@@ -276,7 +281,8 @@ int rename_file_when_send_over(FILE* fs, char *file_name)
 
 		printf("open file successd\r\n");
 
-		ret = frename(fs, rename);
+		ret = frename(fs, rename); ///------debug
+
 		if (ret) {
 			printf("rename fail\n");
 			ret = false;

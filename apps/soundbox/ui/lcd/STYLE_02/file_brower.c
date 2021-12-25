@@ -14,6 +14,7 @@
 #else
 #include "audio_eq.h"
 #endif
+#include "public.h"
 
 
 
@@ -1017,8 +1018,8 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 						file = fselect(__this->fs, FSEL_BY_NUMBER, n);
 						len = fget_name(file, temp_file_name, TEXT_NAME_LEN);
 
-						fclose(file);
-						file = NULL;
+						//fclose(file);
+						//file = NULL;
 
 						ret = check_file_is_sended(temp_file_name);
 
@@ -1028,7 +1029,11 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 							printf("-------find the next file is %s/%s\n", dir_name, file_name);
 							result = true;
 
-							break;
+							rename_file_when_send_over(file, temp_file_name);
+
+							file = NULL;
+
+							//break;// ----------debug
 						} else { //sended
 							//printf("file %s is sended , continue\n", temp_file_name);
 							//check all file is sended in the dir, if all sended,need rename the dir name
@@ -1037,15 +1042,15 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 								need_rename_dir = true;
 							}
 
-							continue;
+							//continue;
 						}
 					}
 
 				__this->fs = fscan_exitdir(__this->fs);
 				printf("exitdir\n");
 
-				if (result == true)// break out dir loop
-					break;
+				//if (result == true)// break out dir loop
+					//break;  ---debug
 
 
 			} else { //dir send over
