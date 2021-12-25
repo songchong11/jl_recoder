@@ -106,6 +106,10 @@ void prepare_start_send_pcm(void)
 	}
 
 	if (ret) {
+		 app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_GET_NEXT_FILE);
+	}
+#if 0
+	if (ret) {
 
 		printf("gsm enter into access mode success\n");
 		int t = scan_sd_card_before_get_path();
@@ -120,7 +124,7 @@ void prepare_start_send_pcm(void)
 		printf("gsm init faild\n");
 		app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_GSM_FAIL);
 	}
-
+#endif
 }
 
 
@@ -156,10 +160,21 @@ void get_next_file(void)
 	int ret;
 
 	printf("APP_USER_MSG_GET_NEXT_FILE");
-	
+
+#if 1//debug
+	int t = scan_sd_card_before_get_path();
+	if (t) {
+		 //app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_GET_NEXT_FILE);
+	} else {
+		printf("scan error\n");
+		app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_SEND_FILE_OVER);
+		return;
+	}
+#endif
+
 	memset(tmp_dir_name, 0x00, sizeof(tmp_dir_name));
 	memset(tmp_file_name, 0x00, sizeof(tmp_file_name));
-	
+
 	ret = get_recoder_file_path(tmp_dir_name, tmp_file_name);
 	
 	if (ret) {
@@ -174,6 +189,7 @@ void get_next_file(void)
 		printf("no file to send \n");
 		app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_SEND_FILE_OVER);
 	}
+	release_all_fs_source();
 
 }
 
