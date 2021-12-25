@@ -1006,69 +1006,35 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 
 			printf("dir[%d]= %s\n", from_index, tmp_dir_name);
 
-			ret = check_dir_is_sended(tmp_dir_name);
+			__this->fs = fscan_enterdir(__this->fs, tmp_dir_name);
+			__this->cur_total = __this->fs->file_number + 1;
 
-			if (!ret) { //dir not send over
-					__this->fs = fscan_enterdir(__this->fs, tmp_dir_name);
-					__this->cur_total = __this->fs->file_number + 1;
+			for (int n = 1; n < __this->cur_total; n++) {
+				file = fselect(__this->fs, FSEL_BY_NUMBER, n);
+				len = fget_name(file, temp_file_name, TEXT_NAME_LEN);
 
-					//printf("%s have %d	files\n", tmp_dir_name, __this->cur_total);
+				ret = check_file_is_sended(temp_file_name);
 
-					for (int n = 1; n < __this->cur_total; n++) {
-						file = fselect(__this->fs, FSEL_BY_NUMBER, n);
-						len = fget_name(file, temp_file_name, TEXT_NAME_LEN);
+				if(!ret) { // file not sended
+					memcpy(dir_name, tmp_dir_name, 8 + 1);
+					memcpy(file_name, temp_file_name, 10 + 1);
+					printf("-------find the next file is %s/%s\n", dir_name, file_name);
+					result = true;
 
-						//fclose(file);
-						//file = NULL;
+					rename_file_when_send_over(file, temp_file_name);
+					file = NULL;
 
-						ret = check_file_is_sended(temp_file_name);
-
-						if(!ret) { // file not sended
-							memcpy(dir_name, tmp_dir_name, 8 + 1);
-							memcpy(file_name, temp_file_name, 10 + 1);
-							printf("-------find the next file is %s/%s\n", dir_name, file_name);
-							result = true;
-
-							rename_file_when_send_over(file, temp_file_name);
-
-							file = NULL;
-
-							//break;// ----------debug
-						} else { //sended
-							//printf("file %s is sended , continue\n", temp_file_name);
-							//check all file is sended in the dir, if all sended,need rename the dir name
-							if (n == (__this->cur_total) - 1) {
-								printf("all file sended , rename dir\n");
-								need_rename_dir = true;
-							}
-
-							//continue;
-						}
-					}
-
-				__this->fs = fscan_exitdir(__this->fs);
-				printf("exitdir\n");
-
-				//if (result == true)// break out dir loop
-					//break;  ---debug
-
-
-			} else { //dir send over
-				//printf("dir is sended , continue\n");
-			}
-
-			 if (need_rename_dir) {
-
-				need_rename_dir = false;
-				rt = rename_dir_name(dir, tmp_dir_name);
-
-				if (rt) {
-					printf("rename dir successed\n");
-				} else {
-					printf("rename dir fail\n");
+				} else { //sended
+					//printf("file %s is sended , continue\n", temp_file_name);
+					//check all file is sended in the dir, if all sended,need rename the dir name
+					fclose(file);
+					continue;
 				}
-
 			}
+
+			__this->fs = fscan_exitdir(__this->fs);
+			printf("exitdir\n");
+
 			fclose(dir);
 		}
 
