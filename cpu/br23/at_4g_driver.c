@@ -268,7 +268,7 @@ void file_read_and_send(void *priv)
 #endif
 static u32 packet_num = 0;
 
-void file_read_and_send(FILE *read_p)
+void file_read_and_send(FILE *read_p, const char * filename, const char* dir_name)
 {
 	int ret;
 	u32 file_len = 0;
@@ -280,8 +280,12 @@ void file_read_and_send(FILE *read_p)
 	}
 	file_len_t = flen(read_p);
 	printf("file_len_t ++++++++ %x \r\n", file_len_t);
+	
+#if WAV_FORMAT
+			fseek(read_p, 44, SEEK_SET);
+#endif
+	send_the_start_packet(filename, dir_name, file_len_t);
 
-	fseek(read_p, 0, SEEK_SET);
 	int len = fread(read_p, read_buffer, READ_LEN);
 
 	while (len > 0) {
@@ -411,7 +415,7 @@ bool file_read_from_sd_card(u8 *dir, u8 *file_name)
 extern void get_sys_time(struct sys_time *time);
 extern u8 get_vbat_percent(void);
 
-void send_the_start_packet(char * filename, char* dir_name, u32 size)
+void send_the_start_packet(const char * filename, const char* dir_name, u32 size)
 {
 	u8 start[320];
 	u8 year_month_day[14] = {0};
@@ -447,7 +451,7 @@ void send_the_start_packet(char * filename, char* dir_name, u32 size)
 	printf("%s\n", start);
 
 	int len = strlen(start);
-	printf("len = %d \n", len);
+	//printf("len = %d \n", len);
 	packet_num = 0;
 	gsm_send_buffer(start, len);
 

@@ -124,7 +124,7 @@ void module_4g_gpio_init(void);
 void module_power_off(void);
 int write_config_file_when_send_over(char *dir, char *file);
 void send_end_packet(void);
-void send_the_start_packet(char * filename, char* dir_name, u32 size);
+void send_the_start_packet(const char * filename, const char* dir_name, u32 size);
 extern uint8_t gsm_sync_time_from_net(void);
 extern void set_sys_time(struct sys_time *time);
 void check_moudule_whether_is_power_on(void);

@@ -1021,7 +1021,7 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 					printf("-------find the next file is %s/%s\n", dir_name, file_name);
 					result = true;
 					/*send file*/
-					file_read_and_send(file);
+					file_read_and_send(file, temp_file_name, tmp_dir_name);
 					/*rename file*/
 					rename_file_when_send_over(file, temp_file_name);
 					file = NULL;

@@ -71,6 +71,6 @@ extern void prepare_start_send_pcm(void);
 extern void stop_send_pcm_to_at(void);
 extern void get_next_file(void);
 extern int rename_file_when_send_over(FILE* fs, char *file_name);
-extern void file_read_and_send(FILE *read_p);
+extern void file_read_and_send(FILE *read_p, const char * filename, const char* dir_name);
 
 #endif
