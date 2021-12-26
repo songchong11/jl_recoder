@@ -34,6 +34,8 @@ typedef struct re_state {
 
 }RECODER;
 
+extern volatile int pre_dir_index;
+
 
 extern RECODER	recoder;
 

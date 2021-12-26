@@ -972,6 +972,9 @@ bool check_the_file_all_sended_indir(u8 *dir_name)
 
 int rename_dir_name(FILE* fs, char *dir_name);
 
+volatile int pre_dir_index = 0;
+//volatile int pre_file_index = 0;
+
 bool file_get_next_file(u8 *dir_name, u8 *file_name)
 {
     FILE *dir = NULL;
@@ -989,7 +992,10 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 
 	printf("file_list_flush  -------------\r\n");
 
-	for (from_index = 0; from_index <  dir_num; from_index++) {
+	for (from_index = pre_dir_index; from_index <  dir_num; from_index++) {
+
+		pre_dir_index = from_index;// for fast
+
         dir = fselect(__this->fs, FSEL_BY_NUMBER, from_index);
 	    if (dir) {
 
@@ -1030,6 +1036,7 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 			if(from_index == (dir_num - 1) && result == false) {
 				printf("all file send over\n");
 				stop_send_pcm_when_over();
+				pre_dir_index = 0;
 			}
 
 			if (result == true)

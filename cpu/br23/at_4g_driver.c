@@ -83,6 +83,7 @@ void prepare_start_send_pcm(void)
 
 	printf("prepare_start_send_pcm");
 	/*power on 4g module and send file to at*/
+	pre_dir_index = 0;
 	if (recoder.module_status == POWER_OFF) {
 
 	#if DEBUG_FILE_SYS
@@ -141,7 +142,6 @@ void stop_send_pcm_when_over(void)
 {
 	printf("stop_send_pcm_when_over\n");
 
-	release_all_fs_source();
 	recoder.send_pcm_state = false;
 
 	memset(tmp_dir_name, 0x00, sizeof(tmp_dir_name));
@@ -174,10 +174,6 @@ void get_next_file(void)
 
 	ret = get_recoder_file_path(tmp_dir_name, tmp_file_name);
 
-	if (!ret) {
-		//send a msg stop
-		app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_SEND_FILE_OVER);
-	}
 }
 
 
