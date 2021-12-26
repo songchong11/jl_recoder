@@ -108,30 +108,13 @@ void prepare_start_send_pcm(void)
 	if (ret) {
 		 app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_GET_NEXT_FILE);
 	}
-#if 0
-	if (ret) {
-
-		printf("gsm enter into access mode success\n");
-		int t = scan_sd_card_before_get_path();
-		if (t) {
-			 app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_GET_NEXT_FILE);
-		} else {
-			printf("scan error\n");
-			app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_SEND_FILE_OVER);
-		}
-	} else {
-
-		printf("gsm init faild\n");
-		app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_GSM_FAIL);
-	}
-#endif
 }
 
 
-void stop_send_pcm_to_at(void)
+void stop_send_pcm_by_user(void)
 {
-	//sys_timer_del(file_send_timer);
-	//file_send_timer = 0;
+	sys_timer_del(file_send_timer);
+	file_send_timer = 0;
 
 	gsm_send_buffer(read_buffer, READ_LEN);//send last packet
 
@@ -154,6 +137,24 @@ void stop_send_pcm_to_at(void)
 #endif
 }
 
+void stop_send_pcm_when_over(void)
+{
+	printf("stop_send_pcm_when_over\n");
+
+	release_all_fs_source();
+	recoder.send_pcm_state = false;
+
+	memset(tmp_dir_name, 0x00, sizeof(tmp_dir_name));
+	memset(tmp_file_name, 0x00, sizeof(tmp_file_name));
+
+	printf("send file over, close 4G module\n");
+
+#if DEBUG_FILE_SYS
+	/*power off 4g module */
+	clsoe_tcp_link();
+	module_power_off();
+#endif
+}
 
 void get_next_file(void)
 {
@@ -161,36 +162,22 @@ void get_next_file(void)
 
 	printf("get_next_file\n");
 
-#if 1//debug
 	int t = scan_sd_card_before_get_path();
-	if (t) {
-		 //app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_GET_NEXT_FILE);
-	} else {
+	if (!t) {
 		printf("scan error\n");
 		app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_SEND_FILE_OVER);
 		return;
 	}
-#endif
 
 	memset(tmp_dir_name, 0x00, sizeof(tmp_dir_name));
 	memset(tmp_file_name, 0x00, sizeof(tmp_file_name));
 
 	ret = get_recoder_file_path(tmp_dir_name, tmp_file_name);
-	
-	//if (ret) {
-	
-		//printf("find a file to send %s/%s", tmp_dir_name, tmp_file_name);
-	#if 0
-		ret = file_read_from_sd_card(tmp_dir_name, tmp_file_name);
-		if (!ret)
-			 app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_SEND_FILE_OVER);
-	#endif
-	//} else {
-		printf("file send over \n");
-		//app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_SEND_FILE_OVER);
-	//}
-		stop_send_pcm_to_at();
 
+	if (!ret) {
+		//send a msg stop
+		app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_SEND_FILE_OVER);
+	}
 }
 
 
@@ -198,7 +185,7 @@ void get_next_file(void)
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////
-#if 0
+#if 1
 static u32 packet_num = 0;
 
 void file_read_and_send(void *priv)
@@ -235,10 +222,10 @@ void file_read_and_send(void *priv)
 
 #if DEBUG_FILE_SYS
 #if ENCODER_ENABLE
-				encode(&mg, (s16 *)read_buffer, len / 2, micEncodebuf);
-				gsm_send_buffer(micEncodebuf, len / 4);
+		encode(&mg, (s16 *)read_buffer, len / 2, micEncodebuf);
+		gsm_send_buffer(micEncodebuf, len / 4);
 #else
-				gsm_send_buffer(read_buffer, len);//send last packet
+		gsm_send_buffer(read_buffer, len);//send last packet
 #endif
 #endif
 
@@ -246,29 +233,23 @@ void file_read_and_send(void *priv)
 
 		send_end_packet();
 #endif
-		//-------------------------------------------------------------debug
-
-		sys_timer_del(file_send_timer);
-		file_send_timer = 0;
-//-------------------------------------------------------------
-		ret = rename_file_when_send_over(read_p, tmp_file_name);
+		ret = rename_file_when_send_over(read_p, tmp_file_name);//have close file
 		if (ret) {
+			fclose(read_p);
 			release_all_fs_source();
 			app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_GET_NEXT_FILE);
 		} else {
-			release_all_fs_source();
+			fclose(read_p);
 			printf("rename fail, stop send\n");
 			app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_SEND_FILE_OVER);
 		}
-
 
 	}
 
 }
 #endif
-static u32 packet_num = 0;
 
-void file_read_and_send(FILE *read_p, const char * filename, const char* dir_name)
+void start_send_file_by_timer(FILE *read_p, const char * filename, const char* dir_name)
 {
 	int ret;
 	u32 file_len = 0;
@@ -280,51 +261,15 @@ void file_read_and_send(FILE *read_p, const char * filename, const char* dir_nam
 	}
 	file_len_t = flen(read_p);
 	printf("file_len_t ++++++++ %x \r\n", file_len_t);
-	
+
 #if WAV_FORMAT
-			fseek(read_p, 44, SEEK_SET);
+	fseek(read_p, 44, SEEK_SET);
 #endif
 	send_the_start_packet(filename, dir_name, file_len_t);
 
-	int len = fread(read_p, read_buffer, READ_LEN);
-
-	while (len > 0) {
-		if((packet_num % 5) == 0)
-			led_green_toggle();
-#if 1
-		file_len += len;
-		if(len == READ_LEN) {
-			packet_num++;
-			//printf("s%d", packet_num);
-#if DEBUG_FILE_SYS
-#if ENCODER_ENABLE
-			/*320byte input, 320 / 4 = 80 byte*/
-			encode(&mg, (s16 *)read_buffer, READ_LEN / 2, micEncodebuf);
-			gsm_send_buffer(micEncodebuf, READ_LEN / 4);
-#else
-			gsm_send_buffer(read_buffer, READ_LEN);
-#endif
-#endif
-		} else {
-
-#if DEBUG_FILE_SYS
-#if ENCODER_ENABLE
-			encode(&mg, (s16 *)read_buffer, len / 2, micEncodebuf);
-			gsm_send_buffer(micEncodebuf, len / 4);
-#else
-			gsm_send_buffer(read_buffer, len);//send last packet
-#endif
-#endif
-			printf("send over, close file!!!\r\n");
-			send_end_packet();
-			break;
-#endif
-		}
-
-		len = fread(read_p, read_buffer, READ_LEN);
-		delay_2ms(1);
+	if (file_send_timer == 0) {
+		file_send_timer = sys_timer_add(read_p, file_read_and_send, 1);
 	}
-	printf("file len is -------- %x !!!\r\n", file_len);
 
 }
 
@@ -343,7 +288,7 @@ int rename_file_when_send_over(FILE* fs, char *file_name)
 
 		printf("open file successd\r\n");
 
-		ret = frename(fs, rename); ///------debug
+		ret = frename(fs, rename);
 
 		if (ret) {
 			printf("rename fail\n");
@@ -352,7 +297,6 @@ int rename_file_when_send_over(FILE* fs, char *file_name)
 			printf("rename ok\n");
 			ret = true;
 		}
-		fclose(fs);
 	} else {
 		printf("open file error\r\n");
 		ret = false;

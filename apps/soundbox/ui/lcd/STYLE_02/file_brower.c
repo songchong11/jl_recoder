@@ -984,27 +984,16 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 	int len;
 	int rt;
 	bool result = false;
-	bool need_rename_dir = false;
 
 	int dir_num = __this->cur_total;
 
-#if 0
-    for (i = 0; i < sizeof(TEXT_FNAME_ID) / sizeof(TEXT_FNAME_ID[0]); i++) {
-        memset(__this->text_list[i].fname, 0, TEXT_NAME_LEN);
-        __this->text_list[i].len = 0;
-    }
-#endif
 	printf("file_list_flush  -------------\r\n");
-
 
 	for (from_index = 0; from_index <  dir_num; from_index++) {
         dir = fselect(__this->fs, FSEL_BY_NUMBER, from_index);
 	    if (dir) {
 
-			//__this->text_list[from_index].len = fget_name(dir, tmp_dir_name, TEXT_NAME_LEN);
 			int n_len = fget_name(dir, tmp_dir_name, TEXT_NAME_LEN);
-
-			printf("dir[%d]= %s\n", from_index, tmp_dir_name);
 
 			__this->fs = fscan_enterdir(__this->fs, tmp_dir_name);
 			__this->cur_total = __this->fs->file_number + 1;
@@ -1018,28 +1007,31 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 				if(!ret) { // file not sended
 					memcpy(dir_name, tmp_dir_name, 8 + 1);
 					memcpy(file_name, temp_file_name, 10 + 1);
-					printf("-------find the next file is %s/%s\n", dir_name, file_name);
+					printf("-------find file: %s/%s\n", dir_name, file_name);
 					result = true;
 					/*send file*/
-					file_read_and_send(file, temp_file_name, tmp_dir_name);
+					start_send_file_by_timer(file, temp_file_name, tmp_dir_name);
 					/*rename file*/
-					rename_file_when_send_over(file, temp_file_name);
+					//rename_file_when_send_over(file, temp_file_name);
 					file = NULL;
 
 				} else { //sended
-					//printf("file %s is sended , continue\n", temp_file_name);
-					//check all file is sended in the dir, if all sended,need rename the dir name
+
 					fclose(file);
 					continue;
 				}
 			}
 
 			__this->fs = fscan_exitdir(__this->fs);
-			printf("exitdir\n");
+			printf("exitdir %s\n", tmp_dir_name);
 
 			fclose(dir);
-		}
 
+			if(from_index == (dir_num - 1) && result == false) {
+				printf("all file send over\n");
+				stop_send_pcm_when_over();
+			}
+		}
     }
 
     return result;
@@ -1161,13 +1153,6 @@ int get_recoder_file_path(u8 *tmp_dir, u8 *tmp_file)
 
 		ret = file_get_next_file(tmp_dir, tmp_file);
 
-		//if (ret) {
-		//	printf("find next file ok %s/%s\n", tmp_dir,tmp_file);
-		//	ret = true;
-	//	} else {
-		//	printf("not find next file\n");
-		ret = false;
-		//}
 	} else {
 		printf("have no dir\n");
 		ret = false;

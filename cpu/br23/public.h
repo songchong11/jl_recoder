@@ -49,6 +49,21 @@ enum {
     KEY_USER_DEAL_POST_2,
 };
 
+enum {
+	APP_USER_MSG_START_STOP_RECODER = 0x10,
+	APP_USER_MSG_START_SEND_FILE_TO_AT,
+	APP_USER_MSG_STOP_SEND_FILE_TO_AT,
+	APP_USER_MSG_GET_NEXT_FILE,
+	APP_USER_MSG_SEND_FILE_OVER,
+	APP_USER_MSG_BUFFER_HAVE_DATA,
+	APP_USER_MSG_START_RECODER,
+	APP_USER_MSG_STOP_RECODER,
+	APP_USER_MSG_GSM_FAIL,
+	APP_USER_MSG_SYNC_TIME,
+	APP_USER_MSG_GSM_ERROR,
+};
+
+
 #include "system/includes.h"
 #include "system/event.h"
 
@@ -57,10 +72,10 @@ enum {
 #define Q_USER_DEAL   0xAABBCC ///自定义队列类型
 #define Q_USER_DATA_SIZE  6///理论Queue受任务声明struct task_info.qsize限制,但不宜过大,建议<=6
 
+extern u8 tmp_dir_name[10];
+extern u8 tmp_file_name[10];
 
 extern void get_sys_time(struct sys_time *time);//获取时间
-
-
 extern void uart_dev_4g_at_task_del(void);
 extern void uart_dev_4g_at_init(u32 baud);
 extern void check_at_baud_ret(void);
@@ -68,9 +83,11 @@ extern void uart_1_dev_reinit(u32 baud);
 extern u32 myuart_dev_close(uart_bus_t *ut);
 extern void clear_rx_buffer(void);
 extern void prepare_start_send_pcm(void);
-extern void stop_send_pcm_to_at(void);
 extern void get_next_file(void);
 extern int rename_file_when_send_over(FILE* fs, char *file_name);
-extern void file_read_and_send(FILE *read_p, const char * filename, const char* dir_name);
+extern void file_read_and_send(void *priv);
+extern void start_send_file_by_timer(FILE *read_p, const char * filename, const char* dir_name);
+extern void stop_send_pcm_when_over(void);
+extern void stop_send_pcm_by_user(void);
 
 #endif

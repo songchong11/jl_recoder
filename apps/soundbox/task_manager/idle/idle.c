@@ -352,7 +352,7 @@ static int idle_key_event_opr(struct sys_event *event)
 		} else {
 			printf("stop send pcm to module............\n");
 			recoder.send_pcm_state = false;
-			stop_send_pcm_to_at();
+			stop_send_pcm_by_user();
 		}
 
 		if(recoder.sd_state == false) {
@@ -606,16 +606,14 @@ void app_idle_task()
             break;
 		case APP_MSG_USER:
 #if 1
-			printf("msg[1] %x\n", msg[1]);
 			switch (msg[1]) {
 				case APP_USER_MSG_GET_NEXT_FILE:
 						get_next_file();
 					break;
 
-			//	case APP_USER_MSG_SEND_FILE_OVER:
-			//			printf("--------------APP_USER_MSG_SEND_FILE_OVER------ %x\n");
-			//			stop_send_pcm_to_at();
-			//		break;
+				case APP_USER_MSG_SEND_FILE_OVER:
+						stop_send_pcm_when_over();
+					break;
 
 				case APP_USER_MSG_GSM_ERROR:
 					 if(msg[2] == NO_SIM_CARD) {
