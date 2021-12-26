@@ -1014,7 +1014,7 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 					/*rename file*/
 					//rename_file_when_send_over(file, temp_file_name);
 					file = NULL;
-
+					break;
 				} else { //sended
 
 					fclose(file);
@@ -1031,6 +1031,9 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 				printf("all file send over\n");
 				stop_send_pcm_when_over();
 			}
+
+			if (result == true)
+				break;
 		}
     }
 
