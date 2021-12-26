@@ -1020,7 +1020,9 @@ bool file_get_next_file(u8 *dir_name, u8 *file_name)
 					memcpy(file_name, temp_file_name, 10 + 1);
 					printf("-------find the next file is %s/%s\n", dir_name, file_name);
 					result = true;
-
+					/*send file*/
+					file_read_and_send(file);
+					/*rename file*/
 					rename_file_when_send_over(file, temp_file_name);
 					file = NULL;
 

@@ -130,14 +130,14 @@ void prepare_start_send_pcm(void)
 
 void stop_send_pcm_to_at(void)
 {
-	sys_timer_del(file_send_timer);
-	file_send_timer = 0;
+	//sys_timer_del(file_send_timer);
+	//file_send_timer = 0;
 
 	gsm_send_buffer(read_buffer, READ_LEN);//send last packet
 
 	printf("user active stop send!!!\r\n");
 
-	send_end_packet();
+	send_end_packet(); // if it is user active stoped,need send end packet
 
 	release_all_fs_source();
 	recoder.send_pcm_state = false;
@@ -198,7 +198,7 @@ void get_next_file(void)
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////
-
+#if 0
 static u32 packet_num = 0;
 
 void file_read_and_send(void *priv)
@@ -213,7 +213,7 @@ void file_read_and_send(void *priv)
 
 	if((packet_num % 5) == 0)
 		led_green_toggle();
-#if 0
+#if 1
 	int len = fread(read_p, read_buffer, READ_LEN);
 
 	if(len == READ_LEN) {
@@ -262,10 +262,67 @@ void file_read_and_send(void *priv)
 		}
 
 
-	//}
+	}
 
 }
+#endif
+static u32 packet_num = 0;
 
+void file_read_and_send(FILE *read_p)
+{
+	int ret;
+	u32 file_len = 0;
+	u32 file_len_t = 0;
+
+	if(!read_p) {
+		printf("file open error!!!\r\n");
+		return;
+	}
+	file_len_t = flen(read_p);
+	printf("file_len_t ++++++++ %x \r\n", file_len_t);
+
+	fseek(read_p, 0, SEEK_SET);
+	int len = fread(read_p, read_buffer, READ_LEN);
+
+	while (len > 0) {
+		if((packet_num % 5) == 0)
+			led_green_toggle();
+#if 1
+		file_len += len;
+		if(len == READ_LEN) {
+			packet_num++;
+			//printf("s%d", packet_num);
+#if DEBUG_FILE_SYS
+#if ENCODER_ENABLE
+			/*320byte input, 320 / 4 = 80 byte*/
+			encode(&mg, (s16 *)read_buffer, READ_LEN / 2, micEncodebuf);
+			gsm_send_buffer(micEncodebuf, READ_LEN / 4);
+#else
+			gsm_send_buffer(read_buffer, READ_LEN);
+#endif
+#endif
+		} else {
+
+#if DEBUG_FILE_SYS
+#if ENCODER_ENABLE
+			encode(&mg, (s16 *)read_buffer, len / 2, micEncodebuf);
+			gsm_send_buffer(micEncodebuf, len / 4);
+#else
+			gsm_send_buffer(read_buffer, len);//send last packet
+#endif
+#endif
+			printf("send over, close file!!!\r\n");
+			send_end_packet();
+			break;
+#endif
+		}
+
+		len = fread(read_p, read_buffer, READ_LEN);
+		delay_2ms(1);
+	}
+	printf("file len is -------- %x !!!\r\n", file_len);
+
+}
 
 
 int rename_file_when_send_over(FILE* fs, char *file_name)
