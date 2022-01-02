@@ -145,6 +145,8 @@ void stop_send_pcm_when_over(void)
 	recoder.send_pcm_state = false;
 	led_green_off();
 
+	release_all_fs_source();
+
 	memset(tmp_dir_name, 0x00, sizeof(tmp_dir_name));
 	memset(tmp_file_name, 0x00, sizeof(tmp_file_name));
 

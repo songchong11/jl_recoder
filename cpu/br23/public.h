@@ -7,6 +7,7 @@
 #include "lwrb.h"
 #include "ima_enc.h"
 #include "app_task.h"
+#include "rtc/alarm.h"
 
 #define TARGET_BAUD		1000000
 
@@ -14,6 +15,7 @@
 #define	USE_LWRB		1
 #define DEBUG_FILE_SYS	0
 #define WAV_FORMAT		1
+#define ALARM_TEST		0
 
 #define SIM_CARD_TYPE	CTNET//CMNET
 
@@ -91,5 +93,6 @@ extern void file_read_and_send(void *priv);
 extern void start_send_file_by_timer(FILE *read_p, const char * filename, const char* dir_name);
 extern void stop_send_pcm_when_over(void);
 extern void stop_send_pcm_by_user(void);
+extern int set_send_alarm(void);
 
 #endif

@@ -162,7 +162,6 @@ void app_main()
 	user_init();
 	uart_dev_receive_init();//uart 0 receive data from bes
 	check_at_baud_ret();
-	//at_4g_thread_init(); // 4g driver
     app_task_loop();
 
 }

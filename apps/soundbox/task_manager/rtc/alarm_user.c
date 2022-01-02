@@ -5,6 +5,7 @@
 #include "app_main.h"
 #include "tone_player.h"
 #include "app_task.h"
+#include "public.h"
 
 
 #if TCFG_APP_RTC_EN
@@ -124,6 +125,7 @@ void alarm_ring_start()
     }
 }
 
+#if 0
 void alarm_event_handler(struct sys_event *event, void *priv)
 {
     switch (event->type) {
@@ -139,7 +141,7 @@ void alarm_event_handler(struct sys_event *event, void *priv)
 }
 
 SYS_EVENT_HANDLER(SYS_KEY_EVENT, alarm_event_handler, 2);
-
+#endif
 
 
 int alarm_sys_event_handler(struct sys_event *event)
@@ -150,12 +152,18 @@ int alarm_sys_event_handler(struct sys_event *event)
             printf("alarm_sys_event_handler\n");
             alarm_update_info_after_isr();
 
+			printf("alarm_sys_event_handler-------------\n");
+
+			#if 0
             u8 app = app_get_curr_task();
             if (app == APP_RTC_TASK) {
                 alarm_ring_start();
                 return false;
             }
             return true;
+			#endif
+			//send a msg to start send by alarm
+			app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_START_SEND_FILE_TO_AT);
         }
     }
 

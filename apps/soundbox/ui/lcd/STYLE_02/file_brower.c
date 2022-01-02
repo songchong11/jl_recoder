@@ -1165,6 +1165,7 @@ int get_recoder_file_path(u8 *tmp_dir, u8 *tmp_file)
 
 	} else {
 		printf("have no dir\n");
+		app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_SEND_FILE_OVER);
 		ret = false;
 	}
 

@@ -565,6 +565,64 @@ void sd_check_fun(void *priv)
 	sd_check_timer = 0;
 }
 
+
+int set_send_alarm(void)
+{
+    u8 index = 0;
+    T_ALARM alarm;
+	struct sys_time time;
+
+	get_sys_time(&time);
+	printf("now_time : %d-%d-%d,%d:%d:%d\n", time.year, time.month, time.day, time.hour, time.min, time.sec);
+
+#if ALARM_TEST
+    alarm.time.hour  = time.hour;
+    alarm.time.min   = time.min + 1;
+    alarm.mode       = 0x01;//E_ALARM_MODE_EVERY_DAY;
+    alarm.sw         = 1;
+    alarm.index      = index;
+    alarm_add(&alarm, index);
+	printf("set send alarm : %d-%d\n", alarm.time.hour, alarm.time.min);
+
+	index = 1;
+    alarm.time.min   = time.min + 2;
+    alarm.mode       = 0x01;//E_ALARM_MODE_EVERY_DAY;
+    alarm.sw         = 1;
+    alarm.index      = index;
+    alarm_add(&alarm, index);
+	printf("set send alarm : %d-%d\n", alarm.time.hour, alarm.time.min);
+
+
+	index = 2;
+    alarm.time.min   = time.min + 3;
+    alarm.mode       = 0x01;//E_ALARM_MODE_EVERY_DAY;
+    alarm.sw         = 1;
+    alarm.index      = index;
+    alarm_add(&alarm, index);
+	printf("set send alarm : %d-%d\n", alarm.time.hour, alarm.time.min);
+#else
+	alarm.time.hour  = 12;
+	alarm.time.min	 = 30;
+	alarm.mode		 = 0x01;//E_ALARM_MODE_EVERY_DAY;
+	alarm.sw		 = 1;
+	alarm.index 	 = index;
+	alarm_add(&alarm, index);
+	printf("set send alarm : %d-%d\n", alarm.time.hour, alarm.time.min);
+
+	index = 1;
+	alarm.time.hour  = 18;
+	alarm.time.min	 = 30;
+	alarm.mode		 = 0x01;//E_ALARM_MODE_EVERY_DAY;
+	alarm.sw		 = 1;
+	alarm.index 	 = index;
+	alarm_add(&alarm, index);
+	printf("set send alarm : %d-%d\n", alarm.time.hour, alarm.time.min);
+
+#endif
+    return 0;
+}
+
+
 //*----------------------------------------------------------------------------*/
 /**@brief    idle 主任务
   @param    无
@@ -594,6 +652,7 @@ void app_idle_task()
 
     idle_app_start();
 	bes_power_on();
+	set_send_alarm();
 
     while (1) {
         app_task_get_msg(msg, ARRAY_SIZE(msg), 1);
@@ -607,6 +666,15 @@ void app_idle_task()
 		case APP_MSG_USER:
 #if 1
 			switch (msg[1]) {
+				case APP_USER_MSG_START_SEND_FILE_TO_AT:
+					if (recoder.send_pcm_state == false && recoder.sd_state == true) {
+						recoder.send_pcm_state = true;
+						printf("start send pcm to module............\n");
+						prepare_start_send_pcm();
+					}
+
+					break;
+
 				case APP_USER_MSG_GET_NEXT_FILE:
 						get_next_file();
 					break;
