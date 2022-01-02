@@ -8022,7 +8022,7 @@
 1626847689 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\include_lib\system\task.h
 	"os/os_api.h"
 
-1626847689 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\include_lib\driver\cpu\br23\asm\uart_dev.h
+1638368270 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\include_lib\driver\cpu\br23\asm\uart_dev.h
 	"typedef.h"
 	"os/os_api.h"
 	"jiffies.h"
@@ -8235,7 +8235,7 @@
 1626847689 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\include_lib\system\power_manage.h
 	"generic/typedef.h"
 
-1626847689 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\include_lib\system\syscfg_id.h
+1638542487 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\include_lib\system\syscfg_id.h
 	"typedef.h"
 
 1626847689 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\include_lib\system\bank_switch.h
@@ -8398,7 +8398,7 @@
 	"user_cfg_id.h"
 	"usb_common_def.h"
 
-1632538390 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\board\br23\board_config.h
+1636908910 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\board\br23\board_config.h
 	"board_ac6954a_demo/board_ac6954a_demo_cfg.h"
 	"board_ac695x_demo/board_ac695x_demo_cfg.h"
 	"board_ac6952e_lighter/board_ac6952e_lighter_cfg.h"
@@ -8420,7 +8420,7 @@
 
 1626847689 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\common\usb\usb_std_class_def.h
 
-1635609682 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\board\br23\board_ac695x_demo\board_ac695x_demo_cfg.h
+1639909192 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\board\br23\board_ac695x_demo\board_ac695x_demo_cfg.h
 	"usb_std_class_def.h"
 
 1626847689 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\board\br23\board_ac6952e_lighter\board_ac6952e_lighter_cfg.h
@@ -8447,7 +8447,7 @@
 1626847689 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\board\br23\board_ac695x_soundcard\board_ac695x_soundcard.h
 	"usb_std_class_def.h"
 
-1632399688 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\board\br23\board_ac695x_smartbox\board_ac695x_smartbox.h
+1636908910 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\board\br23\board_ac695x_smartbox\board_ac695x_smartbox.h
 	"usb_std_class_def.h"
 
 1626847689 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\board\br23\board_ac695x_lcd\board_ac695x_lcd_cfg.h
@@ -8754,7 +8754,7 @@
 	"typedef.h"
 	"system/fs/fs.h"
 
-1635290301 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\common\file_operate\file_bs_deal.h
+1636908910 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\common\file_operate\file_bs_deal.h
 	"fs/fs.h"
 	"storage_dev/storage_dev.h"
 
@@ -8917,7 +8917,7 @@
 	"le_smartbox_module.h"
 	"debug.h"
 
-1633145713 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\include\key_event_deal.h
+1638202639 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\include\key_event_deal.h
 	"typedef.h"
 	"system/event.h"
 
@@ -9447,13 +9447,13 @@
 	"typedef.h"
 	"fs/fs.h"
 
-1635347588 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\common\file_operate\file_api.c
+1636908910 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\common\file_operate\file_api.c
 	"app_config.h"
 	"system/includes.h"
 	"system/os/os_cpu.h"
 	"file_operate/file_bs_deal.h"
 
-1635581455 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\common\file_operate\file_bs_deal.c
+1639315875 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\common\file_operate\file_bs_deal.c
 	"file_bs_deal.h"
 	"uart.h"
 	"dev_manager.h"
@@ -9527,7 +9527,7 @@
 1626847689 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\include_lib\driver\cpu\br23\asm\ctmu.h
 	"typedef.h"
 
-1634854206 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\common\key\iokey.c
+1636908910 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\common\key\iokey.c
 	"key_driver.h"
 	"iokey.h"
 	"gpio.h"
@@ -9544,7 +9544,7 @@
 
 1626847689 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\include_lib\driver\cpu\br23\asm\irflt.h
 
-1634854841 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\common\key\key_driver.c
+1636908910 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\common\key\key_driver.c
 	"device/key_driver.h"
 	"system/event.h"
 	"system/init.h"
@@ -11501,7 +11501,7 @@
 1626847689 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\include_lib\media\media_develop\media\cpu\br23\commproc.h
 	"generic/typedef.h"
 
-1635692811 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\app_main.c
+1641145879 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\app_main.c
 	"system/includes.h"
 	"app_config.h"
 	"asm/pwm_led.h"
@@ -11518,6 +11518,8 @@
 	"soundcard/peripheral.h"
 	"audio.h"
 	"vm.h"
+	"syscfg_id.h"
+	"public.h"
 	"debug.h"
 
 1626847689 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\include\power_on.h
@@ -11565,7 +11567,7 @@
 
 1626847689 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\include_lib\driver\cpu\br23\asm\chargestore.h
 
-1626847689 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\include_lib\driver\cpu\br23\asm\rtc.h
+1640416590 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\include_lib\driver\cpu\br23\asm\rtc.h
 	"typedef.h"
 
 1626847689 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\include\task_manager\linein\linein_dev.h
@@ -12071,7 +12073,7 @@
 	"app_config.h"
 	"app_task.h"
 
-1635182223 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\board\br23\board_ac695x_demo\board_ac695x_demo.c
+1639241345 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\board\br23\board_ac695x_demo\board_ac695x_demo.c
 	"app_config.h"
 	"system/includes.h"
 	"media/includes.h"
@@ -12103,6 +12105,7 @@
 	"led_driver.h"
 	"at_4g_driver.h"
 	"misc_driver.h"
+	"public.h"
 	"debug.h"
 	"asm/ctmu.h"
 	"uart_update.h"
@@ -12116,7 +12119,7 @@
 	"board_config.h"
 	"app_task.h"
 
-1635185500 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\board\br23\board_ac695x_demo\key_table\iokey_table.c
+1638542487 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\board\br23\board_ac695x_demo\key_table\iokey_table.c
 	"key_event_deal.h"
 	"key_driver.h"
 	"app_config.h"
@@ -12650,7 +12653,7 @@
 	"chgbox_ctrl.h"
 	"update_loader_download.h"
 
-1633329454 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\common\task_table.c
+1641119826 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\common\task_table.c
 	"system/includes.h"
 	"app_config.h"
 	"lwrb.h"
@@ -13520,7 +13523,7 @@
 	"app_power_manage.h"
 	"app_task.h"
 
-1635187084 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\app_common.c
+1641119826 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\app_common.c
 	"common/app_common.h"
 	"app_task.h"
 	"app_main.h"
@@ -13558,9 +13561,10 @@
 	"ui_manage.h"
 	"soundbox.h"
 	"bt_emitter.h"
+	"public.h"
 	"debug.h"
 
-1635977568 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\include\common\app_common.h
+1641119826 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\include\common\app_common.h
 	"typedef.h"
 
 1626847689 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\include\task_manager\pc\pc.h
@@ -13955,7 +13959,7 @@
 	"fm/fm_manage.h"
 	"fm/fm_rw.h"
 
-1635612677 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\idle\idle.c
+1641144399 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\idle\idle.c
 	"system/includes.h"
 	"media/includes.h"
 	"app_config.h"
@@ -13971,7 +13975,9 @@
 	"ui/ui_api.h"
 	"key_event_deal.h"
 	"common/app_common.h"
-	"led_driver.h"
+	"public.h"
+	"at_4g_driver.h"
+	"dev_manager.h"
 	"debug.h"
 	"usb/otg.h"
 	"usb/host/usb_host.h"
@@ -14068,7 +14074,7 @@
 	"user_api/app_status_api.h"
 	"debug.h"
 
-1632325705 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\pc\pc.c
+1638542487 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\pc\pc.c
 	"system/app_core.h"
 	"system/includes.h"
 	"server/server_core.h"
@@ -14102,13 +14108,14 @@
 	"bt_tws.h"
 	"clock_cfg.h"
 	"user_api/app_status_api.h"
+	"led_driver.h"
 	"debug.h"
 
 1626847689 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\include\task_manager\pc\usb_msd.h
 	"system/includes.h"
 	"usb/device/msd.h"
 
-1626847689 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\power_off\power_off.c
+1637941497 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\power_off\power_off.c
 	"common/power_off.h"
 	"bt_tws.h"
 	<stdlib.h>
@@ -14126,9 +14133,10 @@
 	"user_cfg.h"
 	"bt_tws.h"
 	"bt.h"
+	"led_driver.h"
 	"debug.h"
 
-1634448615 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\power_on\power_on.c
+1637247286 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\power_on\power_on.c
 	"system/includes.h"
 	"media/includes.h"
 	"app_config.h"
@@ -14143,6 +14151,7 @@
 	"ui/ui_api.h"
 	"app_task.h"
 	"key_event_deal.h"
+	"led_driver.h"
 	"debug.h"
 
 1626847689 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\record\record.c
@@ -14174,7 +14183,7 @@
 	"dev_manager.h"
 	"debug.h"
 
-1635067362 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\rtc\alarm_api.c
+1636908910 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\rtc\alarm_api.c
 	"system/includes.h"
 	"rtc/alarm.h"
 	"common/app_common.h"
@@ -14183,7 +14192,7 @@
 	"tone_player.h"
 	"app_task.h"
 
-1626847689 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\rtc\alarm_user.c
+1641143171 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\rtc\alarm_user.c
 	"system/includes.h"
 	"rtc/alarm.h"
 	"common/app_common.h"
@@ -14191,8 +14200,9 @@
 	"app_main.h"
 	"tone_player.h"
 	"app_task.h"
+	"public.h"
 
-1635612775 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\rtc\rtc.c
+1641119826 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\rtc\rtc.c
 	"app_config.h"
 	"key_event_deal.h"
 	"system/includes.h"
@@ -14279,7 +14289,7 @@
 	"ui_manage.h"
 	"debug.h"
 
-1633188194 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\task_key.c
+1636908910 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\task_manager\task_key.c
 	"key_event_deal.h"
 	"key_driver.h"
 	"app_config.h"
@@ -14403,7 +14413,7 @@
 	"application/audio_eq_drc_apply.h"
 	"audio_eq.h"
 
-1626847689 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\ui\lcd\style_02\clock_action.c
+1641141524 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\ui\lcd\style_02\clock_action.c
 	"ui/ui.h"
 	"app_config.h"
 	"ui/ui_style.h"
@@ -14421,7 +14431,7 @@
 	"application/audio_eq_drc_apply.h"
 	"audio_eq.h"
 
-1635977873 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\ui\lcd\style_02\file_brower.c
+1641144385 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\ui\lcd\style_02\file_brower.c
 	"ui/ui.h"
 	"app_config.h"
 	"ui/ui_api.h"
@@ -14435,6 +14445,7 @@
 	"music/music_player.h"
 	"application/audio_eq_drc_apply.h"
 	"audio_eq.h"
+	"public.h"
 
 1626847689 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\ui\lcd\style_02\fm_action.c
 	"ui/ui.h"
@@ -14627,7 +14638,7 @@
 	"system/timer.h"
 	"board_config.h"
 
-1626847689 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\user_api\app_record_api.c
+1639909209 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\apps\soundbox\user_api\app_record_api.c
 	"generic/gpio.h"
 	"asm/includes.h"
 	"system/timer.h"
@@ -14697,7 +14708,7 @@
 	"asm/power/p33.h"
 	"asm/power_interface.h"
 
-1635606066 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\app_timer.c
+1636908910 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\app_timer.c
 	"includes.h"
 	"app_config.h"
 	"asm/cpu.h"
@@ -15427,7 +15438,7 @@
 	"asm/pwm_led.h"
 	"system/timer.h"
 
-1632115800 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\setup.c
+1636908910 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\setup.c
 	"asm/includes.h"
 	"asm/wdt.h"
 	"asm/debug.h"
@@ -15458,21 +15469,22 @@
 	"system/includes.h"
 	"asm/uart_dev.h"
 
-1626847689 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\uart_dev.c
+1638542487 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\uart_dev.c
 	"asm/clock.h"
 	"asm/uart_dev.h"
 	"asm/cpu.h"
 	"generic/gpio.h"
 	"spinlock.h"
 
-1636066858 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\uart_test.c
+1641126739 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\uart_test.c
 	"system/includes.h"
 	"asm/uart_dev.h"
 	"system/event.h"
 	"common/app_common.h"
-	"lwrb.h"
+	"public.h"
+	"os/os_api.h"
 
-1626847689 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\ui_driver\interface\ui_platform.c
+1636262404 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\ui_driver\interface\ui_platform.c
 	"ui/includes.h"
 	"timer.h"
 	"asm/crc16.h"
@@ -15582,58 +15594,73 @@
 1626847689 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\ui_driver\ui_common.c
 	"includes.h"
 
-1631475196 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\lwrb.h
+1636908910 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\lwrb.h
 	<string.h>
 	<stdint.h>
 
-1634366252 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\led_driver.h
+1638542487 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\led_driver.h
 	"generic/typedef.h"
 
-1636043358 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\at_4g_driver.h
+1641119826 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\at_4g_driver.h
 	"generic/typedef.h"
 
-1635780387 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\misc_driver.h
+1636908910 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\misc_driver.h
 	"generic/typedef.h"
 
-1636043353 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\at_4g_driver.c
+1641142740 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\at_4g_driver.c
 	"includes.h"
 	"system/includes.h"
 	"asm/uart_dev.h"
 	"system/event.h"
 	"common/app_common.h"
-	"lwrb.h"
 	"at_4g_driver.h"
-	"led_driver.h"
+	"public.h"
 	"stdlib.h"
-	"system/includes.h"
-	"system/event.h"
+	"syscfg_id.h"
 
-1636066923 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\file_write.c
+1641126574 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\file_write.c
 	"system/includes.h"
 	"asm/uart_dev.h"
 	"system/event.h"
 	"common/app_common.h"
-	"lwrb.h"
-	"led_driver.h"
-	"misc_driver.h"
 	"file_bs_deal.h"
-	"system/includes.h"
-	"system/event.h"
+	"public.h"
 
-1634823688 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\led_driver.c
+1639068275 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\led_driver.c
 	"includes.h"
 	"app_config.h"
+	"led_driver.h"
 
-1633237973 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\lwrb.c
+1636908910 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\lwrb.c
 	"lwrb.h"
 
-1634966289 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\uart_4g_at.c
+1641119826 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\uart_4g_at.c
 	"system/includes.h"
 	"asm/uart_dev.h"
 	"system/event.h"
 	<stdarg.h>
+	"public.h"
 
-1636067405 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\misc_driver.c
+1639241345 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\misc_driver.c
 	"includes.h"
 	"misc_driver.h"
+	"led_driver.h"
+	"public.h"
+
+1641145749 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\public.h
+	"generic/typedef.h"
+	"misc_driver.h"
+	"led_driver.h"
+	"lwrb.h"
+	"ima_enc.h"
+	"app_task.h"
+	"rtc/alarm.h"
+	"system/includes.h"
+	"system/event.h"
+
+1639241345 d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\ima_enc.h
+	"system/includes.h"
+
+1639241345 source:d:\work\recorder\jl\ac695n_soundbox_sdk_release_3.0.2\sdk\cpu\br23\ima_enc.c
+	"ima_enc.h"
 

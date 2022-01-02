@@ -114,8 +114,6 @@ void app_task_loop()
 }
 
 extern void uart_dev_receive_init();
-extern void file_write_thread_init(void);
-extern void at_4g_thread_init(void);
 extern void set_sys_time(struct sys_time *time);
 
 void app_main()
