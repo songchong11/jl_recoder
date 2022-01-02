@@ -11,8 +11,7 @@ extern lwrb_t receive_buff;
 #ifdef USE_LWRB
 /* Declare rb instance & raw data */
 lwrb_t receive_buff;
-//uint8_t buff_data[320 * 200];
-uint8_t buff_data[320 * 1];//debug only
+uint8_t buff_data[320 * 200];
 
 #endif
 
@@ -538,8 +537,10 @@ void uart_dev_receive_init()
 #endif
 
 	rx_total = 0;
-	adpcm_init();
 
+#if ENCODER_ENABLE
+	adpcm_init();
+#endif
     uart_bus = uart_dev_open(&u_arg);
     if (uart_bus != NULL) {
         printf("uart_dev_open() success\n");

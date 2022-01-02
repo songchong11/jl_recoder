@@ -1175,7 +1175,7 @@ int get_recoder_file_path(u8 *tmp_dir, u8 *tmp_file)
 void release_all_fs_source(void)
 {
 
-	printf("release_all_fs_source \n");
+	//printf("release_all_fs_source \n");
 	if (__this->fs) {
 		fscan_release(__this->fs);
 		__this->fs = NULL;
