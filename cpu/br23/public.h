@@ -14,9 +14,9 @@
 #define ENCODER_ENABLE	1
 #define	USE_LWRB		1
 #define DEBUG_FILE_SYS	1
-#define WAV_FORMAT		1
+#define WAV_FORMAT		0
 #define ALARM_TEST		0
-#define MICLINK_SERVER	0
+#define MICLINK_SERVER	1
 
 #define SIM_CARD_TYPE	CTNET//CMNET
 

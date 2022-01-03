@@ -618,6 +618,16 @@ int set_send_alarm(void)
 	alarm_add(&alarm, index);
 	printf("set send alarm : %d-%d\n", alarm.time.hour, alarm.time.min);
 
+	#if 0
+	index = 2;
+	alarm.time.hour  = time.hour;
+	alarm.time.min	 = time.min + 4;
+	alarm.mode		 = 0x01;//E_ALARM_MODE_EVERY_DAY;
+	alarm.sw		 = 1;
+	alarm.index 	 = index;
+	alarm_add(&alarm, index);
+	printf("set send alarm : %d-%d\n", alarm.time.hour, alarm.time.min);
+	#endif
 #endif
     return 0;
 }

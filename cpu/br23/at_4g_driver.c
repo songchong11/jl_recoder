@@ -81,7 +81,7 @@ void send_a_msg_to_idle_task(void * priv)
 	send_msg_timer = 0;
 }
 
-void prepare_start_send_pcm(void)
+void prepare_start_send_pcm(void)·
 {
 	u8 retry;
 
@@ -208,7 +208,7 @@ void file_read_and_send(void *priv)
 
 	if(len == READ_LEN) {
 		packet_num++;
-		//printf("s%d", packet_num);
+		printf("s%d", packet_num);
 #if DEBUG_FILE_SYS
 #if ENCODER_ENABLE
 		/*320byte input, 320 / 4 = 80 byte*/
