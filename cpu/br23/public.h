@@ -16,6 +16,7 @@
 #define DEBUG_FILE_SYS	1
 #define WAV_FORMAT		1
 #define ALARM_TEST		0
+#define MICLINK_SERVER	0
 
 #define SIM_CARD_TYPE	CTNET//CMNET
 

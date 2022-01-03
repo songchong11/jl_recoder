@@ -74,12 +74,16 @@ u8 gsn_str[30];
 extern bool scan_sd_card_before_get_path(void);
 extern void release_all_fs_source(void);
 int rename_file_when_send_over(FILE* fs, char *file_name);
-
+int send_msg_timer = 0;
+void send_a_msg_to_idle_task(void * priv)
+{
+	app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_GET_NEXT_FILE);
+	send_msg_timer = 0;
+}
 
 void prepare_start_send_pcm(void)
 {
 	u8 retry;
-	int ret;
 
 	printf("prepare_start_send_pcm");
 	/*power on 4g module and send file to at*/
@@ -96,19 +100,19 @@ void prepare_start_send_pcm(void)
 			wdt_clear();
 			module_power_on();
 			if(retry > 3) {
-				ret = false;
+				module_power_off();
 				break;
 			}
 		}
-		ret = true;
+		printf("send msg APP_USER_MSG_GET_NEXT_FILE\n");
+		//app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_GET_NEXT_FILE);
+		//get_next_file();
+		send_msg_timer = sys_timeout_add(NULL, send_a_msg_to_idle_task, 1);
 	#else
-		ret = true;
+		app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_GET_NEXT_FILE);
 	#endif
 	}
 
-	if (ret) {
-		 app_task_put_usr_msg(APP_MSG_USER, 1, APP_USER_MSG_GET_NEXT_FILE);
-	}
 }
 
 
@@ -870,9 +874,11 @@ uint8_t gsm_init_to_access_mode(void)
 	retry = 0;
 	//while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9999,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
 	//while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
+#if MICLINK_SERVER
 	while(gsm_cmd("AT+MIPODM=1,,\"record.miclink.net\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
-	//while(gsm_cmd("AT+MIPODM=1,,\"luyin.heteen.com\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
-
+#else
+	while(gsm_cmd("AT+MIPODM=1,,\"luyin.heteen.com\",9899,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
+#endif
 	//while(gsm_cmd("AT+MIPODM=1,,\"47.113.105.118\",9898,0\r","+MIPODM", 1000 * 60) != GSM_TRUE)// 链接TCP
 
 	{
@@ -917,7 +923,7 @@ int clsoe_tcp_link(void)
 	{
 		printf("\r\n +++ not replay AT OK, retry %d\r\n", retry);
 
-		if(++retry > 50) {
+		if(++retry > 20) {
 			printf("\r\n模块响应测试不正常！！\r\n");
 
 			goto sms_failure;
