@@ -3,8 +3,10 @@
 #include "led_driver.h"
 #include "public.h"
 
-#define BES_PWR_GPIO	IO_PORTA_12
+#define BES_PWR_GPIO		IO_PORTA_12
 #define BES_RECODER_GPIO	IO_PORTB_07
+
+#define DET_4G_POWER_GPIO	IO_PORTB_05
 
 
 #define CE_GPIO			IO_PORTC_03
@@ -64,6 +66,11 @@ void misc_driver_init(void)
 	gpio_set_pull_up(USB_DECT, 0);
 	gpio_set_die(USB_DECT, 1);
 
+	gpio_direction_input(DET_4G_POWER_GPIO);
+	gpio_set_pull_down(DET_4G_POWER_GPIO, 0);
+	gpio_set_pull_up(DET_4G_POWER_GPIO, 0);
+	gpio_set_die(DET_4G_POWER_GPIO, 1);
+
 	// add a timer to check the usb plug
 	printf("start a timer to check usb plug in\n");
 
@@ -107,6 +114,7 @@ void bes_stop_recoder(void)
 	led_green_off();
 }
 
+extern void module_power_off(void);
 void check_charge_usb_status(void *priv)
 {
 	static int pre_status = 0;
@@ -137,5 +145,20 @@ void check_charge_usb_status(void *priv)
 	pre_status = ret;
 
 }
+
+void check_4G_power_status(void)
+{
+	int ret = gpio_read(DET_4G_POWER_GPIO);
+
+	if (ret) {
+
+		printf("4G is power on, power off it\n");
+		module_power_off();
+	}
+	else
+		printf("4G is power off\n");
+
+}
+
 
 /*****************************************************************************/

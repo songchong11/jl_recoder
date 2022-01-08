@@ -121,7 +121,7 @@ uint8_t gsm_init_to_access_mode(void);
 int gsm_set_to_access_mode(void);
 bool file_read_from_sd_card(u8 *dir, u8 *file_name);
 void module_4g_gpio_init(void);
-void module_power_off(void);
+extern void module_power_off(void);
 int write_config_file_when_send_over(char *dir, char *file);
 void send_end_packet(void);
 void send_the_start_packet(const char * filename, const char* dir_name, u32 size);

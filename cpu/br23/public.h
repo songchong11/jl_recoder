@@ -96,5 +96,7 @@ extern void stop_send_pcm_when_over(void);
 extern void stop_send_pcm_by_user(void);
 extern int set_send_alarm(void);
 extern void adpcm_init();
+extern void module_power_on(void);
+extern void module_power_off(void);
 
 #endif

@@ -81,7 +81,7 @@ void send_a_msg_to_idle_task(void * priv)
 	send_msg_timer = 0;
 }
 
-void prepare_start_send_pcm(void)·
+void prepare_start_send_pcm(void)
 {
 	u8 retry;
 
@@ -1279,6 +1279,7 @@ uint8_t gsm_sync_time_from_net(void)
 
 
 /*---------------------------------------------------------------------*/
+#if 0
 //判断4G模块是否处于开机状态
 void check_moudule_whether_is_power_on(void)
 {
@@ -1314,7 +1315,7 @@ void check_moudule_whether_is_power_on(void)
 	GSM_DELAY(5000);
 	wdt_clear();
 }
-
+#endif
 
 uint8_t get_and_set_time(void)
 {

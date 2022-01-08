@@ -648,10 +648,9 @@ void app_idle_task()
 	printf("idle task\n");
 
 	if (!is_from_pc_task) {
-
 		led_power_on_show();
 #if DEBUG_FILE_SYS
-		check_moudule_whether_is_power_on();
+		check_4G_power_status();
 		gsm_sync_time_from_net();// TODO:check
 #endif
 		if (sd_check_timer == 0) {
