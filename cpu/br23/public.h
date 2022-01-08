@@ -98,5 +98,6 @@ extern int set_send_alarm(void);
 extern void adpcm_init();
 extern void module_power_on(void);
 extern void module_power_off(void);
+extern void stop_recoder_by_user_active(void);
 
 #endif

@@ -118,6 +118,9 @@ void prepare_start_send_pcm(void)
 
 void stop_send_pcm_by_user(void)
 {
+	if (recoder.send_pcm_state == false)
+		return;
+
 	sys_timer_del(file_send_timer);
 	file_send_timer = 0;
 

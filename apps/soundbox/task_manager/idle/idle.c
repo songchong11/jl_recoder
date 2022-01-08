@@ -362,8 +362,8 @@ static int idle_key_event_opr(struct sys_event *event)
 
 		} else {
 			printf("stop send pcm to module............\n");
-			recoder.send_pcm_state = false;
 			stop_send_pcm_by_user();
+			recoder.send_pcm_state = false;
 		}
 
 		if(recoder.sd_state == false) {

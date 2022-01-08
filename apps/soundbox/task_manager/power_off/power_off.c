@@ -28,7 +28,7 @@
 #include "user_cfg.h"
 #include "bt_tws.h"
 #include "bt.h"
-#include "led_driver.h"
+#include "public.h"
 
 #define LOG_TAG_CONST       APP_ACTION
 #define LOG_TAG             "[APP_ACTION]"
@@ -265,7 +265,10 @@ void app_poweroff_task()
 
 	printf("power off task, module_power_off \n");
 	led_power_off_show();
-	//module_power_off();
+
+	//check has some timer is also runnig
+	stop_send_pcm_by_user();
+	stop_recoder_by_user_active();
 
     while (1) {
         app_task_get_msg(msg, ARRAY_SIZE(msg), 1);

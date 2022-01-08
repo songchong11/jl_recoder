@@ -426,6 +426,26 @@ static void uart_u_task_handle(void *arg)
 
 }
 
+void stop_recoder_by_user_active(void)
+{
+
+	if (recoder.recoder_state == false)
+		return;
+
+	printf("stop_recoder_by_user_active");
+	if (test_file) {
+#if WAV_FORMAT
+		fclose(test_file);
+		test_file = NULL;
+		transform_pcm_to_wave();
+#else
+		fclose(test_file);
+		test_file = NULL;
+#endif
+	}
+
+	lwrb_free(&receive_buff);
+}
 
 static void uart_isr_hook(void *arg, u32 status)
 {
