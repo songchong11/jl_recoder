@@ -314,6 +314,11 @@ static int idle_key_event_opr(struct sys_event *event)
 
 	case KEY_START_STOP_RECODER:
 		//before start recoder , check the sd card
+		if (recoder.send_pcm_state == true) {//when sending pcm, do not start recoder
+			ret = true;
+			break;
+		}
+
 		if(recoder.recoder_state == false && recoder.sd_state == true) {
 			printf("start recoder task............\n");
 
@@ -342,6 +347,12 @@ static int idle_key_event_opr(struct sys_event *event)
 
 		break;
 	case KEY_AT_SEND_PCM:
+
+		if (recoder.recoder_state == true) {//when sending pcm, do not start recoder
+			ret = true;
+			break;
+		}
+
 		get_sys_time(&time);
 		printf("now_time : %d-%d-%d,%d:%d:%d\n", time.year, time.month, time.day, time.hour, time.min, time.sec);
 		if (recoder.send_pcm_state == false && recoder.sd_state == true) {
